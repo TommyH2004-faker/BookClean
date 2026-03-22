@@ -20,12 +20,12 @@ import {
 
 import { toast } from "react-toastify";
 import { LoadingButton } from "@mui/lab";
-import UserModel from "../../../../models/UserModel";
 import RoleModel from "../../../../models/RoleModel";
 import {getAllRoles} from "../../../../api/RoleApi";
 import {get1User} from "../../../../api/UserApi";
 import {getUsernameByToken} from "../../../utils/JwtService";
 import {endpointBE} from "../../../utils/Constant";
+import { UserModel } from "../../../../models/UserModel";
 
 
 interface UserFormProps {
@@ -37,21 +37,21 @@ interface UserFormProps {
 
 export const UserForm: React.FC<UserFormProps> = (props) => {
 	// Các biến cần thiết
-	const [user, setUser] = useState<UserModel>({
-		idUser: 0,
-		dateOfBirth: new Date("2000-01-01"),
-		deliveryAddress: "",
-		purchaseAddress: "",
-		email: "",
-		firstName: "",
-		lastName: "",
-		gender: "M",
-		phoneNumber: "",
-		username: "",
-		password: "",
-		avatar: "",
-		role: 3,
-	});
+	 const [user, setUser] = useState<UserModel>({
+		 idUser: 0,
+		 dateOfBirth: "",
+		 deliveryAddress: "",
+		 email: "",
+		 firstName: "",
+		 lastName: "",
+		 gender: "M",
+		 phoneNumber: "",
+		 username: "",
+		 password: "",
+		 avatar: "",
+		 enabled: true,
+		 roles: ["CUSTOMER"],
+	 });
 	const [avatar, setAvatar] = useState<File | null>(null);
 	const [previewAvatar, setPreviewAvatar] = useState("");
 	const [roles, setRoles] = useState<RoleModel[]>([]);
@@ -72,17 +72,17 @@ export const UserForm: React.FC<UserFormProps> = (props) => {
 	}, []);
 
 	// Load user lên khi update
-	useEffect(() => {
-		if (props.option === "update") {
-			get1User(props.id).then((response) => {
-				setUser({
-					...response,
-					dateOfBirth: new Date(response.dateOfBirth),
-				});
-				setPreviewAvatar(response.avatar);
-			});
-		}
-	}, [props.id, props.option]);
+	 useEffect(() => {
+		 if (props.option === "update") {
+			 get1User(props.id).then((response) => {
+				 setUser({
+					 ...response,
+					 dateOfBirth: response.dateOfBirth || "",
+				 });
+				 setPreviewAvatar(response.avatar ?? "");
+			 });
+		 }
+	 }, [props.id, props.option]);
 
 	function hanleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
@@ -111,21 +111,21 @@ export const UserForm: React.FC<UserFormProps> = (props) => {
 			})
 				.then((response) => {
 					if (response.ok) {
-						setUser({
-							idUser: 0,
-							dateOfBirth: new Date("2000-01-01"),
-							deliveryAddress: "",
-							purchaseAddress: "",
-							email: "",
-							firstName: "",
-							lastName: "",
-							gender: "M",
-							phoneNumber: "",
-							username: "",
-							password: "",
-							avatar: "",
-							role: 3,
-						});
+						 setUser({
+							 idUser: 0,
+							 dateOfBirth: "",
+							 deliveryAddress: "",
+							 email: "",
+							 firstName: "",
+							 lastName: "",
+							 gender: "M",
+							 phoneNumber: "",
+							 username: "",
+							 password: "",
+							 avatar: "",
+							 enabled: true,
+							 roles: ["CUSTOMER"],
+						 });
 						setAvatar(null);
 						setPreviewAvatar("");
 						setStatusBtn(false);
@@ -170,18 +170,13 @@ export const UserForm: React.FC<UserFormProps> = (props) => {
 			reader.readAsDataURL(selectedFile);
 		}
 	}
-	const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const dateString = e.target.value;
-		// Chuyển đổi chuỗi thành đối tượng Date
-		const dateObject = new Date(dateString);
-		if (!isNaN(dateObject.getTime())) {
-			// Nếu là một ngày hợp lệ, cập nhật state
-			setUser({
-				...user,
-				dateOfBirth: dateObject,
-			});
-		}
-	};
+	 const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		 const dateString = e.target.value;
+		 setUser({
+			 ...user,
+			 dateOfBirth: dateString,
+		 });
+	 };
 
 	return (
 		<div>
@@ -294,16 +289,16 @@ export const UserForm: React.FC<UserFormProps> = (props) => {
 									size='small'
 								/>
 
-								<TextField
-									required
-									id='filled-required'
-									label='Ngày sinh'
-									style={{ width: "100%" }}
-									type='date'
-									value={user.dateOfBirth.toISOString().split("T")[0]}
-									onChange={handleDateChange}
-									size='small'
-								/>
+								 <TextField
+									 required
+									 id='filled-required'
+									 label='Ngày sinh'
+									 style={{ width: "100%" }}
+									 type='date'
+									 value={user.dateOfBirth}
+									 onChange={handleDateChange}
+									 size='small'
+								 />
 							</Box>
 						</div>
 						<div className='col-6'>
@@ -367,32 +362,27 @@ export const UserForm: React.FC<UserFormProps> = (props) => {
 									</Select>
 								</FormControl>
 
-								<FormControl fullWidth size='small'>
-									<InputLabel id='demo-simple-select-label'>
-										Vai trò
-									</InputLabel>
-									<Select
-										labelId='demo-simple-select-label'
-										id='demo-simple-select'
-										value={user.role}
-										label='Vai trò'
-										onChange={(e: any) =>
-											setUser({
-												...user,
-												role: e.target.value as number,
-											})
-										}
-									>
-										{roles.map((role) => (
-											<MenuItem
-												value={role.idRole}
-												key={role.idRole}
-											>
-												{role.nameRole}
-											</MenuItem>
-										))}
-									</Select>
-								</FormControl>
+								 <FormControl fullWidth size='small'>
+									 <InputLabel id='demo-simple-select-label'>Vai trò</InputLabel>
+									 <Select
+										 labelId='demo-simple-select-label'
+										 id='demo-simple-select'
+										 value={user.roles[0] || ""}
+										 label='Vai trò'
+										 onChange={(e: any) =>
+											 setUser({
+												 ...user,
+												 roles: [e.target.value],
+											 })
+										 }
+									 >
+										 {roles.map((role) => (
+											 <MenuItem value={role.nameRole} key={role.idRole}>
+												 {role.nameRole}
+											 </MenuItem>
+										 ))}
+									 </Select>
+								 </FormControl>
 							</Box>
 						</div>
 						<div className='d-flex align-items-center mt-3'>

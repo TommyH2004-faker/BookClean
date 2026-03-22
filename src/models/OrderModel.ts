@@ -1,7 +1,7 @@
 import BookModel from "./BookModel";
 import CartItemModel from "./CartItemModel";
 import PaymentModel from "./Payment";
-import UserModel from "./UserModel";
+import { UserModel } from "./UserModel";
 import OrdersDetailModel from "./OrdersDetailModel";
 
 class OrderModel{

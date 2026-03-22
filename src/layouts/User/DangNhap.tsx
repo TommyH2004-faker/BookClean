@@ -64,6 +64,15 @@ import { useCartItem } from "../utils/CartItemContext";
 
             // decode token
             const decodedToken = jwtDecode<JwtPayload>(token);
+            const roles = Array.isArray(decodedToken.role)
+                ? decodedToken.role
+                : [decodedToken.role];
+            const isEnabled =
+                decodedToken.enabled === true || decodedToken.enabled === "true";
+
+            if (!isEnabled) {
+                throw new Error("Tài khoản chưa kích hoạt hoặc bị vô hiệu hoá");
+            }
 
             //  lưu token
             localStorage.setItem("token", token);
@@ -100,7 +109,7 @@ import { useCartItem } from "../utils/CartItemContext";
             setCartList(cartFromServer);
 
             //  redirect theo role
-            if (decodedToken.role === "ADMIN") {
+            if (roles.includes("ADMIN")) {
                 navigation("/admin/dashboard");
             } else {
                 navigation("/");

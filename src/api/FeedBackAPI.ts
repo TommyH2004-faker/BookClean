@@ -45,20 +45,20 @@ export async function lay1DanhGiaCuaMotSach(maSach: number): Promise<ReviewModel
 // getTotalNumberOfFeedbacks
 export async function getTotalNumberOfFeedbacks(): Promise<number> {
     // Xác định endpoint
-    const duongDan: string = `http://localhost:8080/feedback/totalFeedbacks`;
+    const duongDan: string = `${endpointBE}/feedback/get-total`;
     // Gọi phương thức request
     const response = await my_request(duongDan);
     return response;
 }
 // getAllFeedbacks
 export async function getAllFeedback(): Promise<FeedbackModel[]> {
-    const endpoint = endpointBE + "/feedbacks?sort=idFeedback,desc";
+    const endpoint = endpointBE + "/feedback/all-feedback?sort=idfeedback,asc";
     const response = await requestAdmin(endpoint);
 
     let feedbacks: FeedbackModel[] = [];
 
     if (response) {
-        feedbacks = await response._embedded.feedbackses.map((feedbackData: any) => ({
+        feedbacks = await response.data.map((feedbackData: any) => ({
             ...feedbackData
         }))
     }

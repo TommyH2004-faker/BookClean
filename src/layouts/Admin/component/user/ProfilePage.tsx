@@ -27,7 +27,6 @@ import Tooltip from "@mui/material/Tooltip";
 
 
 import HiddenInputUpload from "../../../utils/HiddenInputUpload";
-import UserModel from "../../../../models/UserModel";
 import useScrollToTop from "../../../../hooks/ScrollToTop";
 import {useAuth} from "../../../utils/AuthContext";
 import {useNavigate} from "react-router-dom";
@@ -39,6 +38,7 @@ import {OrderTable} from "../order/OrderTable";
 import {FadeModal} from "../../../utils/FadeModal";
 import {OrderForm} from "../order/OrderForm";
 import CheckIcon from "@mui/icons-material/Check";
+import { UserModel } from "../../../../models/UserModel";
 
 interface ProfilePageProps {
 	setReloadAvatar: any;
@@ -57,20 +57,21 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
 	});
 
 	// Các biến thông tin cá nhân
-	const [user, setUser] = useState<UserModel>({
-		idUser: 0,
-		dateOfBirth: new Date(),
-		deliveryAddress: "",
-		purchaseAddress: "",
-		email: "",
-		firstName: "",
-		lastName: "",
-		gender: "",
-		password: "",
-		phoneNumber: "",
-		username: "",
-		avatar: "",
-	});
+	 const [user, setUser] = useState<UserModel>({
+		 idUser: 0,
+		 dateOfBirth: "",
+		 deliveryAddress: "",
+		 email: "",
+		 firstName: "",
+		 lastName: "",
+		 gender: "",
+		 password: "",
+		 phoneNumber: "",
+		 username: "",
+		 avatar: "",
+		 enabled: true,
+		 roles: ["CUSTOMER"],
+	 });
 	const [newPassword, setNewPassword] = useState("");
 	const [repeatPassword, setRepeatPassword] = useState("");
 	const [dataAvatar, setDataAvatar] = useState("");
@@ -95,17 +96,31 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
 	const [errorRepeatPassword, setErrorRepeatPassword] = useState("");
 
 	// Lấy data user lên
+	//  useEffect(() => {
+	// 	 const idUser = getIdUserByToken();
+	// 	 get1User(idUser)
+	// 		 .then((response) => {
+	// 			 setUser({
+	// 				 ...response,
+	// 				 dateOfBirth: response.dateOfBirth || new Date("2000-01-01"),
+	// 			 });
+	// 			 setPreviewAvatar(response.avatar ?? "");
+	// 		 })
+	// 		 .catch((error) => console.log(error));
+	//  }, []);
 	useEffect(() => {
-		const idUser = getIdUserByToken();
-		get1User(idUser)
-			.then((response) => {
-				setUser({
-					...response,
-					dateOfBirth: new Date(response.dateOfBirth),
-				});
-				setPreviewAvatar(response.avatar);
-			})
-			.catch((error) => console.log(error));
+	const idUser = getIdUserByToken();
+	get1User(idUser)
+		.then((response) => {
+		setUser({
+			...response,
+			dateOfBirth: response.dateOfBirth
+			? response.dateOfBirth.split("T")[0] // 🔥 FIX CHÍNH
+			: "",
+		});
+		setPreviewAvatar(response.avatar ?? "");
+		})
+		.catch((error) => console.log(error));
 	}, []);
 
 	// Xử lý change só điện thoại
@@ -140,18 +155,13 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
 	}
 
 	// Xử lý ngày sinh
-	const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const dateString = e.target.value;
-		// Chuyển đổi chuỗi thành đối tượng Date
-		const dateObject = new Date(dateString);
-		if (!isNaN(dateObject.getTime())) {
-			// Nếu là một ngày hợp lệ, cập nhật state
-			setUser({
-				...user,
-				dateOfBirth: dateObject,
-			});
-		}
-	};
+	 const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		 const dateString = e.target.value;
+		 setUser({
+			 ...user,
+			 dateOfBirth: dateString,
+		 });
+	 };
 
 	// Xử lý change password
 	const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -237,7 +247,7 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
 				})
 				.catch((error) => {
 					toast.error("Cập nhật ảnh đại diện thất bại");
-					setPreviewAvatar(user.avatar);
+					setPreviewAvatar(user.avatar ? user.avatar : "");
 					setIsUploadAvatar(false);
 					console.log(error);
 				}),
@@ -317,7 +327,7 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
 										variant='outlined'
 										startIcon={<CloseIcon/>}
 										onClick={() => {
-											setPreviewAvatar(user.avatar);
+											setPreviewAvatar(user.avatar ? user.avatar : "");
 											setIsUploadAvatar(false);
 										}}
 										color='error'
@@ -492,21 +502,17 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
 														readOnly: true,
 													}}
 												/>
-												<TextField
-													required
-													fullWidth
-													className='input-field'
-													label='Ngày sinh'
-													style={{width: "100%"}}
-													type='date'
-													value={
-														user.dateOfBirth
-															.toISOString()
-															.split("T")[0]
-													}
-													onChange={handleDateChange}
-													disabled={modifiedStatus ? false : true}
-												/>
+												 <TextField
+													 required
+													 fullWidth
+													 className='input-field'
+													 label='Ngày sinh'
+													 style={{width: "100%"}}
+													 type='date'
+													 value={user.dateOfBirth}
+													 onChange={handleDateChange}
+													 disabled={modifiedStatus ? false : true}
+												 />
 												<FormControl>
 													<FormLabel id='demo-row-radio-buttons-group-label'>
 														Giới tính
@@ -527,7 +533,7 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
 															disabled={
 																modifiedStatus ? false : true
 															}
-															value='M'
+															value='Male'
 															control={<Radio/>}
 															label='Nam'
 														/>
@@ -535,7 +541,7 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
 															disabled={
 																modifiedStatus ? false : true
 															}
-															value='F'
+															value='Female'
 															control={<Radio/>}
 															label='Nữ'
 														/>

@@ -163,14 +163,14 @@ export async function getBookByIdCartItem(idCart: number): Promise<BookModel | n
     }
 }
 export async function getTotalNumberOfBooks(): Promise<number> {
-    const endpoint = "http://localhost:8080/book/get-total";
+    const endpoint = `${endpointBE}/book/total-book`;
     try {
         // Gọi phương thức request()
         const response = await requestAdmin(endpoint);
         // Kiểm tra xem dữ liệu endpoint trả về có dữ liệu không
         if (response) {
             // Trả về số lượng cuốn sách
-            return response;
+            return response.total;
         }
     } catch (error) {
         throw new Error("Lỗi không gọi được endpoint lấy tổng cuốn sách\n" + error);

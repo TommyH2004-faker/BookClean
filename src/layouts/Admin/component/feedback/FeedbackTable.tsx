@@ -65,7 +65,7 @@ export const FeedbackTable: React.FC = (props) => {
 		{ field: "title", headerName: "TIÊU ĐỀ", width: 150 },
 		{ field: "comment", headerName: "NHẬN XÉT", width: 300 },
 		{ field: "dateCreated", headerName: "NGÀY TẠO", width: 100 },
-		{ field: "user", headerName: "NGƯỜI DÙNG", width: 100 },
+		{ field: "username", headerName: "NGƯỜI DÙNG", width: 100 },
 		{
 			field: "readed",
 			headerName: "ĐÃ ĐỌC",

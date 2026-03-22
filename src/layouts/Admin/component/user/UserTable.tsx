@@ -12,10 +12,12 @@ import React, { useEffect, useState } from "react";
 
 import { useConfirm } from "material-ui-confirm";
 import { toast } from "react-toastify";
-import UserModel from "../../../../models/UserModel";
+
 import {endpointBE} from "../../../utils/Constant";
-import {getAllUserRole} from "../../../../api/UserApi";
 import {DataTable} from "../../../utils/DataTable";
+import { getAllUsers } from "../../../../api/UserApi";
+import { UserModel } from "../../../../models/UserModel";
+import { c } from "framer-motion/dist/types.d-6pKw1mTI";
 
 
 interface UserTableProps {
@@ -69,30 +71,32 @@ export const UserTable: React.FC<UserTableProps> = (props) => {
 	}
 
 	useEffect(() => {
-		getAllUserRole()
+		getAllUsers()
 			.then((response) => {
 				let users = response
 					.flat()
 					.map((user) => ({ ...user, id: user.idUser }));
-				users = users.sort((u1, u2) => u1.idUser - u2.idUser);
+				   users = users.sort((u1, u2) => Number(u1.idUser) - Number(u2.idUser));
 				setData(users);
 				setLoading(false);
+				console.log(response);
 			})
 			.catch((error) => console.log(error));
 	}, [props.keyCountReload]);
+	console.log(data);
 
 	const columns: GridColDef[] = [
 		{ field: "id", headerName: "ID", width: 50 },
 		{ field: "username", headerName: "TÊN TÀI KHOẢN", width: 120 },
 		{
-			field: "role",
+			field: "roles",
 			headerName: "VAI TRÒ",
 			width: 150,
 			renderCell: (params) => {
 				return (
 					<Chip
-						label={params.value}
-						color={params.value === "CUSTOMER" ? "success" : "error"}
+						label={params.value[0]}
+						color={params.value[0] === "CUSTOMER" ? "success" : "error"}
 						variant='outlined'
 					/>
 				);
@@ -100,13 +104,21 @@ export const UserTable: React.FC<UserTableProps> = (props) => {
 		},
 		{ field: "lastName", headerName: "TÊN", width: 100 },
 		{
-			field: "dateOfBirth",
-			headerName: "NGÀY SINH",
-			width: 100,
+		field: "dateOfBirth",
+		headerName: "NGÀY SINH",
+		width: 120,
+		renderCell: (params) =>
+			params.value
+			? new Date(params.value).toLocaleDateString("vi-VN")
+			: "Chưa có"
 		},
 		{ field: "email", headerName: "EMAIL", width: 200 },
-		{ field: "phoneNumber", headerName: "SỐ ĐIỆN THOẠI", width: 120 },
-
+		{
+		field: "phoneNumber",
+		headerName: "SỐ ĐIỆN THOẠI",
+		width: 120,
+		renderCell: (params) => params.value || "Chưa có"
+		},
 		{
 			field: "action",
 			headerName: "HÀNH ĐỘNG",

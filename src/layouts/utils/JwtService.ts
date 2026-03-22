@@ -1,5 +1,17 @@
 import { jwtDecode } from "jwt-decode";
 import {JwtPayload} from "../Admin/RequireAdmin";
+
+function getRolesFromToken(decodedToken: JwtPayload): string[] {
+   if (Array.isArray(decodedToken.role)) {
+      return decodedToken.role;
+   }
+
+   if (typeof decodedToken.role === "string" && decodedToken.role.trim().length > 0) {
+      return [decodedToken.role];
+   }
+
+   return [];
+}
 export function isTokenExpired(token: string) {
    const decodedToken = jwtDecode(token);
 
@@ -49,7 +61,7 @@ export function getIdUserByToken() {
    const token = localStorage.getItem('token');
    if (token) {
       const decodedToken = jwtDecode(token) as JwtPayload;
-      return decodedToken.id;
+      return decodedToken.sub;
    }
 }
 
@@ -57,8 +69,20 @@ export function getRoleByToken() {
    const token = localStorage.getItem('token');
    if (token) {
       const decodedToken = jwtDecode(token) as JwtPayload;
-      return decodedToken.role;
+      return getRolesFromToken(decodedToken);
    }
+
+   return [];
+}
+
+export function hasRole(role: string) {
+   const token = localStorage.getItem('token');
+   if (!token) {
+      return false;
+   }
+
+   const decodedToken = jwtDecode(token) as JwtPayload;
+   return getRolesFromToken(decodedToken).includes(role);
 }
 
 export function logout(navigate: any) {

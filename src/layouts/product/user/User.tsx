@@ -4,7 +4,7 @@
 import React, { useEffect, useState } from "react";
 import Avatar from "@mui/material/Avatar";
 import ReviewModel from "../../../models/ReviewModel";
-import UserModel from "../../../models/UserModel";
+import { UserModel } from "../../../models/UserModel";
 import {getUserByIdReview} from "../../../api/UserApi";
 
 

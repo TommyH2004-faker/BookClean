@@ -4,7 +4,7 @@ import {Link, NavLink, useLocation, useNavigate} from "react-router-dom";
 import {Search} from "@mui/icons-material";
 import {useCartItem} from "../utils/CartItemContext";
 import {useAuth} from "../utils/AuthContext";
-import {getAvatarByToken, getLastNameByToken, getRoleByToken, isToken, logout} from "../utils/JwtService";
+import {getAvatarByToken, getLastNameByToken, hasRole, isToken, logout} from "../utils/JwtService";
 import Button from "@mui/material/Button";
 import Avatar from "@mui/material/Avatar";
 import GenreModel from "../../models/GenreModel";
@@ -59,28 +59,23 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
                                 Giới thiệu
                             </NavLink>
                         </li>
-                        {/* <li className="nav-item dropdown">
-                            <NavLink className="nav-link dropdown-toggle" to="#" id="navbarDropdown1" role="button"
-                                     data-bs-toggle="dropdown" aria-expanded="false">
-                                Thể loại sách
-                            </NavLink>
-                            <ul className="dropdown-menu" aria-labelledby="navbarDropdown1">
-                                <li><NavLink className="dropdown-item" to="/30">Thể loại 1</NavLink></li>
-                                <li><NavLink className="dropdown-item" to="/32">Thể loại 2</NavLink></li>
-                                <li><NavLink className="dropdown-item" to="/36">Thể loại 3</NavLink></li>
-                            </ul>
-                        </li>*/}
                         <li className='nav-item dropdown dropdown-hover'>
-                            <a
-                                className='nav-link dropdown-toggle'
-                                href='#'
-                                role='button'
-                                data-bs-toggle='dropdown'
-                                aria-expanded='false'
-                            >
-                                Thể loại
+                        <a
+                            className='nav-link dropdown-toggle'
+                            href='#'
+                            role='button'
+                            data-bs-toggle='dropdown'
+                            aria-expanded='false'
+                        >
+                            Thể loại
                             </a>
-                            <ul className='dropdown-menu'>
+                            <ul 
+                                className='dropdown-menu' 
+                                style={{
+                                    maxHeight: "300px",
+                                    overflowY: "auto"
+                                }}
+                                >
                                 {genreList.map((genre, index) => {
                                     return (
                                         <li key={index}>
@@ -212,7 +207,7 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
                                         Sách yêu thích của tôi
                                     </Link>
                                 </li>
-                                {getRoleByToken() === "ADMIN" && (
+                                {hasRole("ADMIN") && (
                                     <li>
                                         <Link
                                             className='dropdown-item'

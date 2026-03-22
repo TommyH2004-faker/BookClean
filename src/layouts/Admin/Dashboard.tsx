@@ -2,7 +2,7 @@
 import RequireAdmin from "./RequireAdmin";
 import { useEffect, useState } from "react";
 import OrderModel from "../../models/OrderModel";
-import {getAllUserRole} from "../../api/UserApi";
+import { getAllUsers} from "../../api/UserApi";
 import {getAllOrders} from "../../api/OrderApi";
 import {ParameterDigital} from "./component/ParameterDigital";
 import {Chart} from "./component/chart/Chart";
@@ -22,10 +22,10 @@ const Dashboard = () => {
 
 	// Lấy tổng số account
 	useEffect(() => {
-		getAllUserRole()
+		getAllUsers()
 			.then((response) => {
-				console.log("User role: ", response);
-				setNumberOfAccount(response?.length || 0 );
+				console.log("All users: ", response);
+				setNumberOfAccount(response.length);
 			})
 			.catch((error) => console.log(error));
 	}, []);

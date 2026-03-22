@@ -21,7 +21,7 @@ export async function getAllReview(idBook: number): Promise<ReviewModel[]> {
 }
 
 export async function getTotalNumberOfReviews(): Promise<number> {
-   const endpoint = endpointBE + "/review/search/countBy";
+   const endpoint = endpointBE + "/review/total";
    try {
       const response = await requestAdmin(endpoint);
       if (response) {

@@ -14,7 +14,7 @@ async function getGenre(endpoint: string): Promise<resultInterface> {
    const response = await my_request(endpoint);
 
    // Lấy ra danh sách quyển sách
-   const genreList: any = response._embedded.genres.map((genreData: any) => ({
+   const genreList: any = response.map((genreData: any) => ({
       ...genreData,
    }))
 
@@ -22,7 +22,7 @@ async function getGenre(endpoint: string): Promise<resultInterface> {
 }
 
 export async function getAllGenres(): Promise<resultInterface> {
-   const endpoint = endpointBE + "/genres?sort=idGenre";
+   const endpoint = endpointBE + "/genres?Sort=idGenre,asc";
 
    return getGenre(endpoint);
 }

@@ -4,10 +4,10 @@ import { jwtDecode } from "jwt-decode";
 
 export interface JwtPayload {
 	id: any;
-	role: string;
+	role: string | string[];
 	avatar: string;
 	lastName: string;
-	enabled: boolean;
+	enabled: boolean | string;
 	sub: string;
 }
 
@@ -30,10 +30,12 @@ const RequireAdmin = <P extends object>(
 			const decodedToken = jwtDecode(token) as JwtPayload;
 
 			// Lấy thông tin từ token đó
-			const role = decodedToken.role;
+			const roles = Array.isArray(decodedToken.role)
+				? decodedToken.role
+				: [decodedToken.role];
 
 			// Kiểm tra quyền
-			if (role !== "ADMIN") {
+			if (!roles.includes("ADMIN")) {
 				navigate("/bao-loi-403");
 			}
 		}, [navigate]);

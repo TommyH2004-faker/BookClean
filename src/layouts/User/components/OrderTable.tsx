@@ -27,6 +27,7 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 	const [data, setData] = useState<OrderModel[]>([]);
 	useEffect(() => {
 		const idUser = getIdUserByToken();
+		if (!idUser) return;
 		getAllOrdersByIdUser(idUser)
 			.then((response) => {
 				const orders = response.map((order) => ({
