@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {layToanBoDanhGiaCuaMotSach} from "../../api/FeedBackAPI";
-import ReviewModel from "../../models/ReviewModel";
 import renderRating from "../utils/SaoXepHang";
+import ReviewModel from '../../models/ReviewModel';
 interface DanhGiaSanPham {
     maSach: number;
 }
@@ -48,11 +48,11 @@ const DanhGiaSanPham: React.FC<DanhGiaSanPham> = (props) => {
                 danhSachDanhGia.map((danhGia, index) => (
                         <div className="row">
                             <div className="col-4  text-end">
-                                <p>{danhGia.idReview}</p>
-                                <p>{renderRating(danhGia.ratingPoint?danhGia.ratingPoint:0)}</p>
+                                <p>{danhGia.id}</p>
+                                <p>{renderRating(danhGia.rating?danhGia.rating:0)}</p>
                             </div>
                             <div className="col-8 text-start">
-                                <p>{danhGia.content}</p>
+                                <p>{danhGia.comment}</p>
                             </div>
                         </div>
                     )

@@ -45,8 +45,8 @@ const Carouseltem: React.FC<CaroselItemPropsInterface> = (props) => {
     }
 
     let duLieuAnh: string = "";
-    if (danhSachAnh[0] && danhSachAnh[0].urlImage) {
-        duLieuAnh = danhSachAnh[0].urlImage;
+    if (danhSachAnh[0] && danhSachAnh[0].url) {
+        duLieuAnh = danhSachAnh[0].url;
     }
 
     return (

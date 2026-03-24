@@ -1,11 +1,9 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @typescript-eslint/no-redeclare */
-/* eslint-disable jsx-a11y/anchor-is-valid */
+
 import React, { useEffect, useState } from "react";
 import Avatar from "@mui/material/Avatar";
-import ReviewModel from "../../../models/ReviewModel";
 import { UserModel } from "../../../models/UserModel";
 import {getUserByIdReview} from "../../../api/UserApi";
+import ReviewModel from "../../../models/ReviewModel";
 
 
 interface CommentProps {
@@ -14,14 +12,17 @@ interface CommentProps {
 }
 
 const User: React.FC<CommentProps> = (props) => {
-	const [user, setUser] = useState<UserModel | null>(null);
+	// const [user, setUser] = useState<UserModel | null>(null);
+	// 	useEffect(() => {
+	// 	if (!props.review?.id) return;
 
-	useEffect(() => {
-		getUserByIdReview(props.review.idReview).then((response) => {
-			setUser(response);
-		});
-	}, []);
-
+	// 	getUserByIdReview(props.review.id).then((response) => {
+	// 		setUser(response);
+	// 		console.log("User đã được lấy:", response);
+	// 	});
+	// }, [props.review.id]);
+		const user = props.review.user;
+		console.log("User đã được lấy:", user);
 	const formatDate = (timestamp: string) => {
 		const date = new Date(timestamp);
 
@@ -38,12 +39,14 @@ const User: React.FC<CommentProps> = (props) => {
 	return (
 		<>
 			<div className='me-4 mt-1'>
-				<Avatar>{user?.lastName[0]}</Avatar>
+			<Avatar src={user?.avatarUrl ?? undefined}>
+				{!user?.avatarUrl && user?.name?.charAt(0)}
+			</Avatar>
 			</div>
 			<div>
-				<strong>{user?.username}</strong>
+				<strong>{user?.lastName}</strong>
 				<span className='ms-2' style={{ fontSize: "12px", color: "#aaa" }}>
-					{formatDate(props.review.timestamp + "")}
+					{formatDate(props.review.dateCreated + "")}
 				</span>
 				{props.children}
 			</div>

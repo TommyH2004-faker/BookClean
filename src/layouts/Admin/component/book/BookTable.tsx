@@ -7,7 +7,7 @@ import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useConfirm } from "material-ui-confirm";
 import BookModel from "../../../../models/BookModel";
-import {getAllBook, layToanBoSach} from "../../../../api/SachAPI";
+import {getAllBook} from "../../../../api/SachAPI";
 import {layToanBoHinhAnhMotSach} from "../../../../api/HinhAnhAPI";
 import {endpointBE} from "../../../utils/Constant";
 import {DataTable} from "../../../utils/DataTable";
@@ -33,21 +33,19 @@ export const BookTable: React.FC<BookTableProps> = (props) => {
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
-				const bookResponse = await getAllBook(1000,0);
-
+				const bookResponse = await getAllBook(1000, 0);
+				console.log(bookResponse);
 				const promises = bookResponse.ketQua.map(async (book) => {
 					const imagesList = await layToanBoHinhAnhMotSach(book.idBook);
-
-					const thumbnail = imagesList.find((image) => image.thumbnail);
+					
+					const thumbnail = imagesList.find((image) => image.isThumbnail);
 
 					return {
 						...book,
 						id: book.idBook,
-						thumbnail: thumbnail?.urlImage || thumbnail?.dataImage,
+						thumbnail: thumbnail?.url || thumbnail?.data,
 					};
 				});
-				// Promise.all(promises) nghĩa là đợi cho những Promise trên kia hoàn thành hết thì mới tới
-				// câu lệnh này
 				const books = await Promise.all(promises);
 				setData(books);
 				setLoading(false);
@@ -69,7 +67,7 @@ export const BookTable: React.FC<BookTableProps> = (props) => {
 			cancellationText: ["Huỷ"],
 		})
 			.then(() => {
-				fetch(endpointBE + `/books/${id}`, {
+				fetch(endpointBE + `/book/${id}`, {
 					method: "DELETE",
 					headers: {
 						Authorization: `Bearer ${token}`,

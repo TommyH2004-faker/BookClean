@@ -1,8 +1,8 @@
 
 import {my_request, requestAdmin} from './Request';
 import FeedbackModel from "../models/FeedbackModel";
-import ReviewModel from "../models/ReviewModel";
 import {endpointBE} from "../layouts/utils/Constant";
+import ReviewModel from '../models/ReviewModel';
 
 async function layDanhGiaCuaMotSach(duongDan: string): Promise<ReviewModel[]> {
     const ketQua: ReviewModel[] = [];
@@ -16,10 +16,16 @@ async function layDanhGiaCuaMotSach(duongDan: string): Promise<ReviewModel[]> {
 
     for (const key in responseData) {
         ketQua.push({
-            idReview: responseData[key].idReview,
-            content: responseData[key].content,
-            ratingPoint: responseData[key].ratingPoint,
-            timestamp:responseData[key].timestamp
+            id: responseData[key].id,
+            comment: responseData[key].comment,
+            rating: responseData[key].rating,
+            dateCreated: responseData[key].dateCreated,
+            user: {
+                id: responseData[key].user.id,
+                name: responseData[key].user.name,
+                lastName: responseData[key].user.lastName,
+                avatarUrl: responseData[key].user.avatarUrl,
+            }
         });
     }
 
@@ -29,7 +35,7 @@ async function layDanhGiaCuaMotSach(duongDan: string): Promise<ReviewModel[]> {
 
 export async function layToanBoDanhGiaCuaMotSach(maSach: number): Promise<ReviewModel[]> {
     // Xác định endpoint
-    const duongDan: string = `http://localhost:8080/books/${maSach}/listReviews`;
+    const duongDan: string = `${endpointBE}/books/${maSach}/listReviews`;
 
     return layDanhGiaCuaMotSach(duongDan);
 }
@@ -37,7 +43,7 @@ export async function layToanBoDanhGiaCuaMotSach(maSach: number): Promise<Review
 
 export async function lay1DanhGiaCuaMotSach(maSach: number): Promise<ReviewModel[]> {
     // Xác định endpoint
-    const duongDan: string = `http://localhost:8080/books/${maSach}/listReviews?sort=maDanhGia,asc&page=0&size=1`;
+    const duongDan: string = `${endpointBE}/books/${maSach}/listReviews?sort=maDanhGia,asc&page=0&size=1`;
 
     return layDanhGiaCuaMotSach(duongDan);
 }

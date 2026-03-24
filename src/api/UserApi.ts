@@ -28,61 +28,10 @@ function normalizeGender(gender: any): string {
 
 async function getUser(endpoint: string): Promise<UserModel> {
    // Gọi phương thức request()
-   const response = unwrapData(await my_request(endpoint));
-
+   const response =await my_request(endpoint);
    return response;
 }
 
-
-// export async function getAllUserRole(): Promise<UserModel[]> {
-//    const endpoint: string = endpointBE + `/role`;
-
-
-//    const response = await requestAdmin(endpoint);
-
-
-//    const roles = response._embedded?.roles || [];
-
-
-//    let users: UserModel[] = [];
-
-//    for (const roleData of roles) {
-//       const listUsersUrl = roleData._links?.listUsers?.href;
-
-
-//       if (listUsersUrl) {
-//          try {
-//             const listUsersResponse = await requestAdmin(listUsersUrl);
-
-
-//             const listUsers = listUsersResponse._embedded?.users || [];
-
-//             const usersFromRole = listUsers.map((userData: any) => ({
-//                idUser: userData.idUser,
-//                avatar: userData.avatar,
-//                dateOfBirth: userData.dateOfBirth,
-//                deliveryAddress: userData.deliveryAddress,
-//                email: userData.email,
-//                firstName: userData.firstName,
-//                lastName: userData.lastName,
-//                gender: userData.gender,
-//                phoneNumber: userData.phoneNumber,
-//                username: userData.username,
-//                role: roleData.nameRole,
-//             }));
-
-//             users = [...users, ...usersFromRole];
-//          } catch (error) {
-//             console.error(`Lỗi khi lấy danh sách người dùng từ ${listUsersUrl}`, error);
-//          }
-//       } else {
-//          console.warn("Không tìm thấy listUsersUrl trong role:", roleData);
-//       }
-//    }
-
-//    console.log("Danh sách users cuối cùng:", users);
-//    return users;
-// }
 
 export async function getAllUsers(): Promise<UserModel[]> {
     const endpoint = `${endpointBE}/user/get-all`;
@@ -129,9 +78,28 @@ export async function get1User(idUser: any): Promise<UserModel> {
    return user;
 }
 
+// export async function getUserByIdReview(idReview: number): Promise<UserModel> {
+//    const endpoint = endpointBE + `/user/reviews/${idReview}/user`;
+//    return getUser(endpoint);
+// }
 export async function getUserByIdReview(idReview: number): Promise<UserModel> {
-   // Xác định endpoint
-   const endpoint: string = endpointBE + `/review/${idReview}/user`;
+   const endpoint = endpointBE + `/user/reviews/${idReview}/user`;
+   const response = await my_request(endpoint);
 
-   return getUser(endpoint);
+   // nếu API trả trực tiếp object user
+   return {
+      idUser: 0, // hoặc parse nếu cần
+      username: response.name,          // map
+      avatar: response.avatarUrl,       // map
+      email: response.email,
+      firstName: response.firstName,
+      lastName: response.lastName,
+      dateOfBirth: null,
+      deliveryAddress: null,
+      gender: null,
+      phoneNumber: null,
+      enabled: true,
+      timeStamp: response.timeStamp,
+      roles: []
+   };
 }

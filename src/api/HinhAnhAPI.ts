@@ -1,33 +1,35 @@
 import React from "react";
 import ImageModel from "../models/ImageModel";
 import { my_request } from "../api/Request";
+import { endpointBE } from "../layouts/utils/Constant";
 async function layAnhMotSach(duongDan:string): Promise<ImageModel[]> {
     const ketQua: ImageModel[] = [];
     // xac dinh endpoint
     // duyet du lieu
     const reponse = await my_request(duongDan);
-    const reponseData = reponse._embedded.images;
+    const reponseData = reponse.data;
     for (const item in reponseData) {
         ketQua.push({
-            idImage: reponseData[item].idImage, // id anh
-            nameImage: reponseData[item].nameImage, // ten anh
-            thumbnail: reponseData[item].thumbnail, // la icon
-            urlImage: reponseData[item].urlImage, // duong dan anh
-            dataImage: reponseData[item].dataImage // du lieu anh
+            id: reponseData[item].id, 
+            name: reponseData[item].name, 
+            isThumbnail: reponseData[item].isThumbnail, 
+            url: reponseData[item].url, 
+            data: reponseData[item].data 
         });
     }
     return ketQua;
 
 }
+
 export async function layToanBoHinhAnhMotSach(idBook: number): Promise<ImageModel[]> {
     // xac dinh endpoint
-    const duongDan: string = `http://localhost:8080/books/${idBook}/listImages`;
+    const duongDan: string = `${endpointBE}/book/${idBook}/images`;
     return layAnhMotSach(duongDan);
 }
 
 export async function lay1AnhCuaMotSach(idBook:number): Promise<ImageModel[]> {
     // xac dinh endpoint
-    const duongDan: string = `http://localhost:8080/books/${idBook}/listImages?sort=idImage,asc?page=0&size=1`;
+    const duongDan: string = `${endpointBE}/book/${idBook}/images?sort=idImage,asc&page=0&size=1`;
     return layAnhMotSach(duongDan);
 }
 

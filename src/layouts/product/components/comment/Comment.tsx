@@ -1,12 +1,10 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @typescript-eslint/no-redeclare */
-/* eslint-disable jsx-a11y/anchor-is-valid */
+
 import React, { useEffect, useState } from "react";
 
 import { getAllReview } from "../../../../api/ReviewApi";
-import ReviewModel from "../../../../models/ReviewModel";
 import RatingStar from "../../rating/Rating";
 import User from "../../user/User";
+import ReviewModel from "../../../../models/ReviewModel";
 
 
 interface CommentProps {
@@ -18,6 +16,7 @@ const Comment: React.FC<CommentProps> = (props) => {
 	useEffect(() => {
 		getAllReview(props.idBook).then((respose) => {
 			setReviews(respose);
+			console.log(respose);
 		});
 	}, []);
 
@@ -35,9 +34,9 @@ const Comment: React.FC<CommentProps> = (props) => {
 								<div>
 									<RatingStar
 										readonly={true}
-										ratingPoint={review.ratingPoint}
+										ratingPoint={review.rating}
 									/>
-									<p className='mb-0'>{review.content}</p>
+									<p className='mb-0'>{review.comment}</p>
 								</div>
 							</User>
 						</div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { endpointBE } from "./Constant";
 
 interface Genre {
     idGenre: number;
@@ -10,7 +11,7 @@ const DropdownGenre: React.FC = () => {
     const [selectedGenre, setSelectedGenre] = useState<string>("");
 
     useEffect(() => {
-        fetch("http://localhost:8080/genres")
+        fetch(`${endpointBE}/genres`)
             .then((response) => response.json())
             .then((data) => setGenres(data._embedded.genres)) // ✅ TypeScript sẽ hiểu genres là mảng Genre[]
             .catch((error) => console.error("Lỗi khi tải thể loại:", error));
@@ -20,7 +21,7 @@ const DropdownGenre: React.FC = () => {
         const genreId = event.target.value;
         setSelectedGenre(genreId);
         if (genreId) {
-            window.location.href = `http://localhost:8080/genres/${genreId}`;
+            window.location.href = `${endpointBE}/genres/${genreId}`;
         }
     };
 

@@ -1,5 +1,6 @@
 import React, { FormEvent, useState } from 'react';
 import RequiredAdmin from '../Admin/RequireAdmin';
+import { endpointBE } from '../utils/Constant';
 
 const SachForm: React.FC = () => {
     const [sach, setSach] = useState({
@@ -17,7 +18,7 @@ const SachForm: React.FC = () => {
     const handleSubmit = (event: FormEvent) => {
         event.preventDefault();
         const token = localStorage.getItem('token'); // lay token ra
-        fetch('http://localhost:8080/books', {
+        fetch(`${endpointBE}/book`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

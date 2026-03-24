@@ -102,81 +102,166 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
     };
 
     // Xử lý thêm sản phẩm vào giỏ hàng
-    const handleAddProduct = async (newBook: BookModel) => {
-        // cái isExistBook này sẽ tham chiếu đến cái cart ở trên, nên khi update thì cart nó cũng update theo
-        let isExistBook = cartList.find(
-            (cartItem) => cartItem.book.idBook === newBook.idBook
-        );
-        // Thêm 1 sản phẩm vào giỏ hàng
-        if (isExistBook) {
-            // nếu có rồi thì sẽ tăng số lượng
-            isExistBook.quantity += quantity;
+    // const handleAddProduct = async (newBook: BookModel) => {
+    //     // cái isExistBook này sẽ tham chiếu đến cái cart ở trên, nên khi update thì cart nó cũng update theo
+      
+    //     let isExistBook = cartList.find(
+    //         (cartItem) => cartItem.book.idBook === newBook.idBook
+    //     );
+    //     // Thêm 1 sản phẩm vào giỏ hàng
+    //     if (isExistBook) {
+    //         // nếu có rồi thì sẽ tăng số lượng
+    //         isExistBook.quantity += quantity;
 
-            // Lưu vào db
-            if (isToken()) {
-                const request = {
-                    idCart: isExistBook.idCart,
-                    quantity: isExistBook.quantity,
-                };
+    //         // Lưu vào db
+    //         if (isToken()) {
+    //             const request = {
+    //                 idCart: isExistBook.idCart,
+    //                 quantity: isExistBook.quantity,
+    //             };
+    //             const token = localStorage.getItem("token");
+    //             fetch(endpointBE + `/cart-item/update-item`, {
+    //                 method: "PUT",
+    //                 headers: {
+    //                     Authorization: `Bearer ${token}`,
+    //                     "content-type": "application/json",
+    //                 },
+    //                 body: JSON.stringify(request),
+    //             }).catch((err) => console.log(err));
+    //         }
+    //     } else {
+    //         // Lưu vào db
+    //         if (isToken()) {
+    //             try {
+    //                 const request = [
+    //                     {
+    //                         quantity: quantity,
+    //                         book: newBook,
+    //                         idUser: getIdUserByToken(),
+    //                     },
+    //                 ];
+    //                 const token = localStorage.getItem("token");
+    //                 const response = await fetch(
+    //                     endpointBE + "/cart-item/add-item",
+    //                     {
+    //                         method: "POST",
+    //                         headers: {
+    //                             Authorization: `Bearer ${token}`,
+    //                             "content-type": "application/json",
+    //                         },
+    //                         body: JSON.stringify(request),
+    //                     }
+    //                 );
+
+    //                 if (response.ok) {
+    //                     const idCart = await response.json();
+    //                     cartList.push({
+    //                         idCart: idCart,
+    //                         quantity: quantity,
+    //                         book: newBook,
+    //                     });
+    //                 }
+    //             } catch (error) {
+    //                 console.log(error);
+    //             }
+    //         } else {
+    //             cartList.push({
+    //                 quantity: quantity,
+    //                 book: newBook,
+    //             });
+    //         }
+    //     }
+    //     // Lưu vào localStorage
+    //     localStorage.setItem("cart", JSON.stringify(cartList));
+    //     // Thông báo toast
+    //     toast.success("Thêm vào giỏ hàng thành công");
+    //     setTotalCart(cartList.length);
+    // };
+    const handleAddProduct = async (newBook: BookModel, quantity: number = 1) => {
+    // Lấy số lượng tồn kho, nếu undefined thì mặc định 0
+    const availableStock = newBook.quantity ?? 0;
+
+    // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
+    let isExistBook = cartList.find(
+        (cartItem) => cartItem.book.idBook === newBook.idBook
+    );
+
+    const currentQuantityInCart = isExistBook ? isExistBook.quantity : 0;
+
+    // Nếu tổng số lượng vượt quá tồn kho, thông báo và dừng
+    if (currentQuantityInCart + quantity > availableStock) {
+        toast.error("Không thể thêm, đã vượt quá số lượng tồn kho!");
+        return;
+    }
+
+    if (isExistBook) {
+        // Nếu đã có trong giỏ, tăng số lượng
+        isExistBook.quantity += quantity;
+
+        // Cập nhật trên server nếu đã đăng nhập
+        if (isToken()) {
+            const request = {
+                idCart: isExistBook.idCart,
+                quantity: isExistBook.quantity,
+            };
+            const token = localStorage.getItem("token");
+            fetch(endpointBE + `/cart-item/update-item`, {
+                method: "PUT",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "content-type": "application/json",
+                },
+                body: JSON.stringify(request),
+            }).catch((err) => console.log(err));
+        }
+    } else {
+        // Nếu chưa có trong giỏ, thêm mới
+        if (isToken()) {
+            try {
+                const request = [
+                    {
+                        quantity: quantity,
+                        book: newBook,
+                        idUser: getIdUserByToken(),
+                    },
+                ];
                 const token = localStorage.getItem("token");
-                fetch(endpointBE + `/cart-item/update-item`, {
-                    method: "PUT",
+                const response = await fetch(endpointBE + "/cart-item/add-item", {
+                    method: "POST",
                     headers: {
                         Authorization: `Bearer ${token}`,
                         "content-type": "application/json",
                     },
                     body: JSON.stringify(request),
-                }).catch((err) => console.log(err));
+                });
+
+                if (response.ok) {
+                    const idCart = await response.json();
+                    cartList.push({
+                        idCart: idCart,
+                        quantity: quantity,
+                        book: newBook,
+                    });
+                }
+            } catch (error) {
+                console.log(error);
             }
         } else {
-            // Lưu vào db
-            if (isToken()) {
-                try {
-                    const request = [
-                        {
-                            quantity: quantity,
-                            book: newBook,
-                            idUser: getIdUserByToken(),
-                        },
-                    ];
-                    const token = localStorage.getItem("token");
-                    const response = await fetch(
-                        endpointBE + "/cart-item/add-item",
-                        {
-                            method: "POST",
-                            headers: {
-                                Authorization: `Bearer ${token}`,
-                                "content-type": "application/json",
-                            },
-                            body: JSON.stringify(request),
-                        }
-                    );
-
-                    if (response.ok) {
-                        const idCart = await response.json();
-                        cartList.push({
-                            idCart: idCart,
-                            quantity: quantity,
-                            book: newBook,
-                        });
-                    }
-                } catch (error) {
-                    console.log(error);
-                }
-            } else {
-                cartList.push({
-                    quantity: quantity,
-                    book: newBook,
-                });
-            }
+            // Nếu chưa đăng nhập, lưu vào localStorage
+            cartList.push({
+                quantity: quantity,
+                book: newBook,
+            });
         }
-        // Lưu vào localStorage
-        localStorage.setItem("cart", JSON.stringify(cartList));
-        // Thông báo toast
-        toast.success("Thêm vào giỏ hàng thành công");
-        setTotalCart(cartList.length);
-    };
+    }
 
+    // Lưu giỏ hàng vào localStorage
+    localStorage.setItem("cart", JSON.stringify(cartList));
+
+    // Thông báo thêm thành công
+    toast.success("Thêm vào giỏ hàng thành công");
+    setTotalCart(cartList.length);
+};
     // Viewer hình ảnh
     const [currentImage, setCurrentImage] = useState(0);
     const [isViewerOpen, setIsViewerOpen] = useState(false);
@@ -184,7 +269,7 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
     let imageList: string[] = [];
     if (images !== undefined && images !== null) {
         imageList = images.map((image) => {
-            return image.urlImage || image.dataImage;
+            return image.url || image.data;
         }) as string[];
     }
 
@@ -202,6 +287,10 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
     const [cartItem, setCartItem] = useState<CartItemModel[]>([]);
     const [totalPriceProduct, setTotalPriceProduct] = useState(0);
     function handleBuyNow(newBook: BookModel) {
+        if(!isToken()) {
+            toast.warning("Bạn cần đăng nhập để mua hàng");
+            return;
+        }
         setCartItem([{ quantity, book: newBook }]);
         setIsCheckout(!isCheckout);
         setTotalPriceProduct(newBook.sellPrice * quantity);
@@ -274,9 +363,9 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
                                             <img
                                                 alt=''
                                                 src={
-                                                    image.dataImage
-                                                        ? image.dataImage
-                                                        : image.urlImage
+                                                    image.data
+                                                        ? image.data
+                                                        : image.url
                                                 }
                                             />
                                         </div>

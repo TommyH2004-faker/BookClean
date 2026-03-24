@@ -48,71 +48,202 @@ const SachProps: React.FC<SachPropsInterface> = ({ sach }) => {
         }
     }, [maSach]);
 
-    const handleAddProduct = async (newBook: BookModel) => {
-        let isExistBook = cartList.find(cartItem => cartItem.book.idBook === newBook.idBook);
+    // const handleAddProduct = async (newBook: BookModel) => {
+    //     let isExistBook = cartList.find(cartItem => cartItem.book.idBook === newBook.idBook);
 
-        if (isExistBook) {
-            isExistBook.quantity += 1;
+    //     if (isExistBook) {
+    //         isExistBook.quantity += 1;
 
-            if (isToken()) {
+    //         if (isToken()) {
+    //             const request = {
+    //                 idCart: isExistBook.idCart,
+    //                 quantity: isExistBook.quantity,
+    //             };
+    //             const token = localStorage.getItem("token");
+    //             fetch(endpointBE + `/cart-item/update-item`, {
+    //                 method: "PUT",
+    //                 headers: {
+    //                     Authorization: `Bearer ${token}`,
+    //                     "content-type": "application/json",
+    //                 },
+    //                 body: JSON.stringify(request),
+    //             }).catch(err => console.log(err));
+    //         }
+    //     } else {
+    //         if (isToken()) {
+    //             try {
+    //                 const request = [
+    //                     {
+    //                         book: newBook,
+    //                         idUser: getIdUserByToken(),
+    //                         quantity: 1,
+    //                     },
+    //                 ];
+    //                 const token = localStorage.getItem("token");
+    //                 const response = await fetch(endpointBE + "/cart-items/add-item", {
+    //                     method: "POST",
+    //                     headers: {
+    //                         Authorization: `Bearer ${token}`,
+    //                         "content-type": "application/json",
+    //                     },
+    //                     body: JSON.stringify(request),
+    //                 });
+                    
+    //                 if (response.ok) {
+    //                     const idCart = await response.json();
+    //                     cartList.push({
+    //                         idCart: idCart,
+    //                         quantity: 1,
+    //                         book: newBook,
+    //                     });
+    //                 }
+    //             } catch (error) {
+    //                 console.log(error);
+    //             }
+    //         } else {
+    //             cartList.push({
+    //                 quantity: 1,
+    //                 book: newBook,
+    //             });
+    //         }
+    //     }
+
+    //     localStorage.setItem("cart", JSON.stringify(cartList));
+    //     toast.success("Thêm vào giỏ hàng thành công");
+    //     setTotalCart(cartList.length);
+    // };
+
+//     const handleAddProduct = async (newBook: BookModel) => {
+//     let isExistBook = cartList.find(cartItem => cartItem.book.idBook === newBook.idBook);
+
+//     if (isExistBook) {
+//         isExistBook.quantity += 1;
+
+//         if (isToken()) {
+//             await fetch(`${endpointBE}/cart-items/update-item`, {
+//                 method: "PUT",
+//                 headers: {
+//                     Authorization: `Bearer ${localStorage.getItem("token")}`,
+//                     "content-type": "application/json",
+//                 },
+//                 body: JSON.stringify({
+//                     idCart: isExistBook.idCart,
+//                     quantity: isExistBook.quantity
+//                 }),
+//             });
+//         }
+//     } else {
+//         if (isToken()) {
+//             try {
+//                 const request = {
+//                     bookId: newBook.idBook,
+//                     quantity: 1
+//                 };
+
+//                 const response = await fetch(`${endpointBE}/cart-items/add-item`, {
+//                     method: "POST",
+//                     headers: {
+//                         Authorization: `Bearer ${localStorage.getItem("token")}`,
+//                         "content-type": "application/json",
+//                     },
+//                     body: JSON.stringify(request),
+//                 });
+
+//                 if (response.ok) {
+//                     const idCart = await response.json();
+//                     cartList.push({
+//                         idCart,
+//                         quantity: 1,
+//                         book: newBook,
+//                     });
+//                 }
+//             } catch (error) {
+//                 console.log(error);
+//             }
+//         } else {
+//             // Guest user
+//             cartList.push({
+//                 quantity: 1,
+//                 book: newBook,
+//             });
+//         }
+//     }
+
+//     localStorage.setItem("cart", JSON.stringify(cartList));
+//     toast.success("Thêm vào giỏ hàng thành công");
+//     setTotalCart(cartList.length);
+// };
+const handleAddProduct = async (newBook: BookModel) => {
+    const existingCartItem = cartList.find(
+        (item) => item.book.idBook === newBook.idBook
+    );
+
+    // Tính tổng số lượng sau khi add
+    const currentQuantityInCart = existingCartItem ? existingCartItem.quantity : 0;
+    // Nếu newBook.quantity undefined, mặc định là 0
+    const availableQuantity = newBook.quantity ?? 0;
+
+    if (currentQuantityInCart + 1 > availableQuantity) {
+        toast.error("Không thể thêm, đã vượt quá số lượng tồn kho!");
+        return;
+    }
+
+    if (existingCartItem) {
+        existingCartItem.quantity += 1;
+
+        if (isToken()) {
+            await fetch(`${endpointBE}/cart-items/update-item`, {
+                method: "PUT",
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    "content-type": "application/json",
+                },
+                body: JSON.stringify({
+                    idCart: existingCartItem.idCart,
+                    quantity: existingCartItem.quantity,
+                }),
+            });
+        }
+    } else {
+        if (isToken()) {
+            try {
                 const request = {
-                    idCart: isExistBook.idCart,
-                    quantity: isExistBook.quantity,
+                    bookId: newBook.idBook,
+                    quantity: 1,
                 };
-                const token = localStorage.getItem("token");
-                fetch(endpointBE + `/cart-item/update-item`, {
-                    method: "PUT",
+
+                const response = await fetch(`${endpointBE}/cart-items/add-item`, {
+                    method: "POST",
                     headers: {
-                        Authorization: `Bearer ${token}`,
+                        Authorization: `Bearer ${localStorage.getItem("token")}`,
                         "content-type": "application/json",
                     },
                     body: JSON.stringify(request),
-                }).catch(err => console.log(err));
+                });
+
+                if (response.ok) {
+                    const idCart = await response.json();
+                    cartList.push({
+                        idCart,
+                        quantity: 1,
+                        book: newBook,
+                    });
+                }
+            } catch (error) {
+                console.log(error);
             }
         } else {
-            if (isToken()) {
-                try {
-                    const request = [
-                        {
-                            quantity: 1,
-                            book: newBook,
-                            idUser: getIdUserByToken(),
-                        },
-                    ];
-                    const token = localStorage.getItem("token");
-                    const response = await fetch(endpointBE + "/cart-item/add-item", {
-                        method: "POST",
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                            "content-type": "application/json",
-                        },
-                        body: JSON.stringify(request),
-                    });
-
-                    if (response.ok) {
-                        const idCart = await response.json();
-                        cartList.push({
-                            idCart: idCart,
-                            quantity: 1,
-                            book: newBook,
-                        });
-                    }
-                } catch (error) {
-                    console.log(error);
-                }
-            } else {
-                cartList.push({
-                    quantity: 1,
-                    book: newBook,
-                });
-            }
+            cartList.push({
+                quantity: 1,
+                book: newBook,
+            });
         }
+    }
 
-        localStorage.setItem("cart", JSON.stringify(cartList));
-        toast.success("Thêm vào giỏ hàng thành công");
-        setTotalCart(cartList.length);
-    };
-
+    localStorage.setItem("cart", JSON.stringify(cartList));
+    toast.success("Thêm vào giỏ hàng thành công");
+    setTotalCart(cartList.length);
+};
     const handleFavoriteBook = async () => {
         if (!isToken()) {
             toast.info("Bạn phải đăng nhập để sử dụng chức năng này");
@@ -148,7 +279,7 @@ const SachProps: React.FC<SachPropsInterface> = ({ sach }) => {
         return <h1>Gặp lỗi: {baoLoi}</h1>;
     }
 
-    const duLieuAnh = danhSachAnh.length > 0 ? danhSachAnh[0].urlImage : "";
+    const duLieuAnh = danhSachAnh.length > 0 ? danhSachAnh[0].url : "";
 
     return (
         <div className="col-md-3 mt-2">

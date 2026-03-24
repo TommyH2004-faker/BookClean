@@ -35,7 +35,7 @@ export async function get1Genre(idGenre: number): Promise<resultInterface> {
 }
 
 export async function getGenreByIdBook(idBook: number): Promise<resultInterface> {
-   const endpoint = endpointBE + `/books/${idBook}/listGenres`;
+   const endpoint = endpointBE + `/book/${idBook}/listGenres`;
 
    return getGenre(endpoint);
 }

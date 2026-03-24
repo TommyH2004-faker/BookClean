@@ -18,16 +18,16 @@ async function laySach(duongDan: string): Promise<KetQuaInterface> {
     const response = await my_request(duongDan);
 
     // Lấy ra json sach
-    const responseData = response._embedded.books;
+    const responseData = response.data;
     // lay thong tin trang
-    const tongSoTrang = response.page.totalPages;
-    const tongSoSach = response.page.totalElements;
+    const tongSoTrang = response.totalPages;
+    const tongSoSach = response.totalElements;
 
     // Duyệt dữ liệu
     for (const item in responseData) {
         ketQua.push({
-            idBook: responseData[item].idBook, // id sach
-            nameBook: responseData[item].nameBook, // Có thể NULL
+            idBook: responseData[item].id, // id sach
+            nameBook: responseData[item].name, // Có thể NULL
             author: responseData[item].author, // tac gia
             isbn: responseData[item].isbn, // ma isbn
             description: responseData[item].description, // mo ta
@@ -51,35 +51,35 @@ export async function getAllBook(size?: number, page?: number): Promise<KetQuaIn
     }
 
     // Xác định endpoint
-    const endpoint: string = endpointBE + `/books?sort=idBook,desc&size=${size}&page=${page}`;
+    const endpoint: string = endpointBE + `/book/all-book?sort=idBook,desc&size=${size}&page=${page}`;
 
     return laySach(endpoint);
 }
 export async function layToanBoSach(trangHienTai:number): Promise<KetQuaInterface> {
     // Xác định endpoint
-    const duongDan: string = `http://localhost:8080/books?sort=idBook,desc&size=8&page=${trangHienTai}`;
+    const duongDan: string = `${endpointBE}/book/all-book?sort=idbook,desc&size=8&page=${trangHienTai}`;
     return laySach(duongDan);
 }
 
 export async function lay3SachMoiNhat(): Promise<KetQuaInterface> {
     // Xác định endpoint
-    const duongDan: string = 'http://localhost:8080/books?sort=idBook,desc&page=0&size=3';
+    const duongDan: string = `${endpointBE}/book/all-book?sort=idBook,desc&page=0&size=3`;
     return laySach(duongDan);
 }
 
 export async function get3BestSellerBooks(): Promise<BookModel[]> {
-    const endpoint: string = endpointBE + "/books?sort=soldQuantity,desc&size=3";
+    const endpoint: string = endpointBE + "/book/all-book?sort=soldQuantity,desc&size=3";
     let bookList = await laySach(endpoint);
 
     // Use Promise.all to wait for all promises in the map to resolve
     let newBookList = await Promise.all(bookList.ketQua.map(async (book: any) => {
         // Trả về quyển sách
         const responseImg = await layToanBoHinhAnhMotSach(book.idBook);
-        const thumbnail = responseImg.find(image => image.thumbnail);
+        const thumbnail = responseImg.find(image => image.isThumbnail);
 
         return {
             ...book,
-            thumbnail: thumbnail ? thumbnail.urlImage : null,
+            thumbnail: thumbnail ? thumbnail.url : null,
         };
     }));
 
@@ -88,23 +88,20 @@ export async function get3BestSellerBooks(): Promise<BookModel[]> {
 
 export async function timKiemSach(tuKhoaTimKiem: string, idGenre: number): Promise<KetQuaInterface> {
     // Xác định endpoint
-    let duongDan: string = `http://localhost:8080/books?sort=idBook,desc&size=8&page=0`;
+    let duongDan: string = `${endpointBE}/book/all-book?sort=idBook,desc&size=8&page=0`;
     if (tuKhoaTimKiem !== '' && idGenre == 0) {
-        duongDan = `http://localhost:8080/books/search/findByNameBookContaining?sort=idBook,desc&size=8&page=0&nameBook=${tuKhoaTimKiem}`;
+        duongDan = `${endpointBE}/book/all-book/search/findByNameBookContaining?sort=idBook,desc&size=8&page=0&nameBook=${tuKhoaTimKiem}`;
     } else if (tuKhoaTimKiem === '' && idGenre > 0) {
-        duongDan = `http://localhost:8080/books/search/findByListGenres_idGenre?sort=idBook,desc&size=8&page=0&idGenre=${idGenre}`;
+        duongDan = `${endpointBE}/book/all-book/search/findByListGenres_idGenre?sort=idBook,desc&size=8&page=0&idGenre=${idGenre}`;
     } else if (tuKhoaTimKiem !== '' && idGenre > 0) {
-        duongDan = `http://localhost:8080/books/search/findByNameBookContainingAndListGenres_idGenre?sort=idBook,desc&size=8&page=0&nameBook=${tuKhoaTimKiem}&idGenre=${idGenre}`;
+        duongDan = `${endpointBE}/book/all-book/search/findByNameBookContainingAndListGenres_idGenre?sort=idBook,desc&size=8&page=0&nameBook=${tuKhoaTimKiem}&idGenre=${idGenre}`;
     }
     return laySach(duongDan);
 }
-// http://localhost:8080/book/2?
 
 export async function laySachTheoMaSach(idBook: number): Promise<BookModel|null> {
 
-    const duongDan = `http://localhost:8080/books/${idBook}`;
-
-    let ketQua: BookModel;
+    const duongDan = `${endpointBE}/book/${idBook}`;
 
     try {
         // Gọi phương thức request
@@ -115,21 +112,21 @@ export async function laySachTheoMaSach(idBook: number): Promise<BookModel|null>
         }
 
         const sachData = await response.json();
-
+        var responseData = sachData.data;
         if(sachData){
             return {
-                idBook: sachData.idBook, // id sach
-                nameBook: sachData.nameBook, // Có thể NULL
-                author: sachData.author, // tac gia
-                isbn: sachData.isbn, // ma isbn
-                description: sachData.description, // mo ta
-                listPrice: sachData.listPrice, // gia goc
-                sellPrice:sachData.sellPrice, // gia ban
-                quantity: sachData.quantity, // so luong
-                avgRating: sachData.avgRating, // diem trung binh
-                soldQuantity: sachData.soldQuantity, // so luong da ban
-                discountPercent: sachData.discountPercent, // phan tram giam gia
-                thumbnail: sachData.thumbnail // anh bia
+                idBook: responseData.id, // id sach
+                nameBook: responseData.name, // Có thể NULL
+                author: responseData.author, // tac gia
+                isbn: responseData.isbn, // ma isbn
+                description: responseData.description, // mo ta
+                listPrice: responseData.listPrice, // gia goc
+                sellPrice: responseData.sellPrice, // gia ban
+                quantity: responseData.quantity, // so luong
+                avgRating: responseData.avgRating, // diem trung binh
+                soldQuantity: responseData.soldQuantity, // so luong da ban
+                discountPercent: responseData.discountPercent, // phan tram giam gia
+                thumbnail: responseData.thumbnail // anh bia
 
             }
         }else{
@@ -142,7 +139,7 @@ export async function laySachTheoMaSach(idBook: number): Promise<BookModel|null>
 }
 
 export async function getBookByIdCartItem(idCart: number): Promise<BookModel | null> {
-    const endpoint ="http://localhost:8080" + `/cart-items/${idCart}/book`;
+    const endpoint = `${endpointBE}/cart-items/${idCart}/book`;
 
     try {
         // Gọi phương thức request()
@@ -208,15 +205,15 @@ export async function getBookByIdAllInformation(idBook: number): Promise<BookMod
 
             // Lấy tất cả hình ảnh của sách
             const imagesList = await layToanBoHinhAnhMotSach(response.idBook);
-            const thumbnail = imagesList.find((image) => image.thumbnail);
+            const thumbnail = imagesList.find((image) => image.isThumbnail);
             const relatedImg = imagesList.map((image) => {
                 // Sử dụng conditional (ternary) để trả về giá trị
-                return !image.thumbnail ? image.urlImage || image.dataImage : null;
+                return !image.isThumbnail ? image.url || image.data : null;
             }).filter(Boolean); // Loại bỏ các giá trị null
 
 
 
-            bookResponse = { ...bookResponse, relatedImg: relatedImg as string[], thumbnail: thumbnail?.urlImage || thumbnail?.dataImage };
+            bookResponse = { ...bookResponse, relatedImg: relatedImg as string[], thumbnail: thumbnail?.url || thumbnail?.data };
 
             // Lấy tất cả thể loại của sách
             const genresList = await getGenreByIdBook(response.idBook);
@@ -236,34 +233,75 @@ export async function getBookByIdAllInformation(idBook: number): Promise<BookMod
     }
 }
 // Lấy sách theo id (chỉ lấy thumbnail)
-export async function getBookById(idBook: number): Promise<BookModel | null> {
-    let bookResponse: BookModel = {
-        idBook: 0,
-        nameBook: "",
-        author: "",
-        description: "",
-        listPrice: NaN,
-        sellPrice: NaN,
-        quantity: NaN,
-        avgRating: NaN,
-        soldQuantity: NaN,
-        discountPercent: NaN,
-        thumbnail: "",
-    }
-    const endpoint = endpointBE + `/books/${idBook}`;
-    try {
-        // Gọi phương thức request()
-        const response = await my_request(endpoint);
+// export async function getBookById(idBook: number): Promise<BookModel | null> {
+//     let bookResponse: BookModel = {
+//         idBook: 0,
+//         nameBook: "",
+//         author: "",
+//         description: "",
+//         listPrice: NaN,
+//         sellPrice: NaN,
+//         quantity: NaN,
+//         avgRating: NaN,
+//         soldQuantity: NaN,
+//         discountPercent: NaN,
+//         thumbnail: "",
+//     }
+//     const endpoint = endpointBE + `/books/${idBook}`;
+//     try {
+//         // Gọi phương thức request()
+//         const response = await my_request(endpoint);
 
-        // Kiểm tra xem dữ liệu endpoint trả về có dữ liệu không
-        if (response) {
-            bookResponse = response;
-            // Trả về quyển sách
-            const responseImg = await layToanBoHinhAnhMotSach(response.idBook);
-            const thumbnail = responseImg.filter(image => image.thumbnail);
+//         // Kiểm tra xem dữ liệu endpoint trả về có dữ liệu không
+//         if (response) {
+//             bookResponse = response;
+//             // Trả về quyển sách
+//             const responseImg = await layToanBoHinhAnhMotSach(response.idBook);
+//             const thumbnail = responseImg.filter(image => image.isThumbnail);
+//             return {
+//                 ...bookResponse,
+//                 thumbnail: thumbnail[0].url || thumbnail[0].data,
+//             };
+//         } else {
+//             throw new Error("Sách không tồn tại");
+//         }
+
+//     } catch (error) {
+//         console.error('Error: ', error);
+//         return null;
+//     }
+// }
+export async function getBookById(idBook: number): Promise<BookModel | null> {
+    const endpoint = endpointBE + `/book/${idBook}`;
+    try {
+        const response = await my_request(endpoint);
+        var responseData = response.data;
+
+        if (responseData) {
+
+            // map lại đúng field
+            const bookResponse: BookModel = {
+                idBook: responseData.id,
+                nameBook: responseData.name,
+                author: responseData.author,
+                description: responseData.description,
+                listPrice: responseData.listPrice,
+                sellPrice: responseData.sellPrice,
+                quantity: responseData.quantity,
+                avgRating: responseData.avgRating,
+                soldQuantity: responseData.soldQuantity,
+                discountPercent: responseData.discountPercent,
+                thumbnail: responseData.thumbnail // tạm thời
+            };
+
+            // lấy ảnh
+            const responseImg = await layToanBoHinhAnhMotSach(responseData.id);
+
+            const thumbnail = responseImg.filter(image => image.isThumbnail);
+
             return {
                 ...bookResponse,
-                thumbnail: thumbnail[0].urlImage,
+                thumbnail: thumbnail[0]?.url || thumbnail[0]?.data || "",
             };
         } else {
             throw new Error("Sách không tồn tại");
@@ -274,7 +312,6 @@ export async function getBookById(idBook: number): Promise<BookModel | null> {
         return null;
     }
 }
-
 export async function searchBook(keySearch?: string, idGenre?: number, filter?: number, size?: number, page?: number): Promise<KetQuaInterface> {
 
     // Nếu key search không undifined

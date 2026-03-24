@@ -1,6 +1,8 @@
+import { a } from "framer-motion/dist/types.d-6pKw1mTI";
 import { endpointBE } from "../layouts/utils/Constant";
-import {my_request, requestAdmin} from "./Request";
 import ReviewModel from "../models/ReviewModel";
+import {my_request, requestAdmin} from "./Request";
+
 
 
 
@@ -8,16 +10,33 @@ async function getReview(endpoint: string): Promise<ReviewModel[]> {
    // Gọi phương thức request()
    const response = await my_request(endpoint);
 
-   return response._embedded.reviews.map((reviewData: any) => ({
+   return response.data.map((reviewData: any) => ({
       ...reviewData,
    }));
 }
 
-export async function getAllReview(idBook: number): Promise<ReviewModel[]> {
-   // Xác định endpoint
-   const endpoint: string = endpointBE + `/books/${idBook}/listReviews`;
+// export async function getAllReview(idBook: number): Promise<ReviewModel[]> {
+//    // Xác định endpoint
+//    const endpoint: string = endpointBE + `/review/get-all/${idBook}`;
 
-   return getReview(endpoint);
+//    return getReview(endpoint);
+// }
+
+export async function getAllReview(idBook: number): Promise<ReviewModel[]> {
+	const response = await my_request(`${endpointBE}/review/get-all/${idBook}`);
+
+	return response.data.map((item: any) => ({
+		id: item.id,
+		comment: item.comment,
+		rating: item.rating,
+		dateCreated: item.dateCreated,
+		user: {
+			id: item.user?.id,
+			name: item.user?.name,
+			lastName: item.user?.lastName,
+			avatarUrl: item.user?.avatar
+      },
+	}));
 }
 
 export async function getTotalNumberOfReviews(): Promise<number> {

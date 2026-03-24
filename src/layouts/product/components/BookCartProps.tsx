@@ -77,8 +77,8 @@ const BookCartProps: React.FC<BookCartProps> = (props) => {
     // Loading ảnh thumbnail
     let dataImage;
     if (imageList[0]) {
-        const thumbnail = imageList.filter((i) => i.thumbnail);
-        dataImage = thumbnail[0].urlImage || thumbnail[0].dataImage;
+        const thumbnail = imageList.filter((i) => i.isThumbnail);
+        dataImage = thumbnail[0].url || thumbnail[0].data;
     }
 
     // Xử lý tăng số lượng

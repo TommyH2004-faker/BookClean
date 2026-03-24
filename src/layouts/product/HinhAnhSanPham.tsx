@@ -57,7 +57,7 @@ const HinhAnhSanPham: React.FC<HinhAnhSanPham> = (props) => {
                           danhSachAnh.map((hinhAnh, index) => {
                             return (
                                  <div key={index}>
-                                      <img src={hinhAnh.urlImage} alt={hinhAnh.dataImage} />
+                                      <img src={hinhAnh.url} alt={hinhAnh.data} />
                                  </div>
                             );
                           })

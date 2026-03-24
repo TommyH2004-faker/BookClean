@@ -12,4 +12,5 @@ export interface UserModel {
     phoneNumber: string | null;
     enabled: boolean;
     roles: string[];
+    timeStamp?: string;
 }
