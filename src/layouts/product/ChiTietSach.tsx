@@ -25,15 +25,16 @@ import {laySachTheoMaSach} from "../../api/SachAPI";
 import GenreModel from "../../models/GenreModel";
 import ImageModel from "../../models/ImageModel";
 import {layToanBoHinhAnhMotSach} from "../../api/HinhAnhAPI";
-import CartItemModel from "../../models/CartItemModel";
 import {CheckoutPage} from "../../page/components/CheckoutPage";
 import RatingStar from "./rating/Rating";
+import CartItemModel from "../../models/CartItemModel";
+
 
 interface BookDetailProps {}
 
 const BookDetail: React.FC<BookDetailProps> = (props) => {
     useScrollToTop(); // Mỗi lần vào component này thì sẽ ở trên cùng
-    const { setTotalCart, cartList } = useCartItem();
+    const { setTotalCart, cartList, setCartList } = useCartItem();
 
     // Lấy mã sách từ url
     const { idBook } = useParams();
@@ -218,21 +219,17 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
         // Nếu chưa có trong giỏ, thêm mới
         if (isToken()) {
             try {
-                const request = [
-                    {
-                        quantity: quantity,
-                        book: newBook,
-                        idUser: getIdUserByToken(),
-                    },
-                ];
                 const token = localStorage.getItem("token");
-                const response = await fetch(endpointBE + "/cart-item/add-item", {
+                const response = await fetch(endpointBE + "/cart-items/add-item", {
                     method: "POST",
                     headers: {
                         Authorization: `Bearer ${token}`,
                         "content-type": "application/json",
                     },
-                    body: JSON.stringify(request),
+                    body: JSON.stringify({
+                        bookId: newBook.idBook,
+                        quantity: quantity,
+                    }),
                 });
 
                 if (response.ok) {
@@ -257,6 +254,7 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
 
     // Lưu giỏ hàng vào localStorage
     localStorage.setItem("cart", JSON.stringify(cartList));
+    setCartList([...cartList]); // cập nhật state để re-render
 
     // Thông báo thêm thành công
     toast.success("Thêm vào giỏ hàng thành công");

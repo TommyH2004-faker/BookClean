@@ -31,11 +31,12 @@ const BookCartProps: React.FC<BookCartProps> = (props) => {
                 ? props.cartItem.book.quantity
                 : props.cartItem.quantity
             : props.cartItem.quantity
-    );
+    );  
     const [imageList, setImageList] = useState<ImageModel[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [erroring, setErroring] = useState(null);
-
+        console.log("🛒 cartItem:", props.cartItem);
+console.log("📚 book:", props.cartItem.book);
     function handleConfirm() {
         confirm({
             title: "Xoá sản phẩm",
@@ -43,17 +44,30 @@ const BookCartProps: React.FC<BookCartProps> = (props) => {
             confirmationText: "Xoá",
             cancellationText: "Huỷ",
         })
-            .then(() => {
+            .then(async () => {
                 props.handleRemoveBook(props.cartItem.book.idBook);
                 if (isToken()) {
                     const token = localStorage.getItem("token");
-                    fetch(endpointBE + `/cart-items/${props.cartItem.idCart}`, {
-                        method: "DELETE",
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                            "content-type": "application/json",
-                        },
-                    }).catch((err) => console.log(err));
+                    const idCart = props.cartItem.idCart;
+                    console.log("🗑️ Xoá cart item, idCart =", idCart, "| cartItem =", props.cartItem);
+                    if (!idCart) {
+                        console.error("❌ idCart undefined, không thể xoá trên server! Kiểm tra lại CartApi mapping.");
+                        return;
+                    }
+                    try {
+                        const res = await fetch(endpointBE + `/cart-items/${idCart}`, {
+                            method: "DELETE",
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                                "content-type": "application/json",
+                            },
+                        });
+                        if (!res.ok) {
+                            console.error("❌ Xoá cart trên server thất bại, status:", res.status);
+                        }
+                    } catch (err) {
+                        console.error("❌ Lỗi khi gọi DELETE cart:", err);
+                    }
                 }
             })
             .catch(() => {});
@@ -61,7 +75,7 @@ const BookCartProps: React.FC<BookCartProps> = (props) => {
 
     // Lấy ảnh ra từ BE
     useEffect(() => {
-        layToanBoHinhAnhMotSach(props.cartItem.book.idBook)
+        layToanBoHinhAnhMotSach(props.cartItem.book.idBook ?? props.cartItem.book.id)
             .then((response) => {
                 console.log("Dữ liệu ảnh từ BE:", response); // Kiểm tra dữ liệu
                 setImageList(response);
@@ -125,7 +139,7 @@ const BookCartProps: React.FC<BookCartProps> = (props) => {
             // Cập nhật trong db
             if (isToken()) {
                 const token = localStorage.getItem("token");
-                fetch(endpointBE + `/cart-item/update-item`, {
+                fetch(endpointBE + `/cart-items/update-item`, {
                     method: "PUT",
                     headers: {
                         Authorization: `Bearer ${token}`,

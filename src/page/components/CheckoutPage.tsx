@@ -15,7 +15,6 @@ import { get1User } from "../../api/UserApi";
 import { toast } from "react-toastify";
 
 import useScrollToTop from "../../hooks/ScrollToTop";
-import CartItemModel from "../../models/CartItemModel";
 import {useCartItem} from "../../layouts/utils/CartItemContext";
 
 import {getIdUserByToken} from "../../layouts/utils/JwtService";
@@ -24,6 +23,7 @@ import {checkPhoneNumber} from "../../layouts/utils/Validation";
 import {BookHorizontal} from "../../layouts/product/components/BookHorizontalProps";
 import {CheckoutSuccess} from "./CheckoutSuccess";
 import { UserModel } from "../../models/UserModel";
+import CartItemModel from "../../models/CartItemModel";
 interface CheckoutPageProps {
 	setIsCheckout: any;
 	cartList: CartItemModel[];

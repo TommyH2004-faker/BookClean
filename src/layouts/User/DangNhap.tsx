@@ -7,13 +7,15 @@ import { useAuth } from "../utils/AuthContext";
 
 import useScrollToTop from "../../hooks/ScrollToTop";
 import { JwtPayload } from "../Admin/RequireAdmin";
-import CartItemModel from "../../models/CartItemModel";
 
 import { toast } from "react-toastify";
-import { getCartAllByIdUser } from "../../api/CartApi";
-import { useCartItem } from "../utils/CartItemContext";
 
-    const DangNhap: React.FC = () => {
+import { useCartItem } from "../utils/CartItemContext";
+import { getCartAllByIdUser } from "../../api/CartApi";
+import CartItemModel from "../../models/CartItemModel";
+
+
+const DangNhap: React.FC = () => {
     useScrollToTop();
 
     const { setTotalCart, setCartList } = useCartItem();
@@ -82,31 +84,52 @@ import { useCartItem } from "../utils/CartItemContext";
             toast.success("Đăng nhập thành công!");
 
             //  xử lý cart local → server
-            let cart: CartItemModel[] = JSON.parse(localStorage.getItem("cart") || "[]");
+            // let cart: CartItemModel[] = JSON.parse(localStorage.getItem("cart") || "[]");
 
-            if (cart.length > 0) {
-                const cartTo = cart.map((c) => ({
-                    idUser: decodedToken.sub,
-                    book:c.book.idBook,
-                    quantity: c.quantity,
-                }));
+            // if (cart.length > 0) {
+            //     const cartTo = cart.map((c) => ({
+            //         idUser: decodedToken.sub,
+            //         book:c.book.id ?? c.book.idBook,
+            //         quantity: c.quantity,
+            //     }));
 
-                await fetch(endpointBE + "/cart-item/add-item", {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "content-type": "application/json",
-                    },
-                    body: JSON.stringify(cartTo),
-                });
+            //     await fetch(endpointBE + "/cart-items/add-item", {
+            //         method: "POST",
+            //         headers: {
+            //             Authorization: `Bearer ${token}`,
+            //             "content-type": "application/json",
+            //         },
+            //         body: JSON.stringify(cartTo),
+            //     });
+            // }
+            //  Lấy giỏ hàng local (guest cart) trước khi xoá
+            const localCart: CartItemModel[] = JSON.parse(localStorage.getItem("cart") || "[]");
+
+            // Merge cart local → server (nếu có)
+            if (localCart.length > 0) {
+                // Gửi từng item lên server theo format BE expect: { bookId, quantity }
+                const mergeRequests = localCart.map((c) =>
+                    fetch(endpointBE + "/cart-items/add-item", {
+                        method: "POST",
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            "content-type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            bookId: c.book.idBook ?? c.book.id,
+                            quantity: c.quantity,
+                        }),
+                    }).catch((err) => console.error("Lỗi merge cart item:", err))
+                );
+                await Promise.all(mergeRequests);
+                localStorage.removeItem("cart");
             }
 
-            //  load lại cart từ server
+            // Load lại giỏ hàng đầy đủ từ server (bao gồm cả items vừa merge)
             const cartFromServer = await getCartAllByIdUser();
-
             localStorage.setItem("cart", JSON.stringify(cartFromServer));
-            setTotalCart(cartFromServer.length);
             setCartList(cartFromServer);
+            setTotalCart(cartFromServer.length);
 
             //  redirect theo role
             if (roles.includes("ADMIN")) {
@@ -203,6 +226,6 @@ import { useCartItem } from "../utils/CartItemContext";
             </Box>
         </div>
     );
-    };
+};
 
 export default DangNhap;

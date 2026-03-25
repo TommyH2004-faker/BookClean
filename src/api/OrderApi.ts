@@ -5,6 +5,8 @@ import CartItemModel from "../models/CartItemModel";
 
 
 
+
+
 // export async function getAllOrders(): Promise<OrderModel[]> {
 //    try {
 //       const endpoint: string = endpointBE + "/order/all?sort=idOrder,desc&size=1000";
@@ -99,11 +101,11 @@ export async function get1Orders(idOrder: number): Promise<OrderModel> {
    const responseOrderDetail = await  my_request(endpointBE + `/orders/${responseOrder.idOrder}/listOrderDetails`);
    let cartItems: CartItemModel[] = [];
 
-   // Sử dụng Promise.all để chờ tất cả các promise hoàn thành
-   await Promise.all(responseOrderDetail._embedded.orderDetails.map(async (orderDetail: any) => {
-      const responseBook = await  my_request(endpointBE + `/order-detail/${orderDetail.idOrderDetail}/book`);
-      cartItems.push({ book: responseBook, quantity: orderDetail.quantity, review: orderDetail.review });
-   }));
+   // // Sử dụng Promise.all để chờ tất cả các promise hoàn thành
+   // await Promise.all(responseOrderDetail._embedded.orderDetails.map(async (orderDetail: any) => {
+   //    const responseBook = await  my_request(endpointBE + `/order-detail/${orderDetail.idOrderDetail}/book`);
+   //    cartItems.push({ book: responseBook, quantity: orderDetail.quantity, review: orderDetail. });
+   // }));
 
    const order: OrderModel = {
       idOrder: responseOrder.idOrder,

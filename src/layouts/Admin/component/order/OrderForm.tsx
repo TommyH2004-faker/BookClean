@@ -13,8 +13,6 @@ import {get1Orders} from "../../../../api/OrderApi";
 import OrderModel from "../../../../models/OrderModel";
 import {endpointBE} from "../../../utils/Constant";
 import {OrderDetail} from "../../../product/components/order-detail/OrderDetail";
-import CartItemModel from "../../../../models/CartItemModel";
-
 
 interface OrderFormProps {
 	id: any;
