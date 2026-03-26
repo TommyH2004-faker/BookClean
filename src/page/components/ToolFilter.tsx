@@ -190,9 +190,9 @@ const ToolFilter: React.FC<ToolFilterProps> = (props) => {
 									props.setSize(parseInt(e.target.value));
 								}}
 							>
+								<option value={8}>8 sản phẩm</option>
 								<option value={12}>12 sản phẩm</option>
 								<option value={24}>24 sản phẩm</option>
-								<option value={48}>48 sản phẩm</option>
 							</NativeSelect>
 						</FormControl>
 					</div>

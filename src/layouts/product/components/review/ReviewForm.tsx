@@ -14,6 +14,7 @@ interface ReviewFormProps {
 	handleCloseModalOrderDetail?: any;
 	cartItem?: CartItemModel;
 	setCartItem?: any;
+	mode : "create" | "view";
 }
 
 export const ReviewForm: React.FC<ReviewFormProps> = (props) => {

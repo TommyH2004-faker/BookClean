@@ -6,7 +6,6 @@ import format from "date-fns/format";
 import OrderModel from "../../../../models/OrderModel";
 import {StepperComponent} from "../../../utils/StepperComponent";
 import {BookHorizontal} from "../BookHorizontalProps";
-import CartItemModel from "../../../../models/CartItemModel";
 
 interface OrderDetailProps {
 	order: OrderModel;

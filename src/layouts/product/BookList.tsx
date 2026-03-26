@@ -17,6 +17,7 @@ interface BookListProps {
 	keySearch?: string | undefined;
 	idGenre?: number;
 	filter?: number;
+
 }
 
 const BookList: React.FC<BookListProps> = (props) => {
@@ -40,6 +41,9 @@ const BookList: React.FC<BookListProps> = (props) => {
 		setCurrentPage(1);
 		setTotalPagesTemp(totalPages);
 	}
+	// useEffect(() => {
+	// 	setCurrentPage(1);
+	// }, [props.keySearch, props.idGenre, props.filter, props.size]);
 
 	useEffect(() => {
 		// Mặc đinh sẽ gọi getAllBook
@@ -69,6 +73,13 @@ const BookList: React.FC<BookListProps> = (props) => {
 				props.size,
 				currentPage - 1
 			)
+		// 	searchBook(
+		// 	props.keySearch,
+		// 	props.idGenre,
+		// 	props.filter,
+		// 	currentPage - 1,   // ✅ page
+		// 	props.size         // ✅ size
+		// )
 				.then((response) => {
 					setBookList(response.ketQua);
 					setTotalPages(response.tongSoTrang);

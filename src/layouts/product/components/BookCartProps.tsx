@@ -86,7 +86,7 @@ console.log("📚 book:", props.cartItem.book);
                 setLoading(false);
                 setErroring(error.message);
             });
-    }, [props.cartItem.book.idBook]);
+    }, [props.cartItem.book.idBook, props.cartItem.book.id]);
 
     // Loading ảnh thumbnail
     let dataImage;

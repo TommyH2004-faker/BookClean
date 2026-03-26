@@ -3,6 +3,7 @@ import BookModel from "../../../models/BookModel";
 import ImageModel from "../../../models/ImageModel";
 
 import {lay1AnhCuaMotSach} from "../../../api/HinhAnhAPI";
+import { Link } from "react-router-dom";
 
 interface CaroselItemPropsInterface {
     sach: BookModel;
@@ -49,16 +50,32 @@ const Carouseltem: React.FC<CaroselItemPropsInterface> = (props) => {
         duLieuAnh = danhSachAnh[0].url;
     }
 
-    return (
-        <div>
-            <div className="row align-items-center">
-                <div className="col-5 text-center">
-                    <img src={duLieuAnh} className="float-end" style={{width: '300px'}}/>
-                </div>
-                <div className="col-7">
+    // return (
+    //     <div>
+    //         <div className="row align-items-center">
+    //             <div className="col-5 text-center">
+    //                 <img src={duLieuAnh} className="float-end" style={{width: '300px'}}/>
+    //             </div>
+    //             <div className="col-7">
+    //                 <h5>{props.sach.nameBook}</h5>
+    //                 <p>{props.sach.author}</p>
+    //             </div>
+    //         </div>
+    //     </div>
+    // );
+
+       return (
+        <div className="row align-items-center">
+            <div className="col-5 text-center">
+                <Link to={`/books/${maSach}`}>
+                    <img src={duLieuAnh} alt={props.sach.nameBook} style={{ width: '300px', borderRadius: '10px' }} />
+                </Link>
+            </div>
+            <div className="col-7">
+                <Link to={`/books/${maSach}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                     <h5>{props.sach.nameBook}</h5>
                     <p>{props.sach.author}</p>
-                </div>
+                </Link>
             </div>
         </div>
     );

@@ -43,6 +43,7 @@ class OrderModel{
         this.totalPriceProduct = totalPriceProduct;
         this.user = user;
     }
+    
 }
 
 export default OrderModel;

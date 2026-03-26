@@ -46,10 +46,11 @@ interface ProfilePageProps {
 
 const ProfilePage: React.FC<ProfilePageProps> = (props) => {
 	useScrollToTop(); // Mỗi lần vào component này thì sẽ ở trên cùng
-
+	const [currentPassword, setCurrentPassword] = useState("");
+	const [errorCurrentPassword, setErrorCurrentPassword] = useState("");
 	const { isLoggedIn } = useAuth();
 	const navigation = useNavigate();
-
+	const [selectedFile, setSelectedFile] = useState<File | null>(null);
 	useLayoutEffect(() => {
 		if (!isLoggedIn) {
 			navigation("/dangnhap");
@@ -64,7 +65,7 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
 		 email: "",
 		 firstName: "",
 		 lastName: "",
-		 gender: "",
+		 gender: 'M',
 		 password: "",
 		 phoneNumber: "",
 		 username: "",
@@ -74,7 +75,6 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
 	 });
 	const [newPassword, setNewPassword] = useState("");
 	const [repeatPassword, setRepeatPassword] = useState("");
-	const [dataAvatar, setDataAvatar] = useState("");
 	const [previewAvatar, setPreviewAvatar] = useState("");
 
 	// reload lại component order table
@@ -130,28 +130,36 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
 	};
 
 	// Xử lý upload hình ảnh (preview)
-	function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
-		const inputElement = event.target as HTMLInputElement;
+	// function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
+	// 	const inputElement = event.target as HTMLInputElement;
 
-		if (inputElement.files && inputElement.files.length > 0) {
-			const selectedFile = inputElement.files[0];
+	// 	if (inputElement.files && inputElement.files.length > 0) {
+	// 		const selectedFile = inputElement.files[0];
 
-			const reader = new FileReader();
+	// 		const reader = new FileReader();
 
-			// Xử lý sự kiện khi tệp đã được đọc thành công
-			reader.onload = (e: any) => {
-				// e.target.result chính là chuỗi base64
-				const avatarBase64 = e.target?.result as string;
+	// 		// Xử lý sự kiện khi tệp đã được đọc thành công
+	// 		reader.onload = (e: any) => {
+	// 			// e.target.result chính là chuỗi base64
+	// 			const avatarBase64 = e.target?.result as string;
 
-				setDataAvatar(avatarBase64);
-				setPreviewAvatar(URL.createObjectURL(selectedFile));
-				setIsUploadAvatar(true);
-				props.setReloadAvatar(Math.random());
-			};
+	// 			setDataAvatar(avatarBase64);
+	// 			setPreviewAvatar(URL.createObjectURL(selectedFile));
+	// 			setIsUploadAvatar(true);
+	// 			props.setReloadAvatar(Math.random());
+	// 		};
 
-			// Đọc tệp dưới dạng chuỗi base64
-			reader.readAsDataURL(selectedFile);
-		}
+	// 		// Đọc tệp dưới dạng chuỗi base64
+	// 		reader.readAsDataURL(selectedFile);
+	// 	}
+	// }
+		function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
+	if (event.target.files && event.target.files.length > 0) {
+		const file = event.target.files[0];
+		setSelectedFile(file);
+		setPreviewAvatar(URL.createObjectURL(file)); // preview ngay
+		setIsUploadAvatar(true);
+	}
 	}
 
 	// Xử lý ngày sinh
@@ -162,7 +170,6 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
 			 dateOfBirth: dateString,
 		 });
 	 };
-
 	// Xử lý change password
 	const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setNewPassword(e.target.value);
@@ -187,7 +194,7 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
 		event.preventDefault();
 		const token = localStorage.getItem("token");
 		toast.promise(
-			fetch(endpointBE + `/taikhoan/update-profile`, {
+			fetch(endpointBE + `/user/update-profile`, {
 				method: "PUT",
 				headers: {
 					Authorization: `Bearer ${token}`,
@@ -217,77 +224,154 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
 	}
 
 	// Xử lý khi thay đổi avatar (thay đổi avatar)
-	function handleSubmitAvatar() {
-		const token = localStorage.getItem("token");
-		toast.promise(
-			fetch(endpointBE + "/taikhoan/change-avatar", {
-				method: "PUT",
-				headers: {
-					Authorization: `Bearer ${token}`,
-					"content-type": "application/json",
-				},
-				body: JSON.stringify({
-					idUser: getIdUserByToken(),
-					avatar: dataAvatar,
-				}),
-			})
-				.then((response) => {
-					if (response.ok) {
-						return response.json();
-					}
-				})
-				.then((data) => {
-					const { jwtToken } = data;
-					localStorage.setItem("token", jwtToken);
+	// function handleSubmitAvatar() {
+	// 	const token = localStorage.getItem("token");
+	// 	toast.promise(
+	// 		fetch(endpointBE + "/taikhoan/change-avatar", {
+	// 			method: "PUT",
+	// 			headers: {
+	// 				Authorization: `Bearer ${token}`,
+	// 				"content-type": "application/json",
+	// 			},
+	// 			body: JSON.stringify({
+	// 				idUser: getIdUserByToken(),
+	// 				avatar: dataAvatar,
+	// 			}),
+	// 		})
+	// 			.then((response) => {
+	// 				if (response.ok) {
+	// 					return response.json();
+	// 				}
+	// 			})
+	// 			.then((data) => {
+	// 				const { jwtToken } = data;
+	// 				localStorage.setItem("token", jwtToken);
 
-					toast.success("Cập nhật ảnh đại diện thành công");
-					setPreviewAvatar(previewAvatar);
-					setIsUploadAvatar(false);
-					props.setReloadAvatar(Math.random());
-				})
-				.catch((error) => {
-					toast.error("Cập nhật ảnh đại diện thất bại");
-					setPreviewAvatar(user.avatar ? user.avatar : "");
-					setIsUploadAvatar(false);
-					console.log(error);
-				}),
-			{ pending: "Đang trong quá trình xử lý ..." }
-		);
-	}
+	// 				toast.success("Cập nhật ảnh đại diện thành công");
+	// 				setPreviewAvatar(previewAvatar);
+	// 				setIsUploadAvatar(false);
+	// 				props.setReloadAvatar(Math.random());
+	// 			})
+	// 			.catch((error) => {
+	// 				toast.error("Cập nhật ảnh đại diện thất bại");
+	// 				setPreviewAvatar(user.avatar ? user.avatar : "");
+	// 				setIsUploadAvatar(false);
+	// 				console.log(error);
+	// 			}),
+	// 		{ pending: "Đang trong quá trình xử lý ..." }
+	// 	);
+	// }
+		async function handleSubmitAvatar() {
+	if (!selectedFile) return toast.warning("Chọn ảnh trước khi upload!");
 
-	// Xử lý khi form sumbit (thay đổi mật khẩu)
-	function handleSubmitChangePassword(
-		event: FormEvent<HTMLFormElement>
-	): void {
-		event.preventDefault();
+	try {
+		const reader = new FileReader();
+		reader.readAsDataURL(selectedFile);
 
-		if (errorNewPassword.length > 0 || errorRepeatPassword.length > 0) {
-			toast.warning("Xem lại mật khẩu vừa nhập");
-			return;
-		}
+		reader.onload = async () => {
+		const base64Data = (reader.result as string).split(",")[1]; // chỉ lấy base64
 
 		const token = localStorage.getItem("token");
-		fetch(endpointBE + "/taikhoan/change-password", {
+		const response = await fetch(endpointBE + "/user/change-avatar", {
 			method: "PUT",
 			headers: {
-				Authorization: `Bearer ${token}`,
-				"content-type": "application/json",
+			Authorization: `Bearer ${token}`,
+			"Content-Type": "application/json",
 			},
-			body: JSON.stringify({
-				idUser: getIdUserByToken(),
-				newPassword: newPassword,
-			}),
-		})
-			.then((response) => {
-				setNewPassword("");
-				setRepeatPassword("");
-				toast.success("Đổi mật khẩu thành công");
-			})
-			.catch((error) => {
-				console.log(error);
-				toast.error("Thay đổi mật khẩu không thành công");
-			});
+			body: JSON.stringify({ avatar: base64Data }),
+		});
+
+		if (!response.ok) throw new Error(await response.text());
+
+		const data = await response.json();
+		localStorage.setItem("token", data.jwtToken);
+
+		setUser({ ...user, avatar: data.avatar ?? user.avatar });
+		setPreviewAvatar(data.avatar ?? user.avatar);
+		setIsUploadAvatar(false);
+		setSelectedFile(null);
+		toast.success("Cập nhật avatar thành công!");
+		props.setReloadAvatar(Math.random());
+		};
+	} catch (error) {
+		console.error(error);
+		toast.error("Cập nhật avatar thất bại");
+		setPreviewAvatar(user.avatar || "");
+		setIsUploadAvatar(false);
 	}
+}
+
+	// Xử lý khi form sumbit (thay đổi mật khẩu)
+	// function handleSubmitChangePassword(
+	// 	event: FormEvent<HTMLFormElement>
+	// ): void {
+	// 	event.preventDefault();
+
+	// 	if (errorNewPassword.length > 0 || errorRepeatPassword.length > 0) {
+	// 		toast.warning("Xem lại mật khẩu vừa nhập");
+	// 		return;
+	// 	}
+
+	// 	const token = localStorage.getItem("token");
+	// 	fetch(endpointBE + "/taikhoan/change-password", {
+	// 		method: "PUT",
+	// 		headers: {
+	// 			Authorization: `Bearer ${token}`,
+	// 			"content-type": "application/json",
+	// 		},
+	// 		body: JSON.stringify({
+	// 			idUser: getIdUserByToken(),
+	// 			newPassword: newPassword,
+	// 		}),
+	// 	})
+	// 		.then((response) => {
+	// 			setNewPassword("");
+	// 			setRepeatPassword("");
+	// 			toast.success("Đổi mật khẩu thành công");
+	// 		})
+	// 		.catch((error) => {
+	// 			console.log(error);
+	// 			toast.error("Thay đổi mật khẩu không thành công");
+	// 		});
+	// }
+	// Xử lý khi form submit (thay đổi mật khẩu)
+function handleSubmitChangePassword(event: FormEvent<HTMLFormElement>): void {
+    event.preventDefault();
+
+    // Kiểm tra lỗi
+    if (errorCurrentPassword || errorNewPassword || errorRepeatPassword) {
+        toast.warning("Xem lại các mật khẩu vừa nhập");
+        return;
+    }
+
+    const token = localStorage.getItem("token");
+    fetch(endpointBE + "/user/change-password", {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            currentPassword: currentPassword, // gửi mật khẩu hiện tại
+            newPassword: newPassword,         // gửi mật khẩu mới
+        }),
+    })
+        .then(async (response) => {
+            if (!response.ok) {
+                const text = await response.text();
+                throw new Error(text);
+            }
+            // thành công
+            setCurrentPassword("");
+            setNewPassword("");
+            setRepeatPassword("");
+            toast.success("Đổi mật khẩu thành công");
+        })
+        .catch((error) => {
+            console.error(error);
+            toast.error("Thay đổi mật khẩu không thành công: " + error.message);
+        });
+}
 
 	// Khúc này chủ yếu nếu mà không đăng nhập mà cố tình vào thì sẽ không render component ra
 	if (!isLoggedIn) {
@@ -533,7 +617,7 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
 															disabled={
 																modifiedStatus ? false : true
 															}
-															value='Male'
+															value='0'
 															control={<Radio/>}
 															label='Nam'
 														/>
@@ -541,11 +625,18 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
 															disabled={
 																modifiedStatus ? false : true
 															}
-															value='Female'
+															value='1'
 															control={<Radio/>}
 															label='Nữ'
 														/>
 													</RadioGroup>
+													<FormControl>
+							<FormLabel id='demo-row-radio-buttons-group-label'>Giới tính</FormLabel>
+							<FormControl>
+							<FormLabel id="gender-radio-group">Giới tính</FormLabel>
+
+							</FormControl>
+							</FormControl>
 												</FormControl>
 											</div>
 										</div>
@@ -592,6 +683,20 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
 										className='form position-relative'
 										style={{padding: "0 120px"}}
 									>
+										<TextField
+											error={errorCurrentPassword.length > 0}
+											helperText={errorCurrentPassword}
+											required
+											fullWidth
+											type="password"
+											label="Mật khẩu hiện tại"
+											placeholder="Nhập mật khẩu hiện tại"
+											value={currentPassword}
+											onChange={(e) => {
+												setCurrentPassword(e.target.value);
+												setErrorCurrentPassword("");
+											}}
+										/>
 										<TextField
 											error={
 												errorNewPassword.length > 0 ? true : false

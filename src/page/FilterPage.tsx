@@ -13,8 +13,7 @@ interface FilterPageProps {
 
 const FilterPage: React.FC<FilterPageProps> = (props) => {
 	useScrollToTop(); // Mỗi lần vào component này thì sẽ ở trên cùng
-
-	const [size, setSize] = useState(12); // Hiển thị bao nhiêu sản phẩm
+	const [size, setSize] = useState(8); // Hiển thị bao nhiêu sản phẩm
 	const [keySearch, setKeySearch] = useState(""); // Từ khoá của sách
 	const [idGenre, setIdGenre] = useState(0); // Thể loại muốn hiển thị
 	const [filter, setFilter] = useState(0); // Lọc theo chế độ gì (tên từ A - Z, Z - A, ...)
@@ -49,6 +48,7 @@ const FilterPage: React.FC<FilterPageProps> = (props) => {
 					setIdGenre={setIdGenre}
 					filter={filter}
 					setFilter={setFilter}
+	
 				/>
 			</div>
 			<BookList paginable={true} size={size} keySearch={keySearch} idGenre={idGenre} filter={filter} />

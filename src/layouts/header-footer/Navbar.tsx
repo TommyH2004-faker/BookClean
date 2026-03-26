@@ -30,6 +30,11 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
     const onsearchInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
        setTuKhoaTamThoi(event.target.value);
     }
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+        handleSearch();
+        }
+    };
     const handleSearch = () => {
         setTuKhoaTimKiem(tuKhoaTamThoi);
     }
@@ -42,7 +47,9 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
     return(
         <nav className="navbar navbar-expand-lg navbar-light bg-light">
             <div className="container-fluid">
-                <a className="navbar-brand" href="#">Bookstore</a>
+                <Link className="navbar-brand" to={"/"}>
+                    <img src="/images/books/LogoPage.jpg" alt="Logo" style={{ height: "90px", width: "150px" }} />
+                </Link>
                 <button className="navbar-toggler" type="button" data-bs-toggle="collapse"
                         data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
@@ -108,7 +115,7 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
                 {/* Tìm kiếm */}
                 <div className="d-flex">
                     <input className="form-control me-2" type="search" placeholder="Tìm kiếm" aria-label="Search"
-                           onChange={onsearchInputChange} value={tuKhoaTamThoi}/>
+                           onChange={onsearchInputChange} value={tuKhoaTamThoi} onKeyDown={handleKeyDown}/>
                     <button className="btn btn-outline-success" type="submit" onClick={handleSearch}>Search
                         <Search/>
                     </button>

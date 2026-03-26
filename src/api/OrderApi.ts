@@ -7,122 +7,152 @@ import CartItemModel from "../models/CartItemModel";
 
 
 
-// export async function getAllOrders(): Promise<OrderModel[]> {
-//    try {
-//       const endpoint: string = endpointBE + "/order/all?sort=idOrder,desc&size=1000";
-//       const response = await my_request(endpoint);
 
-//       const datas = await Promise.all(response._embedded.orders.map(async (data: any) => {
-//          const responsePayment = await  my_request(endpointBE + `/orders/${data.idOrder}/payment`);
-//          return {
-//             idOrder: data.idOrder,
-//             deliveryAddress: data.deliveryAddress,
-//             totalPrice: data.totalPrice,
-//             totalPriceProduct: data.totalPriceProduct,
-//             feeDelivery: data.feeDelivery,
-//             feePayment: data.feePayment,
-//             dateCreated: data.dateCreated,
-//             status: data.status,
-//           user: data._embedded.user,
-//             fullName: data.fullName,
-//             note: data.note,
-//             payment: responsePayment.namePayment,
-//          };
-//       }));
-
-//       return datas;
-//    } catch (error) {
-//       console.error("Error while fetching orders:", error);
-//       throw error;
-//    }
-// }
 export async function getAllOrders(): Promise<OrderModel[]> {
    try {
-      const endpoint: string = endpointBE + "/order/all?sort=idorder,desc&size=100000";
+      const endpoint: string = endpointBE + "/order/all?sort=id_desc&size=100";
+
       const response = await my_request(endpoint);
+
+      if (!response?.data) return [];
 
       return response.data.map((data: any) => ({
          idOrder: data.id,
          deliveryAddress: data.deliveryAddress,
-         totalPrice: data.totalPrice,
-         totalPriceProduct: data.totalPriceProduct,
-         feeDelivery: data.feeDelivery,
-         feePayment: data.feePayment,
+         totalPrice: data.totalPrice ?? 0,
+         totalPriceProduct: data.totalPriceProduct ?? 0,
+         feeDelivery: data.feeDelivery ?? 0,
+         feePayment: data.feePayment ?? 0,
          dateCreated: data.dateCreated,
          status: data.status,
          fullName: data.fullName,
-         note: data.note,
+         note: data.note ?? "",
+
          user: {
             id: data.userId,
-            fullName: data.userName
+            fullName: data.userName ?? ""
          },
 
-         payment: data.paymentName,
-         delivery: data.deliveryName
+         payment: data.paymentName ?? "",
+         delivery: data.deliveryName ?? "",
+
+         // 🔥 QUAN TRỌNG: map items
+         items: (data.items ?? []).map((item: any) => ({
+            bookId: item.bookId,
+            bookName: item.bookName,
+            quantity: item.quantity,
+            price: item.price
+         }))
       }));
 
    } catch (error) {
       console.error("Error while fetching orders:", error);
-      throw error;
+      return []; 
    }
 }
 
-export async function getAllOrdersByIdUser(idUser: string): Promise<OrderModel[]> {
-   const endpoint = endpointBE + `/users/${idUser}/listOrders?sort=idOrder,desc`;
-   const response = await  my_request(endpoint);
-   console.log(response);
-   const datas = await Promise.all(response._embedded.
-   orders.map(async (data: any) => {
-      const responsePayment = await  my_request(endpointBE + `/orders/${data.idOrder}/payment`);
-      const order: OrderModel = {
-         idOrder: data.idOrder,
-         deliveryAddress: data.deliveryAddress,
-         totalPrice: data.totalPrice,
-         totalPriceProduct: data.totalPriceProduct,
-         feeDelivery: data.feeDelivery,
-         feePayment: data.feePayment,
-         dateCreated: data.dateCreated,
-         status: data.status,
-         user: data._embedded.user,
-         fullName: data.fullName,
-         note: data.note,
-         payment: responsePayment.namePayment,
-      }
-      return order;
-   }))
+export async function getMyOrders(): Promise<OrderModel[]> {
+   const token = localStorage.getItem("token");
 
-   return datas;
+   const response = await fetch(endpointBE + `/order/my-orders`, {
+      method: "GET",
+      headers: {
+         "Content-Type": "application/json",
+         Authorization: `Bearer ${token}`,
+      },
+   });
+
+   if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+   }
+
+   const res = await response.json();
+
+   const datas = res.data;
+
+   const orders: OrderModel[] = datas.map((data: any) => {
+      return {
+         idOrder: data.id,
+         deliveryAddress: data.deliveryAddress,
+
+         totalPriceProduct: data.totalPriceProduct,
+         feeDelivery: data.feeDelivery ?? 0,
+         feePayment: data.feePayment ?? 0,
+
+         totalPrice:
+            data.totalPriceProduct +
+            (data.feeDelivery ?? 0) +
+            (data.feePayment ?? 0),
+
+         dateCreated: new Date(data.dateCreated),
+         status: data.status,
+
+         fullName: data.fullName,
+         phoneNumber: data.phoneNumber ?? "",
+         note: data.note,
+
+         payment: data.paymentName,
+
+         cartItems: data.items.map((item: any) => ({
+            quantity: item.quantity,
+            book: {
+               idBook: item.bookId,
+               nameBook: item.bookName,
+               sellPrice: item.sellPrice,
+               listPrice: item.listPrice,
+            },
+         })),
+      };
+   });
+
+   return orders;
 }
 
 export async function get1Orders(idOrder: number): Promise<OrderModel> {
-   const endpoint: string = endpointBE + `/orders/${idOrder}`;
-   const responseOrder = await  my_request(endpoint);
-   const responsePayment = await  my_request(endpointBE + `/orders/${responseOrder.idOrder}/payment`);
-   const responseOrderDetail = await  my_request(endpointBE + `/orders/${responseOrder.idOrder}/listOrderDetails`);
-   let cartItems: CartItemModel[] = [];
+   const endpoint = endpointBE + `/order/${idOrder}`;
 
-   // // Sử dụng Promise.all để chờ tất cả các promise hoàn thành
-   // await Promise.all(responseOrderDetail._embedded.orderDetails.map(async (orderDetail: any) => {
-   //    const responseBook = await  my_request(endpointBE + `/order-detail/${orderDetail.idOrderDetail}/book`);
-   //    cartItems.push({ book: responseBook, quantity: orderDetail.quantity, review: orderDetail. });
-   // }));
+   const res = await my_request(endpoint);
+
+   // ⚠️ API của bạn trả dạng Result<T>
+   const data = res.data;
+
+   const cartItems: CartItemModel[] = data.items?.map((item: any) => {
+      return new CartItemModel(
+         item.quantity,
+         {
+            idBook: item.bookId,
+            nameBook: item.bookName,
+             sellPrice: item.sellPrice,  
+            listPrice: item.listPrice
+         } as any, // nếu BookModel chưa full
+      );
+   });
 
    const order: OrderModel = {
-      idOrder: responseOrder.idOrder,
-      deliveryAddress: responseOrder.deliveryAddress,
-      totalPrice: responseOrder.totalPrice,
-      totalPriceProduct: responseOrder.totalPriceProduct,
-      feeDelivery: responseOrder.feeDelivery,
-      feePayment: responseOrder.feePayment,
-      dateCreated: responseOrder.dateCreated,
-      status: responseOrder.status,
-     /* user: responseOrder._embedded.user,*/
-      fullName: responseOrder.fullName,
-      phoneNumber: responseOrder.phoneNumber,
-      note: responseOrder.note,
+      idOrder: data.id,
+      deliveryAddress: data.deliveryAddress,
+
+      totalPriceProduct: data.totalPriceProduct,
+      feeDelivery: data.feeDelivery ?? 0,
+      feePayment: data.feePayment ?? 0,
+
+      // 👉 fix totalPrice luôn
+      totalPrice:
+         data.totalPriceProduct +
+         (data.feeDelivery ?? 0) +
+         (data.feePayment ?? 0),
+
+      dateCreated: new Date(data.dateCreated),
+      status: data.status,
+
+      fullName: data.fullName,
+      phoneNumber: data.phoneNumber ?? "",
+      note: data.note,
+
+      payment: data.paymentName,
+
       cartItems: cartItems,
-      payment: responsePayment.namePayment,
-   }
+   };
 
    return order;
 }

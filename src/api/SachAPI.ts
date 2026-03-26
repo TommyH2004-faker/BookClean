@@ -11,39 +11,69 @@ interface KetQuaInterface {
     tongSoSach: number;
 }
 
+// async function laySach(duongDan: string): Promise<KetQuaInterface> {
+//     const ketQua: BookModel[] = [];
+
+//     // Gọi phương thức request
+//     const response = await my_request(duongDan);
+
+//     // Lấy ra json sach
+//     const responseData = response.data;
+//     // lay thong tin trang
+//     const tongSoTrang = response.totalPages;
+//     const tongSoSach = response.totalElements;
+
+//     // Duyệt dữ liệu
+//     for (const item in responseData) {
+//         ketQua.push({
+//             idBook: responseData[item].id, // id sach
+//             nameBook: responseData[item].name, // Có thể NULL
+//             author: responseData[item].author, // tac gia
+//             isbn: responseData[item].isbn, // ma isbn
+//             description: responseData[item].description, // mo ta
+//             listPrice: responseData[item].listPrice, // gia goc
+//             sellPrice: responseData[item].sellPrice, // gia ban
+//             quantity: responseData[item].quantity, // so luong
+//             avgRating: responseData[item].avgRating, // diem trung binh
+//             soldQuantity: responseData[item].soldQuantity, // so luong da ban
+//             discountPercent: responseData[item].discountPercent, // phan tram giam gia
+//             thumbnail: responseData[item].thumbnail // anh bia
+//         });
+//     }
+
+//     return { ketQua: ketQua, tongSoTrang: tongSoTrang, tongSoSach: tongSoSach };
+// }
 async function laySach(duongDan: string): Promise<KetQuaInterface> {
     const ketQua: BookModel[] = [];
 
-    // Gọi phương thức request
     const response = await my_request(duongDan);
 
-    // Lấy ra json sach
     const responseData = response.data;
-    // lay thong tin trang
     const tongSoTrang = response.totalPages;
     const tongSoSach = response.totalElements;
 
-    // Duyệt dữ liệu
-    for (const item in responseData) {
+    for (const item of responseData) {
         ketQua.push({
-            idBook: responseData[item].id, // id sach
-            nameBook: responseData[item].name, // Có thể NULL
-            author: responseData[item].author, // tac gia
-            isbn: responseData[item].isbn, // ma isbn
-            description: responseData[item].description, // mo ta
-            listPrice: responseData[item].listPrice, // gia goc
-            sellPrice: responseData[item].sellPrice, // gia ban
-            quantity: responseData[item].quantity, // so luong
-            avgRating: responseData[item].avgRating, // diem trung binh
-            soldQuantity: responseData[item].soldQuantity, // so luong da ban
-            discountPercent: responseData[item].discountPercent, // phan tram giam gia
-            thumbnail: responseData[item].thumbnail // anh bia
+            idBook: item.id,
+            nameBook: item.name ?? "",
+            author: item.author ?? "Đang cập nhật",
+            isbn: item.isbn ?? "",
+            description: item.description ?? "",
+            listPrice: item.listPrice ?? 0,
+            sellPrice: item.sellPrice ?? 0,
+            quantity: item.quantity ?? 0,
+            avgRating: item.avgRating ?? 0,
+            soldQuantity: item.soldQuantity ?? 0,
+            discountPercent: item.discountPercent ?? 0,
+            thumbnail: item.thumbnail ?? ""
         });
     }
-
-    return { ketQua: ketQua, tongSoTrang: tongSoTrang, tongSoSach: tongSoSach };
+    return {
+        ketQua,
+        tongSoTrang,
+        tongSoSach
+    };
 }
-
 export async function getAllBook(size?: number, page?: number): Promise<KetQuaInterface> {
     // Nếu không truyền size thì mặc định là 8
     if (!size) {
@@ -86,17 +116,49 @@ export async function get3BestSellerBooks(): Promise<BookModel[]> {
     return newBookList;
 }
 
-export async function timKiemSach(tuKhoaTimKiem: string, idGenre: number): Promise<KetQuaInterface> {
-    // Xác định endpoint
-    let duongDan: string = `${endpointBE}/book/all-book?sort=idBook,desc&size=8&page=0`;
-    if (tuKhoaTimKiem !== '' && idGenre == 0) {
-        duongDan = `${endpointBE}/book/all-book/search/findByNameBookContaining?sort=idBook,desc&size=8&page=0&nameBook=${tuKhoaTimKiem}`;
-    } else if (tuKhoaTimKiem === '' && idGenre > 0) {
-        duongDan = `${endpointBE}/book/all-book/search/findByListGenres_idGenre?sort=idBook,desc&size=8&page=0&idGenre=${idGenre}`;
-    } else if (tuKhoaTimKiem !== '' && idGenre > 0) {
-        duongDan = `${endpointBE}/book/all-book/search/findByNameBookContainingAndListGenres_idGenre?sort=idBook,desc&size=8&page=0&nameBook=${tuKhoaTimKiem}&idGenre=${idGenre}`;
-    }
-    return laySach(duongDan);
+// export async function timKiemSach(tuKhoaTimKiem: string, idGenre: number): Promise<KetQuaInterface> {
+//     // Xác định endpoint
+//     let duongDan: string = `${endpointBE}/book/all-book?sort=idBook,desc&size=8&page=0`;
+//     if (tuKhoaTimKiem !== '' && idGenre == 0) {
+//         duongDan = `${endpointBE}/book/all-book/search/findByNameBookContaining?sort=idBook,desc&size=8&page=0&nameBook=${tuKhoaTimKiem}`;
+//     } else if (tuKhoaTimKiem === '' && idGenre > 0) {
+//         duongDan = `${endpointBE}/book/all-book/search/findByListGenres_idGenre?sort=idBook,desc&size=8&page=0&idGenre=${idGenre}`;
+//     } else if (tuKhoaTimKiem !== '' && idGenre > 0) {
+//         duongDan = `${endpointBE}/book/all-book/search/findByNameBookContainingAndListGenres_idGenre?sort=idBook,desc&size=8&page=0&nameBook=${tuKhoaTimKiem}&idGenre=${idGenre}`;
+//     }
+//     return laySach(duongDan);
+// }
+export async function timKiemSach(
+	tuKhoaTimKiem: string,
+	idGenre: number
+): Promise<KetQuaInterface> {
+
+	const keyword = tuKhoaTimKiem?.trim() || "";
+
+	const params = new URLSearchParams();
+
+	// search
+	if (keyword) {
+		params.append("keySearch", keyword);
+	}
+
+	// filter genre
+	if (idGenre && idGenre > 0) {
+		params.append("genreId", idGenre.toString());
+	}
+
+	// mặc định sort mới nhất
+	params.append("sort", "id_desc");
+
+	// pagination cố định
+	params.append("page", "0");
+	params.append("size", "8");
+
+	const endpoint = `${endpointBE}/book/search?${params.toString()}`;
+
+	console.log("🔎 timKiemSach:", endpoint);
+
+	return laySach(endpoint);
 }
 
 export async function laySachTheoMaSach(idBook: number): Promise<BookModel|null> {
@@ -312,59 +374,97 @@ export async function getBookById(idBook: number): Promise<BookModel | null> {
         return null;
     }
 }
-export async function searchBook(keySearch?: string, idGenre?: number, filter?: number, size?: number, page?: number): Promise<KetQuaInterface> {
+// export async function searchBook(keySearch?: string, idGenre?: number, filter?: number, size?: number, page?: number): Promise<KetQuaInterface> {
 
-    // Nếu key search không undifined
-    if (keySearch) {
-        keySearch = keySearch.trim();
-    }
+//     // Nếu key search không undifined
+//     if (keySearch) {
+//         keySearch = keySearch.trim();
+//     }
 
-    const optionsShow = `size=${size}&page=${page}`;
+//     const optionsShow = `size=${size}&page=${page}`;
 
-    // Endpoint mặc định
-    let endpoint: string = endpointBE + `/books?` + optionsShow;
+//     // Endpoint mặc định
+//     let endpoint: string = endpointBE + `/book?` + optionsShow;
 
-    let filterEndpoint = '';
-    if (filter === 1) {
-        filterEndpoint = "sort=nameBook";
-    } else if (filter === 2) {
-        filterEndpoint = "sort=nameBook,desc";
-    } else if (filter === 3) {
-        filterEndpoint = "sort=sellPrice";
-    } else if (filter === 4) {
-        filterEndpoint = "sort=sellPrice,desc";
-    } else if (filter === 5) {
-        filterEndpoint = "sort=soldQuantity,desc";
-    }
+//     let filterEndpoint = '';
+//     if (filter === 1) {
+//         filterEndpoint = "sort=nameBook";
+//     } else if (filter === 2) {
+//         filterEndpoint = "sort=nameBook,desc";
+//     } else if (filter === 3) {
+//         filterEndpoint = "sort=sellPrice";
+//     } else if (filter === 4) {
+//         filterEndpoint = "sort=sellPrice,desc";
+//     } else if (filter === 5) {
+//         filterEndpoint = "sort=soldQuantity,desc";
+//     }
 
-    // Nếu có key search và không có lọc thể loại
-    if (keySearch !== '') {
-        // Mặc đinh nếu không có filter
-        endpoint = endpointBE + `/books/search/findByNameBookContaining?nameBook=${keySearch}&` + optionsShow + '&' + filterEndpoint;
-    }
+//     // Nếu có key search và không có lọc thể loại
+//     if (keySearch !== '') {
+//         // Mặc đinh nếu không có filter
+//         endpoint = endpointBE + `/book/search/findByNameBookContaining?nameBook=${keySearch}&` + optionsShow + '&' + filterEndpoint;
+//     }
 
-    // Nếu idGenre không undifined
-    if (idGenre !== undefined) {
-        // Nếu có không có key search và có lọc thể loại
-        if (keySearch === '' && idGenre > 0) {
-            // Mặc định nếu không có filter
-            endpoint = endpointBE + `/books/search/findByListGenres_idGenre?idGenre=${idGenre}&` + optionsShow + '&' + filterEndpoint;
-        }
+//     // Nếu idGenre không undifined
+//     if (idGenre !== undefined) {
+//         // Nếu có không có key search và có lọc thể loại
+//         if (keySearch === '' && idGenre > 0) {
+//             // Mặc định nếu không có filter
+//             endpoint = endpointBE + `/book/search/findByListGenres_idGenre?idGenre=${idGenre}&` + optionsShow + '&' + filterEndpoint;
+//         }
 
-        // Nếu có key search và có lọc thể loại
-        if (keySearch !== '' && idGenre > 0) {
-            endpoint = endpointBE + `/books/search/findByNameBookContainingAndListGenres_idGenre?nameBook=${keySearch}&idGenre=${idGenre}&` + optionsShow + '&' + filterEndpoint;
-        }
+//         // Nếu có key search và có lọc thể loại
+//         if (keySearch !== '' && idGenre > 0) {
+//             endpoint = endpointBE + `/book/search/findByNameBookContainingAndListGenres_idGenre?nameBook=${keySearch}&idGenre=${idGenre}&` + optionsShow + '&' + filterEndpoint;
+//         }
 
-        // Chỉ lọc filter
-        if (keySearch === '' && (idGenre === 0 || typeof (idGenre) === 'string')) {
-            endpoint = endpointBE + "/books?" + optionsShow + '&' + filterEndpoint;
-        }
+//         // Chỉ lọc filter
+//         if (keySearch === '' && (idGenre === 0 || typeof (idGenre) === 'string')) {
+//             endpoint = endpointBE + "/book?" + optionsShow + '&' + filterEndpoint;
+//         }
 
-        // console.log("idGenre: " + typeof (idGenre) + idGenre + ", filter: " + typeof (filter) + filter + ", keySearch" + +typeof (keySearch) + keySearch);
-    }
+//         // console.log("idGenre: " + typeof (idGenre) + idGenre + ", filter: " + typeof (filter) + filter + ", keySearch" + +typeof (keySearch) + keySearch);
+//     }
 
-    // console.log(endpoint);
+//     // console.log(endpoint);
 
-    return laySach(endpoint);
+//     return laySach(endpoint);
+// }
+export async function searchBook(
+	keySearch?: string,
+	idGenre?: number,
+	filter?: number,
+	size: number = 10,
+	page: number = 0
+): Promise<KetQuaInterface> {
+
+	// trim search
+	const keyword = keySearch?.trim() || "";
+
+	// convert sort
+	let sort = "";
+	switch (filter) {
+		case 1: sort = "name_asc"; break;
+		case 2: sort = "name_desc"; break;
+		case 3: sort = "price_asc"; break;
+		case 4: sort = "price_desc"; break;
+		case 5: sort = "sold_desc"; break;
+		default: sort = "";
+	}
+
+	// build query params
+	const params = new URLSearchParams();
+
+	if (keyword) params.append("keySearch", keyword);
+	if (idGenre && idGenre > 0) params.append("genreId", idGenre.toString());
+	if (sort) params.append("sort", sort);
+
+	params.append("page", page.toString());
+	params.append("size", size.toString());
+
+	const endpoint = `${endpointBE}/book/search?${params.toString()}`;
+
+	console.log(" endpoint:", endpoint);
+
+	return laySach(endpoint);
 }

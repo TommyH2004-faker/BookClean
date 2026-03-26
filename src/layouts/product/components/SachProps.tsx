@@ -210,7 +210,7 @@ const SachProps: React.FC<SachPropsInterface> = ({ sach }) => {
                     />
                 </Link>
                 <div className="card-body" style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                    <Link to={`/sach/${sach.idBook}`} style={{ textDecoration: 'none' }}>
+                    <Link to={`/books/${sach.idBook}`} style={{ textDecoration: 'none' }}>
                         <h5 className="card-title" style={{ minHeight: "50px", textAlign: "center" }}>
                             {sach.nameBook}
                         </h5>
