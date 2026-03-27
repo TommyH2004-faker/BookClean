@@ -45,7 +45,6 @@ export async function getCartAllByIdUser(): Promise<CartItemModel[]> {
         }
 
         const cartResponse = await response.json();
-        console.log("🔍 RAW cart response từ BE:", JSON.stringify(cartResponse, null, 2));
 
         return cartResponse.map((item: any) => ({
             idCart: item.idCart ?? item.id,

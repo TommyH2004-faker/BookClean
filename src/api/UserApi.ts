@@ -88,7 +88,7 @@ export async function getUserByIdReview(idReview: number): Promise<UserModel> {
 
    // nếu API trả trực tiếp object user
    return {
-      idUser: 0, // hoặc parse nếu cần
+      idUser: "", // hoặc parse nếu cần
       username: response.name,          // map
       avatar: response.avatarUrl,       // map
       email: response.email,

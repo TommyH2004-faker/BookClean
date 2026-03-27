@@ -22,6 +22,7 @@ interface GenreFormProps {
 
 export const GenreForm: React.FC<GenreFormProps> = (props) => {
 	const [genre, setGenre] = useState<GenreModel>({
+		// // idGenre: 0,
 		idGenre: 0,
 		nameGenre: "",
 	});
@@ -47,6 +48,7 @@ export const GenreForm: React.FC<GenreFormProps> = (props) => {
 			alert("Bạn chưa đăng nhập!");
 			return;
 		}
+		// if (!isTokenExpired(token)) {
 		if (!isTokenExpired(token)) {
 			alert("Token đã hết hạn. Vui lòng đăng nhập lại!");
 			return;
@@ -80,7 +82,7 @@ export const GenreForm: React.FC<GenreFormProps> = (props) => {
 					props.setKeyCountReload(Math.random());
 					props.handleCloseModal();
 				} else {
-					toast.error("Lỗi khi thưc hiện hành động");
+					toast.warning("Thể loại đã tồn tại");
 					props.handleCloseModal();
 				}
 			})

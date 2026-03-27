@@ -24,7 +24,6 @@ const Dashboard = () => {
 	useEffect(() => {
 		getAllUsers()
 			.then((response) => {
-				console.log("All users: ", response);
 				setNumberOfAccount(response.length);
 			})
 			.catch((error) => console.log(error));
@@ -38,11 +37,11 @@ const Dashboard = () => {
 				const numberOfOrders = response.length;
 				setNumberOfOrder(numberOfOrders);
 				const totalPriceResponse = response.reduce((prevValue, order) => {
-					if (order.status === "Thành công") {
-						return prevValue + order.totalPrice;
-					}
-					return prevValue;
-				}, 0);
+				if (order.status === "Thành công") {
+					return prevValue + (order.totalPriceProduct + order.feeDelivery + order.feePayment);
+				}
+				return prevValue;
+			}, 0);
 				setTotalPrice(totalPriceResponse);
 			})
 			.catch((error) => console.log(error));

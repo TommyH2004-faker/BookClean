@@ -59,13 +59,13 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
 
 	// Các biến thông tin cá nhân
 	 const [user, setUser] = useState<UserModel>({
-		 idUser: 0,
+		 idUser: "",
 		 dateOfBirth: "",
 		 deliveryAddress: "",
 		 email: "",
 		 firstName: "",
 		 lastName: "",
-		 gender: 'M',
+		 gender: false,
 		 password: "",
 		 phoneNumber: "",
 		 username: "",
@@ -81,7 +81,7 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
 	const [keyCountReload, setKeyCountReload] = useState(0);
 
 	// Xử lý order table
-	const [id, setId] = useState(0);
+	const [id, setId] = useState("");
 	const [openModal, setOpenModal] = React.useState(false);
 	const handleOpenModal = () => setOpenModal(true);
 	const handleCloseModal = () => setOpenModal(false);
@@ -100,12 +100,7 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
 		.then((response) => {
 		setUser({
 		...response,
-		gender:
-			response.gender === "Male"
-				? "0"
-				: response.gender === "Female"
-				? "1"
-				: "",
+		gender: response.gender ?? null,
 		dateOfBirth: response.dateOfBirth
 			? response.dateOfBirth.split("T")[0]
 			: "",
@@ -199,7 +194,7 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
 		reader.readAsDataURL(selectedFile);
 
 		reader.onload = async () => {
-		const base64Data = (reader.result as string).split(",")[1]; // chỉ lấy base64
+		const base64Data = (reader.result as string).split(",")[1];
 
 		const token = localStorage.getItem("token");
 		const response = await fetch(endpointBE + "/user/change-avatar", {
@@ -498,7 +493,7 @@ function handleSubmitChangePassword(event: FormEvent<HTMLFormElement>): void {
 													<FormLabel id='demo-row-radio-buttons-group-label'>
 														Giới tính
 													</FormLabel>
-													<RadioGroup
+													{/* <RadioGroup
 														row
 														aria-labelledby='demo-row-radio-buttons-group-label'
 														name='row-radio-buttons-group'
@@ -509,6 +504,28 @@ function handleSubmitChangePassword(event: FormEvent<HTMLFormElement>): void {
 																gender: e.target.value,
 															})
 														}
+													> */}
+													<RadioGroup
+													row
+													value={
+														user.gender === true
+														? "1"
+														: user.gender === false
+														? "0"
+														: ""
+													}
+													onChange={(e) => {
+														const value = e.target.value;
+														setUser({
+														...user,
+														gender:
+															value === "1"
+															? true
+															: value === "0"
+															? false
+															: null,
+														});
+													}}
 													>
 														<FormControlLabel
 															disabled={

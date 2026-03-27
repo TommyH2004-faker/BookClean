@@ -5,9 +5,11 @@ import {
 	Box,
 	Button,
 	FormControl,
+	FormControlLabel,
 	InputLabel,
 	MenuItem,
 	Select,
+	Switch,
 } from "@mui/material";
 import { CloudUpload } from "@mui/icons-material";
 
@@ -38,19 +40,19 @@ interface UserFormProps {
 export const UserForm: React.FC<UserFormProps> = (props) => {
 	// Các biến cần thiết
 	 const [user, setUser] = useState<UserModel>({
-		 idUser: 0,
+		 idUser: "",
 		 dateOfBirth: "",
 		 deliveryAddress: "",
 		 email: "",
 		 firstName: "",
 		 lastName: "",
-		 gender: 'M',
+		 gender: false,
 		 phoneNumber: "",
 		 username: "",
 		 password: "",
 		 avatar: "",
 		 enabled: true,
-		 roles: ["CUSTOMER"],
+		 roles: ["USER"],
 	 });
 	const [avatar, setAvatar] = useState<File | null>(null);
 	const [previewAvatar, setPreviewAvatar] = useState("");
@@ -72,84 +74,124 @@ export const UserForm: React.FC<UserFormProps> = (props) => {
 	}, []);
 
 	// Load user lên khi update
-	 useEffect(() => {
-		 if (props.option === "update") {
-			 get1User(props.id).then((response) => {
-				 setUser({
-					 ...response,
-					 dateOfBirth: response.dateOfBirth || "",
-				 });
-				 setPreviewAvatar(response.avatar ?? "");
-			 });
-		 }
-	 }, [props.id, props.option]);
+	//  useEffect(() => {
+	// 	 if (props.option === "update") {
+	// 		 get1User(props.id).then((response) => {
+	// 		setUser({
+	// 		...response,
+	// 		dateOfBirth: response.dateOfBirth || "",
+	// 		roles: response.roles || ["USER"], 
+	// 	});
+	// 	 setPreviewAvatar(response.avatar ?? "");
+	// 	 });
+	// 	 }
+	//  }, [props.id, props.option]);
+	useEffect(() => {
+  if (props.option === "update") {
+    get1User(props.id).then((response) => {
+      const formattedDate = response.dateOfBirth
+        ? new Date(response.dateOfBirth).toISOString().split("T")[0]
+        : "";
+
+      setUser({
+        ...response,
+		idUser: response.idUser,
+        dateOfBirth: formattedDate,
+        password: "",           // luôn trống, người dùng nhập nếu muốn đổi
+        roles: response.roles || ["USER"],
+      });
+      setPreviewAvatar(response.avatar ?? "");
+    });
+  }
+}, [props.id, props.option]);
+
 
 	function hanleSubmit(event: FormEvent<HTMLFormElement>) {
-		event.preventDefault();
+	event.preventDefault();
 
-		const token = localStorage.getItem("token");
+	const token = localStorage.getItem("token");
 
-		if (getUsernameByToken() === user.username) {
-			toast.warning("Bạn không thể cập nhật tài khoản bạn đang sử dụng");
-			return;
-		}
-		setStatusBtn(true);
-
-		const endpoint =
-			props.option === "add"
-				? endpointBE + "/taikhoan/add-user"
-				: endpointBE + "/taikhoan/update-user";
-		const method = props.option === "add" ? "POST" : "PUT";
-		toast.promise(
-			fetch(endpoint, {
-				method: method,
-				headers: {
-					Authorization: `Bearer ${token}`,
-					"content-type": "application/json",
-				},
-				body: JSON.stringify(user),
-			})
-				.then((response) => {
-					if (response.ok) {
-						 setUser({
-							 idUser: 0,
-							 dateOfBirth: "",
-							 deliveryAddress: "",
-							 email: "",
-							 firstName: "",
-							 lastName: "",
-							gender: "M",
-							 phoneNumber: "",
-							 username: "",
-							 password: "",
-							 avatar: "",
-							 enabled: true,
-							 roles: ["CUSTOMER"],
-						 });
-						setAvatar(null);
-						setPreviewAvatar("");
-						setStatusBtn(false);
-						props.setKeyCountReload(Math.random());
-						props.handleCloseModal();
-						toast.success(
-							props.option === "add"
-								? "Thêm người dùng thành công"
-								: "Cập nhật người dùng thành công"
-						);
-					} else {
-						setStatusBtn(false);
-						toast.error("Gặp lỗi trong quá trình xử lý người dùng");
-					}
-				})
-				.catch((error) => {
-					console.log(error);
-					setStatusBtn(false);
-					toast.error("Gặp lỗi trong quá trình xử lý người dùng");
-				}),
-			{ pending: "Đang trong quá trình xử lý ..." }
-		);
+	// Ngăn không cho update chính tài khoản đang đăng nhập
+	if (getUsernameByToken() === user.username) {
+		toast.warning("Bạn không thể cập nhật tài khoản bạn đang sử dụng");
+		return;
 	}
 
+	setStatusBtn(true);
+
+	const endpoint =
+		props.option === "add"
+			? endpointBE + "/user/add-user"
+			: endpointBE + "/user/update-user";
+	const method = props.option === "add" ? "POST" : "PUT";
+
+	// Map dữ liệu FE sang đúng DTO BE
+	const body = {
+	id: user.idUser,
+    name: user.username || null,
+    email: user.email || null,
+    passwordHash: user.password || null,
+    enabled: user.enabled,
+    firstName: user.firstName || null,
+    lastName: user.lastName || null,
+    phoneNumber: user.phoneNumber || null,
+    deliveryAddress: user.deliveryAddress || null,
+    dateOfBirth: user.dateOfBirth || null,
+    gender: user.gender,
+    avatar: user.avatar || null,
+    roles: user.roles.length > 0 ? user.roles : null
+	};
+
+	toast.promise(
+		fetch(endpoint, {
+			method: method,
+			headers: {
+				Authorization: `Bearer ${token}`,
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(body),
+		})
+			.then((response) => {
+				if (response.ok) {
+					// Reset form
+					setUser({
+						idUser: "",
+						username: "",
+						password: "",
+						email: "",
+						enabled: true,
+						firstName: "",
+						lastName: "",
+						phoneNumber: "",
+						deliveryAddress: "",
+						dateOfBirth: "",
+						gender: false,
+						avatar: "",
+						roles: ["USER"],
+					});
+					setAvatar(null);
+					setPreviewAvatar("");
+					setStatusBtn(false);
+					if (props.setKeyCountReload) props.setKeyCountReload(Math.random());
+					props.handleCloseModal();
+					toast.success(
+						props.option === "add"
+							? "Thêm người dùng thành công"
+							: "Cập nhật người dùng thành công"
+					);
+				} else {
+					setStatusBtn(false);
+					toast.error("Gặp lỗi trong quá trình xử lý người dùng");
+				}
+			})
+			.catch((error) => {
+				console.log(error);
+				setStatusBtn(false);
+				toast.error("Gặp lỗi trong quá trình xử lý người dùng");
+			}),
+		{ pending: "Đang trong quá trình xử lý ..." }
+	);
+}
 	function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
 		const inputElement = event.target as HTMLInputElement;
 
@@ -159,9 +201,9 @@ export const UserForm: React.FC<UserFormProps> = (props) => {
 			const reader = new FileReader();
 
 			reader.onload = (e: any) => {
-				// e.target.result chính là chuỗi base64
+			
 				const thumnailBase64 = e.target?.result as string;
-				// Tiếp tục xử lý tệp đã chọn
+			
 				setAvatar(selectedFile);
 				setPreviewAvatar(URL.createObjectURL(selectedFile));
 				setUser({ ...user, avatar: thumnailBase64 });
@@ -299,6 +341,17 @@ export const UserForm: React.FC<UserFormProps> = (props) => {
 									 onChange={handleDateChange}
 									 size='small'
 								 />
+								 <FormControlLabel
+									control={
+										<Switch
+											checked={user.enabled}
+											onChange={(e) =>
+												setUser({ ...user, enabled: e.target.checked })
+											}
+										/>
+									}
+									label='Kích hoạt tài khoản'
+									/>
 							</Box>
 						</div>
 						<div className='col-6'>
@@ -344,7 +397,7 @@ export const UserForm: React.FC<UserFormProps> = (props) => {
 									size='small'
 								/>
 
-								<FormControl fullWidth size='small' sx={{ mb: 3 }}>
+								{/* <FormControl fullWidth size='small' sx={{ mb: 3 }}>
 									<InputLabel id='demo-simple-select-label'>
 										Giới tính
 									</InputLabel>
@@ -360,9 +413,24 @@ export const UserForm: React.FC<UserFormProps> = (props) => {
 										<MenuItem value={"M"}>Nam</MenuItem>
 										<MenuItem value={"F"}>Nữ</MenuItem>
 									</Select>
-								</FormControl>
+								</FormControl> */}
+								<FormControl fullWidth size='small' sx={{ mb: 3 }}>
+								<InputLabel id='gender-select-label'>Giới tính</InputLabel>
+								<Select
+									labelId='gender-select-label'
+									id='gender-select'
+									value={user.gender}
+									label='Giới tính'
+									onChange={(e: any) =>
+										setUser({ ...user, gender: e.target.value === "true" })
+									}
+								>
+									<MenuItem value="true">Nam</MenuItem>
+									<MenuItem value="false">Nữ</MenuItem>
+								</Select>
+							</FormControl>
 
-								 <FormControl fullWidth size='small'>
+								 {/* <FormControl fullWidth size='small'>
 									 <InputLabel id='demo-simple-select-label'>Vai trò</InputLabel>
 									 <Select
 										 labelId='demo-simple-select-label'
@@ -382,7 +450,26 @@ export const UserForm: React.FC<UserFormProps> = (props) => {
 											 </MenuItem>
 										 ))}
 									 </Select>
-								 </FormControl>
+								 </FormControl> */}
+								 <FormControl fullWidth size='small'>
+								<InputLabel id='role-select-label'>Vai trò</InputLabel>
+								<Select
+									labelId='role-select-label'
+									id='role-select'
+									multiple
+									value={user.roles}
+									onChange={(e: any) =>
+										setUser({ ...user, roles: e.target.value })
+									}
+									renderValue={(selected) => (selected as string[]).join(", ")}
+								>
+									{roles.map((role) => (
+										<MenuItem key={role.idRole} value={role.nameRole}>
+											{role.nameRole}
+										</MenuItem>
+									))}
+								</Select>
+							</FormControl>
 							</Box>
 						</div>
 						<div className='d-flex align-items-center mt-3'>

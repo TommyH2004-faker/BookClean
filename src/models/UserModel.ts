@@ -1,5 +1,5 @@
 export interface UserModel {
-    idUser:number;
+    idUser:string;
     username: string;
     email: string;
     firstName: string;
@@ -8,7 +8,7 @@ export interface UserModel {
     avatar: string | null;
     dateOfBirth:string | null;
     deliveryAddress: string | null;
-    gender: string | null;
+    gender: boolean | null;
     phoneNumber: string | null;
     enabled: boolean;
     roles: string[];
