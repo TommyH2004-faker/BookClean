@@ -141,7 +141,7 @@ export const UserForm: React.FC<UserFormProps> = (props) => {
     avatar: user.avatar || null,
     roles: user.roles.length > 0 ? user.roles : null
 	};
-
+	console.log("Request body:", body); 
 	toast.promise(
 		fetch(endpoint, {
 			method: method,
@@ -153,7 +153,6 @@ export const UserForm: React.FC<UserFormProps> = (props) => {
 		})
 			.then((response) => {
 				if (response.ok) {
-					// Reset form
 					setUser({
 						idUser: "",
 						username: "",

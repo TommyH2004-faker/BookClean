@@ -18,22 +18,26 @@ export const FeedbackTable: React.FC = (props) => {
 
 	// Tạo biến để lấy tất cả data
 	const [data, setData] = useState<FeedbackModel[]>([]);
+	const [reload, setReload] = useState(false);
+
 	useEffect(() => {
 		getAllFeedback().then((response) => {
-			const feedbacks = response.map((feedback) => ({
+			console.log("Feedback data from API:", response);
+			const feedbacks = response.map((feedback: any) => ({
 				...feedback,
 				id: feedback.idFeedback,
+				readed: feedback.isReaded,
 			}));
 			setData(feedbacks);
 			setLoading(false);
 		});
-	}, [data]);
+	}, [reload]);
 
 	const handleChangeIsReaded = (idFeedback: any) => {
 		const token = localStorage.getItem("token");
 
-		const tmp = data.filter((feedback) => feedback.idFeedback);
-		if (tmp[0].readed === true) {
+		const tmp = data.filter((feedback) => feedback.idFeedback === idFeedback);
+		if (tmp.length > 0 && tmp[0].readed === true) {
 			toast.warning("Feedback này đã duyệt rồi");
 			return;
 		}
@@ -48,6 +52,7 @@ export const FeedbackTable: React.FC = (props) => {
 				.then((response) => {
 					if (response.ok) {
 						toast.success("Duyệt thành công");
+						setReload(!reload);
 					} else {
 						toast.error("Lỗi khi duyệt");
 					}
@@ -78,7 +83,15 @@ export const FeedbackTable: React.FC = (props) => {
 				) : (
 					""
 				);
-			},
+			}
+		// 	renderCell: (params) => {
+		// 	return Boolean(params.value) ? (
+		// 		<Tooltip title='Đã đọc'>
+		// 			<CheckIcon color='success' />
+		// 		</Tooltip>
+		// 	) : null;
+		// }
+		,
 		},
 		{
 			field: "action",
@@ -91,7 +104,9 @@ export const FeedbackTable: React.FC = (props) => {
 						<Tooltip title={"Duyệt"}>
 							<IconButton
 								color='secondary'
-								onClick={() => handleChangeIsReaded(item.id)}
+								onClick={
+
+									() => handleChangeIsReaded(item.id)}
 							>
 								<VisibilityOutlined />
 							</IconButton>

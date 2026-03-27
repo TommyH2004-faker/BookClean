@@ -142,8 +142,12 @@ export const UserTable: React.FC<UserTableProps> = (props) => {
 						<Tooltip title={"Xoá"}>
 							<IconButton
 								color='error'
-								onClick={() => handleDeleteUser(item.id)}
+								// onClick={() => handleDeleteUser(item.id)}
+								onClick={() => {
+							handleDeleteUser(item.id);
+						}}
 							>
+						
 								<DeleteOutlineOutlined />
 							</IconButton>
 						</Tooltip>
