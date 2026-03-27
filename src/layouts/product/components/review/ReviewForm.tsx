@@ -73,30 +73,79 @@ export const ReviewForm: React.FC<ReviewFormProps> = (props) => {
 	}
 
 	// Lấy data review khi đã review rồi
-	useEffect(() => {
-		if (props.cartItem?.review) {
+	// useEffect(() => {
+	// 	if (props.cartItem?.review) {
+	// 		const token = localStorage.getItem("token");
+	// 		fetch(endpointBE + `/review/get-review`, {
+	// 			method: "POST",
+	// 			headers: {
+	// 				Authorization: `Bearer ${token}`,
+	// 				"Content-Type": "application/json",
+	// 			},
+	// 			body: JSON.stringify({
+	// 				idUser: getIdUserByToken(),
+	// 				idOrder: props.idOrder,
+	// 				idBook: props.idBook,
+	// 			}),
+	// 		})
+	// 			.then((response) => response.json())
+	// 			.then((data) => {
+	// 				console.log("Review data:", data);
+	// 				setRatingValue(data.rating);
+	// 				setContent(data.content);
+	// 				setIdReview(data.id);
+	// 			})
+	// 			.catch((error) => console.log(error));
+	// 	}
+	// }, []);
+			useEffect(() => {
+			if (!props.idBook || !props.idOrder) return;
+
 			const token = localStorage.getItem("token");
+
+			const payload = {
+				idUser: getIdUserByToken(),
+				idOrder: props.idOrder,
+				idBook: props.idBook,
+			};
+
+			console.log("🔥 Payload get-review:", payload); // ✅ LOG Ở ĐÂY
+
 			fetch(endpointBE + `/review/get-review`, {
 				method: "POST",
 				headers: {
 					Authorization: `Bearer ${token}`,
 					"Content-Type": "application/json",
 				},
-				body: JSON.stringify({
-					idOrder: props.idOrder,
-					idBook: props.idBook,
-				}),
+				body: JSON.stringify(payload),
 			})
-				.then((response) => response.json())
-				.then((data) => {
-					setRatingValue(data.ratingPoint);
-					setContent(data.content);
-					setIdReview(data.idReview);
-				})
-				.catch((error) => console.log(error));
+			.then((res) => {
+		if (res.status === 204) {
+			console.log("⚠️ Chưa có review");
+			return null;
 		}
-	}, []);
+		return res.json();
+		})
+		.then((data) => {
+			console.log("Response:", data);
 
+			if (!data) {
+				props.setCartItem({
+					...props.cartItem,
+					review: false,
+				});
+				return;
+			}
+			setRatingValue(data.rating);
+			setContent(data.comment);
+			setIdReview(data.id);
+
+			props.setCartItem({
+				...props.cartItem,
+				review: true,
+			});
+		})
+		}, [props.idBook, props.idOrder]);
 	return (
 		<div className='container'>
 			<form onSubmit={handleSubmitReview}>

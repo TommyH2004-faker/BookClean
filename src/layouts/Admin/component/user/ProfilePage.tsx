@@ -94,28 +94,20 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
 	const [errorPhoneNumber, setErrorPhoneNumber] = useState("");
 	const [errorNewPassword, setErrorNewPassword] = useState("");
 	const [errorRepeatPassword, setErrorRepeatPassword] = useState("");
-
-	// Lấy data user lên
-	//  useEffect(() => {
-	// 	 const idUser = getIdUserByToken();
-	// 	 get1User(idUser)
-	// 		 .then((response) => {
-	// 			 setUser({
-	// 				 ...response,
-	// 				 dateOfBirth: response.dateOfBirth || new Date("2000-01-01"),
-	// 			 });
-	// 			 setPreviewAvatar(response.avatar ?? "");
-	// 		 })
-	// 		 .catch((error) => console.log(error));
-	//  }, []);
 	useEffect(() => {
 	const idUser = getIdUserByToken();
 	get1User(idUser)
 		.then((response) => {
 		setUser({
-			...response,
-			dateOfBirth: response.dateOfBirth
-			? response.dateOfBirth.split("T")[0] // 🔥 FIX CHÍNH
+		...response,
+		gender:
+			response.gender === "Male"
+				? "0"
+				: response.gender === "Female"
+				? "1"
+				: "",
+		dateOfBirth: response.dateOfBirth
+			? response.dateOfBirth.split("T")[0]
 			: "",
 		});
 		setPreviewAvatar(response.avatar ?? "");
@@ -129,30 +121,6 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
 		setErrorPhoneNumber("");
 	};
 
-	// Xử lý upload hình ảnh (preview)
-	// function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
-	// 	const inputElement = event.target as HTMLInputElement;
-
-	// 	if (inputElement.files && inputElement.files.length > 0) {
-	// 		const selectedFile = inputElement.files[0];
-
-	// 		const reader = new FileReader();
-
-	// 		// Xử lý sự kiện khi tệp đã được đọc thành công
-	// 		reader.onload = (e: any) => {
-	// 			// e.target.result chính là chuỗi base64
-	// 			const avatarBase64 = e.target?.result as string;
-
-	// 			setDataAvatar(avatarBase64);
-	// 			setPreviewAvatar(URL.createObjectURL(selectedFile));
-	// 			setIsUploadAvatar(true);
-	// 			props.setReloadAvatar(Math.random());
-	// 		};
-
-	// 		// Đọc tệp dưới dạng chuỗi base64
-	// 		reader.readAsDataURL(selectedFile);
-	// 	}
-	// }
 		function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
 	if (event.target.files && event.target.files.length > 0) {
 		const file = event.target.files[0];
@@ -223,44 +191,6 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
 		);
 	}
 
-	// Xử lý khi thay đổi avatar (thay đổi avatar)
-	// function handleSubmitAvatar() {
-	// 	const token = localStorage.getItem("token");
-	// 	toast.promise(
-	// 		fetch(endpointBE + "/taikhoan/change-avatar", {
-	// 			method: "PUT",
-	// 			headers: {
-	// 				Authorization: `Bearer ${token}`,
-	// 				"content-type": "application/json",
-	// 			},
-	// 			body: JSON.stringify({
-	// 				idUser: getIdUserByToken(),
-	// 				avatar: dataAvatar,
-	// 			}),
-	// 		})
-	// 			.then((response) => {
-	// 				if (response.ok) {
-	// 					return response.json();
-	// 				}
-	// 			})
-	// 			.then((data) => {
-	// 				const { jwtToken } = data;
-	// 				localStorage.setItem("token", jwtToken);
-
-	// 				toast.success("Cập nhật ảnh đại diện thành công");
-	// 				setPreviewAvatar(previewAvatar);
-	// 				setIsUploadAvatar(false);
-	// 				props.setReloadAvatar(Math.random());
-	// 			})
-	// 			.catch((error) => {
-	// 				toast.error("Cập nhật ảnh đại diện thất bại");
-	// 				setPreviewAvatar(user.avatar ? user.avatar : "");
-	// 				setIsUploadAvatar(false);
-	// 				console.log(error);
-	// 			}),
-	// 		{ pending: "Đang trong quá trình xử lý ..." }
-	// 	);
-	// }
 		async function handleSubmitAvatar() {
 	if (!selectedFile) return toast.warning("Chọn ảnh trước khi upload!");
 
@@ -301,39 +231,6 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
 	}
 }
 
-	// Xử lý khi form sumbit (thay đổi mật khẩu)
-	// function handleSubmitChangePassword(
-	// 	event: FormEvent<HTMLFormElement>
-	// ): void {
-	// 	event.preventDefault();
-
-	// 	if (errorNewPassword.length > 0 || errorRepeatPassword.length > 0) {
-	// 		toast.warning("Xem lại mật khẩu vừa nhập");
-	// 		return;
-	// 	}
-
-	// 	const token = localStorage.getItem("token");
-	// 	fetch(endpointBE + "/taikhoan/change-password", {
-	// 		method: "PUT",
-	// 		headers: {
-	// 			Authorization: `Bearer ${token}`,
-	// 			"content-type": "application/json",
-	// 		},
-	// 		body: JSON.stringify({
-	// 			idUser: getIdUserByToken(),
-	// 			newPassword: newPassword,
-	// 		}),
-	// 	})
-	// 		.then((response) => {
-	// 			setNewPassword("");
-	// 			setRepeatPassword("");
-	// 			toast.success("Đổi mật khẩu thành công");
-	// 		})
-	// 		.catch((error) => {
-	// 			console.log(error);
-	// 			toast.error("Thay đổi mật khẩu không thành công");
-	// 		});
-	// }
 	// Xử lý khi form submit (thay đổi mật khẩu)
 function handleSubmitChangePassword(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
@@ -630,13 +527,6 @@ function handleSubmitChangePassword(event: FormEvent<HTMLFormElement>): void {
 															label='Nữ'
 														/>
 													</RadioGroup>
-													<FormControl>
-							<FormLabel id='demo-row-radio-buttons-group-label'>Giới tính</FormLabel>
-							<FormControl>
-							<FormLabel id="gender-radio-group">Giới tính</FormLabel>
-
-							</FormControl>
-							</FormControl>
 												</FormControl>
 											</div>
 										</div>

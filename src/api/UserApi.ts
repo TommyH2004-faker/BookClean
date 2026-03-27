@@ -75,7 +75,6 @@ export async function get1User(idUser: any): Promise<UserModel> {
       enabled: responseUser.enabled,
       roles: responseRole.nameRole ? [responseRole.nameRole] : [],
    };
-   console.log("User đã được lấy:", user);
    return user;
 }
 
