@@ -89,6 +89,25 @@ export const UserTable: React.FC<UserTableProps> = (props) => {
 		{ field: "id", headerName: "ID", width: 50 },
 		{ field: "username", headerName: "TÊN TÀI KHOẢN", width: 120 },
 		{
+		field: "avatar",
+		headerName: "AVATAR",
+		width: 100,
+		renderCell: (params) => {
+			return (
+			<img
+				src={params.value || "https://via.placeholder.com/40"}
+				alt="avatar"
+				style={{
+				width: 40,
+				height: 40,
+				borderRadius: "50%",
+				objectFit: "cover",
+				}}
+			/>
+			);
+		},
+		},
+		{
 			field: "roles",
 			headerName: "VAI TRÒ",
 			width: 150,

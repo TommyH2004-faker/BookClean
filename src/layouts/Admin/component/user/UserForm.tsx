@@ -122,7 +122,7 @@ export const UserForm: React.FC<UserFormProps> = (props) => {
 	const endpoint =
 		props.option === "add"
 			? endpointBE + "/user/add-user"
-			: endpointBE + "/user/update-user";
+			: endpointBE + `/user/update-user/${user.idUser}`;
 	const method = props.option === "add" ? "POST" : "PUT";
 
 	// Map dữ liệu FE sang đúng DTO BE
