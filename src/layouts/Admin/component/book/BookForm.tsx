@@ -2,7 +2,7 @@ import React, { FormEvent, useEffect, useState } from "react";
 
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
-import { Box, Button } from "@mui/material";
+import { Box, Button, MenuItem } from "@mui/material";
 import { CloudUpload } from "@mui/icons-material";
 import { toast } from "react-toastify";
 
@@ -83,76 +83,83 @@ export const BookForm: React.FC<BookFormProps> = (props) => {
 		setBook({ ...book, idGenres: genresListSelected });
 	}, [genresListSelected]);
 
-	async function hanleSubmit(event: FormEvent<HTMLFormElement>) {
-		event.preventDefault();
+	async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
 
-		const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
+    setStatusBtn(true);
 
-		let bookRequest: BookModel = book;
-		if (bookRequest.discountPercent === 0) {
-			bookRequest = { ...book, sellPrice: book.listPrice };
-		}
+    const formData = new FormData();
 
-		// console.log(book);
+    formData.append("IdBook", book.idBook.toString());
+    formData.append("NameBook", book.nameBook || "");
+    formData.append("Author", book.author || "");
+    formData.append("Description", book.description || "");
+    formData.append("ListPrice", book.listPrice?.toString() || "0");
+    formData.append("SellPrice", book.sellPrice?.toString() || "0");
+    formData.append("Quantity", book.quantity?.toString() || "0");
+    formData.append("DiscountPercent", book.discountPercent?.toString() || "0");
 
-		setStatusBtn(true);
+    // Thumbnail
+    const thumbnailFileInput = (document.querySelector<HTMLInputElement>(
+        "input[type='file'][accept='image/*']"
+    ) as HTMLInputElement)?.files?.[0];
 
-		const endpoint =
-			props.option === "add"
-				? endpointBE + "/book/add-book"
-				: endpointBE + "/book/update-book";
-		const method = props.option === "add" ? "POST" : "PUT";
-		toast.promise(
-			fetch(endpoint, {
-				method: method,
-				headers: {
-					Authorization: `Bearer ${token}`,
-					"content-type": "application/json",
-				},
-				body: JSON.stringify(bookRequest),
-			})
-				.then((response) => {
-					if (response.ok) {
-						setBook({
-							idBook: 0,
-							nameBook: "",
-							author: "",
-							description: "",
-							listPrice: NaN,
-							sellPrice: NaN,
-							quantity: NaN,
-							avgRating: NaN,
-							soldQuantity: NaN,
-							discountPercent: 0,
-							thumbnail: "",
-							relatedImg: [],
-							idGenres: [],
-						});
-						setPreviewThumbnail("");
-						setPreviewRelatedImages([]);
-						setReloadCount(Math.random());
-						setStatusBtn(false);
-						props.setKeyCountReload(Math.random());
-						props.handleCloseModal();
-						props.option === "add"
-							? toast.success("Thêm sách thành công")
-							: toast.success("Cập nhật sách thành công");
-					} else {
-						toast.error("Gặp lỗi trong quá trình xử lý sách");
-						setStatusBtn(false);
-					}
-				})
-				.catch((error) => {
-					console.log(error);
-					setStatusBtn(false);
-					toast.error("Gặp lỗi trong quá trình xử lý sách");
-				}),
-			{
-				pending: "Đang trong quá trình xử lý ...",
-			}
-		);
-	}
+    if (thumbnailFileInput) {
+        formData.append("Thumbnail", thumbnailFileInput);
+    }
 
+    // RelatedImages
+    const relatedFilesInput = (document.querySelector<HTMLInputElement>(
+        "input[type='file'][multiple]"
+    ) as HTMLInputElement)?.files;
+
+    if (relatedFilesInput) {
+        Array.from(relatedFilesInput).forEach((file) => {
+            formData.append("RelatedImages", file);
+        });
+    }
+
+    // Genres
+    book.idGenres?.forEach((id) => formData.append("IdGenres", id.toString()));
+
+    const endpoint =
+        props.option === "add"
+            ? endpointBE + "/book/add-book"
+            : endpointBE + "/book/update-book";
+
+    const method = props.option === "add" ? "POST" : "PUT";
+    toast.promise(
+        fetch(endpoint, {
+            method,
+            headers: {
+                Authorization: `Bearer ${token}`,
+                // Không set content-type, browser tự set multipart/form-data
+            },
+            body: formData,
+        })	
+            .then(async (res) => {
+                if (!res.ok) throw new Error(await res.text());
+                const data = await res.json();
+                toast.success(
+                    props.option === "add" ? "Thêm sách thành công" : "Cập nhật sách thành công"
+                );
+				 //  Trigger reload BookTable
+                if (props.setKeyCountReload) {
+                    props.setKeyCountReload(Math.random());
+                }
+
+                //  Đóng modal
+                props.handleCloseModal();
+                return data;
+            })
+            .catch((err) => {
+                console.error(err);
+                toast.error("Gặp lỗi trong quá trình xử lý sách");
+            }),
+        { pending: "Đang xử lý..." }
+    );
+}
 	function handleThumnailImageUpload(
 		event: React.ChangeEvent<HTMLInputElement>
 	) {
@@ -217,6 +224,7 @@ export const BookForm: React.FC<BookFormProps> = (props) => {
 		}
 	}
 
+
 	return (
 		<div>
 			<Typography className='text-center' variant='h4' component='h2'>
@@ -224,7 +232,7 @@ export const BookForm: React.FC<BookFormProps> = (props) => {
 			</Typography>
 			<hr />
 			<div className='container px-5'>
-				<form onSubmit={hanleSubmit} className='form'>
+				<form onSubmit={handleSubmit} className='form'>
 					<input type='hidden' id='idBook' value={book?.idBook} hidden />
 					<div className='row'>
 						<div
@@ -339,6 +347,20 @@ export const BookForm: React.FC<BookFormProps> = (props) => {
 									}}
 									size='small'
 								/>
+								 <TextField
+									label="Điểm đánh giá"
+									select
+									value={Number.isNaN(book.avgRating) ? 0 : book.avgRating}
+									onChange={(e) => setBook({ ...book, avgRating: parseFloat(e.target.value) })}
+									size="small"
+									style={{ width: "100%" }}
+									>
+									{[0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5].map((val) => (
+										<MenuItem key={val} value={val}>
+										{val}
+										</MenuItem>
+									))}
+									</TextField>
 							</Box>
 						</div>
 						{props.option === "update" && (
@@ -371,7 +393,7 @@ export const BookForm: React.FC<BookFormProps> = (props) => {
 										size='small'
 									/>
 
-									<TextField
+									{/* <TextField
 										id='filled-required'
 										label='Điểm đánh giá'
 										style={{ width: "100%" }}
@@ -380,7 +402,23 @@ export const BookForm: React.FC<BookFormProps> = (props) => {
 											disabled: true,
 										}}
 										size='small'
-									/>
+									/> */}
+
+
+							<TextField
+							label="Điểm đánh giá"
+							select
+							value={Number.isNaN(book.avgRating) ? 0 : book.avgRating}
+							onChange={(e) => setBook({ ...book, avgRating: parseFloat(e.target.value) })}
+							size="small"
+							style={{ width: "100%" }}
+							>
+							{[0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5].map((val) => (
+								<MenuItem key={val} value={val}>
+								{val}
+								</MenuItem>
+							))}
+							</TextField>	
 								</Box>
 							</div>
 						)}

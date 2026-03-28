@@ -73,19 +73,6 @@ export const UserForm: React.FC<UserFormProps> = (props) => {
 		});
 	}, []);
 
-	// Load user lên khi update
-	//  useEffect(() => {
-	// 	 if (props.option === "update") {
-	// 		 get1User(props.id).then((response) => {
-	// 		setUser({
-	// 		...response,
-	// 		dateOfBirth: response.dateOfBirth || "",
-	// 		roles: response.roles || ["USER"], 
-	// 	});
-	// 	 setPreviewAvatar(response.avatar ?? "");
-	// 	 });
-	// 	 }
-	//  }, [props.id, props.option]);
 	useEffect(() => {
   if (props.option === "update") {
     get1User(props.id).then((response) => {
@@ -126,31 +113,72 @@ export const UserForm: React.FC<UserFormProps> = (props) => {
 	const method = props.option === "add" ? "POST" : "PUT";
 
 	// Map dữ liệu FE sang đúng DTO BE
-	const body = {
-	id: user.idUser,
-    name: user.username || null,
-    email: user.email || null,
-    passwordHash: user.password || null,
-    enabled: user.enabled,
-    firstName: user.firstName || null,
-    lastName: user.lastName || null,
-    phoneNumber: user.phoneNumber || null,
-    deliveryAddress: user.deliveryAddress || null,
-    dateOfBirth: user.dateOfBirth || null,
-    gender: user.gender,
-    avatar: user.avatar || null,
-    roles: user.roles.length > 0 ? user.roles : null
-	};
-	console.log("Request body:", body); 
+	// const body = {
+	// id: user.idUser,
+    // name: user.username || null,
+    // email: user.email || null,
+    // passwordHash: user.password || null,
+    // enabled: user.enabled,
+    // firstName: user.firstName || null,
+    // lastName: user.lastName || null,
+    // phoneNumber: user.phoneNumber || null,
+    // deliveryAddress: user.deliveryAddress || null,
+    // dateOfBirth: user.dateOfBirth || null,
+    // gender: user.gender,
+    // avatar: user.avatar || null,
+    // roles: user.roles.length > 0 ? user.roles : null
+	// };
+	const formData = new FormData();
+
+	// ===== MAP Y CHANG DTO =====
+	formData.append("id", user.idUser);
+
+	formData.append("name", user.username || "");
+	formData.append("email", user.email || "");
+	formData.append("passwordHash", user.password || "");
+
+	formData.append("enabled", String(user.enabled));
+
+	formData.append("firstName", user.firstName || "");
+	formData.append("lastName", user.lastName || "");
+
+	formData.append("phoneNumber", user.phoneNumber || "");
+	formData.append("deliveryAddress", user.deliveryAddress || "");
+
+	formData.append("dateOfBirth", user.dateOfBirth || "");
+	formData.append("gender", String(user.gender));
+
+	// ❌ QUAN TRỌNG: KHÔNG gửi avatar base64 nữa
+	// formData.append("avatar", user.avatar); ❌ XÓA
+
+	// ===== ROLES =====
+	if (user.roles && user.roles.length > 0) {
+		user.roles.forEach((role) => {
+			formData.append("roles", role); // ✅ đúng kiểu BE nhận List<string>
+		});
+	}
+
+	// ===== FILE =====
+	if (avatar) {
+		formData.append("file", avatar); // 👈 cái này BE sẽ nhận IFormFile
+	}
+	console.log("Request body:", formData);
 	toast.promise(
+		// fetch(endpoint, {
+		// 	method: method,
+		// 	headers: {
+		// 		Authorization: `Bearer ${token}`,
+		// 		"Content-Type": "application/json",
+		// 	},
+		// 	body: JSON.stringify(body),
+		// })
 		fetch(endpoint, {
-			method: method,
-			headers: {
-				Authorization: `Bearer ${token}`,
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify(body),
-		})
+		method: method,
+		headers: {
+			Authorization: `Bearer ${token}`,
+		},
+		body: formData,
+	})
 			.then((response) => {
 				if (response.ok) {
 					setUser({
@@ -191,26 +219,36 @@ export const UserForm: React.FC<UserFormProps> = (props) => {
 		{ pending: "Đang trong quá trình xử lý ..." }
 	);
 }
+	// function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
+	// 	const inputElement = event.target as HTMLInputElement;
+
+	// 	if (inputElement.files && inputElement.files.length > 0) {
+	// 		const selectedFile = inputElement.files[0];
+
+	// 		const reader = new FileReader();
+
+	// 		reader.onload = (e: any) => {
+			
+	// 			const thumnailBase64 = e.target?.result as string;
+			
+	// 			setAvatar(selectedFile);
+	// 			setPreviewAvatar(URL.createObjectURL(selectedFile));
+	// 			setUser({ ...user, avatar: thumnailBase64 });
+	// 		};
+	// 		// Đọc tệp dưới dạng chuỗi base64
+	// 		reader.readAsDataURL(selectedFile);
+	// 	}
+	// }
 	function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
-		const inputElement = event.target as HTMLInputElement;
+	const inputElement = event.target;
 
-		if (inputElement.files && inputElement.files.length > 0) {
-			const selectedFile = inputElement.files[0];
+	if (inputElement.files && inputElement.files.length > 0) {
+		const file = inputElement.files[0];
 
-			const reader = new FileReader();
-
-			reader.onload = (e: any) => {
-			
-				const thumnailBase64 = e.target?.result as string;
-			
-				setAvatar(selectedFile);
-				setPreviewAvatar(URL.createObjectURL(selectedFile));
-				setUser({ ...user, avatar: thumnailBase64 });
-			};
-			// Đọc tệp dưới dạng chuỗi base64
-			reader.readAsDataURL(selectedFile);
-		}
+		setAvatar(file);
+		setPreviewAvatar(URL.createObjectURL(file)); // 
 	}
+}
 	 const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		 const dateString = e.target.value;
 		 setUser({
@@ -395,24 +433,6 @@ export const UserForm: React.FC<UserFormProps> = (props) => {
 									}
 									size='small'
 								/>
-
-								{/* <FormControl fullWidth size='small' sx={{ mb: 3 }}>
-									<InputLabel id='demo-simple-select-label'>
-										Giới tính
-									</InputLabel>
-									<Select
-										labelId='demo-simple-select-label'
-										id='demo-simple-select'
-										value={user.gender}
-										label='Giới tính'
-										onChange={(e: any) =>
-											setUser({ ...user, gender: e.target.value })
-										}
-									>
-										<MenuItem value={"M"}>Nam</MenuItem>
-										<MenuItem value={"F"}>Nữ</MenuItem>
-									</Select>
-								</FormControl> */}
 								<FormControl fullWidth size='small' sx={{ mb: 3 }}>
 								<InputLabel id='gender-select-label'>Giới tính</InputLabel>
 								<Select

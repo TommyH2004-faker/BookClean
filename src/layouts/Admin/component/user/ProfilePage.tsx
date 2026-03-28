@@ -186,46 +186,84 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
 		);
 	}
 
-		async function handleSubmitAvatar() {
-	if (!selectedFile) return toast.warning("Chọn ảnh trước khi upload!");
+// 	async function handleSubmitAvatar() {
+// 	if (!selectedFile) return toast.warning("Chọn ảnh trước khi upload!");
+
+// 	try {
+// 		const reader = new FileReader();
+// 		reader.readAsDataURL(selectedFile);
+
+// 		reader.onload = async () => {
+// 		const base64Data = (reader.result as string).split(",")[1];
+
+// 		const token = localStorage.getItem("token");
+// 		const response = await fetch(endpointBE + "/user/change-avatar", {
+// 			method: "PUT",
+// 			headers: {
+// 			Authorization: `Bearer ${token}`,
+// 			"Content-Type": "application/json",
+// 			},
+// 			body: JSON.stringify({ avatar: base64Data }),
+// 		});
+
+// 		if (!response.ok) throw new Error(await response.text());
+
+// 		const data = await response.json();
+// 		localStorage.setItem("token", data.jwtToken);
+
+// 		setUser({ ...user, avatar: data.avatar ?? user.avatar });
+// 		setPreviewAvatar(data.avatar ?? user.avatar);
+// 		setIsUploadAvatar(false);
+// 		setSelectedFile(null);
+// 		toast.success("Cập nhật avatar thành công!");
+// 		props.setReloadAvatar(Math.random());
+// 		};
+// 	} catch (error) {
+// 		console.error(error);
+// 		toast.error("Cập nhật avatar thất bại");
+// 		setPreviewAvatar(user.avatar || "");
+// 		setIsUploadAvatar(false);
+// 	}
+// }
+	async function handleSubmitAvatar() {
+	if (!selectedFile) {
+		toast.warning("Chọn ảnh trước khi upload!");
+		return;
+	}
 
 	try {
-		const reader = new FileReader();
-		reader.readAsDataURL(selectedFile);
-
-		reader.onload = async () => {
-		const base64Data = (reader.result as string).split(",")[1];
+		const formData = new FormData();
+		formData.append("file", selectedFile);
 
 		const token = localStorage.getItem("token");
-		const response = await fetch(endpointBE + "/user/change-avatar", {
-			method: "PUT",
+
+		const response = await fetch(endpointBE + "/user/upload-avatar", {
+			method: "POST",
 			headers: {
-			Authorization: `Bearer ${token}`,
-			"Content-Type": "application/json",
+				Authorization: `Bearer ${token}`,
 			},
-			body: JSON.stringify({ avatar: base64Data }),
+			body: formData,
 		});
 
 		if (!response.ok) throw new Error(await response.text());
 
 		const data = await response.json();
-		localStorage.setItem("token", data.jwtToken);
 
-		setUser({ ...user, avatar: data.avatar ?? user.avatar });
-		setPreviewAvatar(data.avatar ?? user.avatar);
-		setIsUploadAvatar(false);
+		// ✅ backend trả về URL
+		setUser({ ...user, avatar: data.avatar });
+		setPreviewAvatar(data.avatar);
+
 		setSelectedFile(null);
-		toast.success("Cập nhật avatar thành công!");
+		setIsUploadAvatar(false);
+
+		toast.success("Upload avatar thành công!");
 		props.setReloadAvatar(Math.random());
-		};
+
 	} catch (error) {
 		console.error(error);
-		toast.error("Cập nhật avatar thất bại");
-		setPreviewAvatar(user.avatar || "");
-		setIsUploadAvatar(false);
+		toast.error("Upload thất bại");
 	}
 }
-
 	// Xử lý khi form submit (thay đổi mật khẩu)
 function handleSubmitChangePassword(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();

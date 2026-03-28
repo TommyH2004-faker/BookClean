@@ -98,7 +98,7 @@ export async function lay3SachMoiNhat(): Promise<KetQuaInterface> {
 }
 
 export async function get3BestSellerBooks(): Promise<BookModel[]> {
-    const endpoint: string = endpointBE + "/book/all-book?sort=soldQuantity,desc&size=3";
+    const endpoint: string = endpointBE + "/book/all-book?page=0&size=3&sort=soldQuantity,desc";
     let bookList = await laySach(endpoint);
 
     // Use Promise.all to wait for all promises in the map to resolve
@@ -156,7 +156,7 @@ export async function timKiemSach(
 
 	const endpoint = `${endpointBE}/book/search?${params.toString()}`;
 
-	console.log("🔎 timKiemSach:", endpoint);
+	console.log("timKiemSach:", endpoint);
 
 	return laySach(endpoint);
 }

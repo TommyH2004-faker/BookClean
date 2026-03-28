@@ -4,11 +4,12 @@ import {Link, NavLink, useLocation, useNavigate} from "react-router-dom";
 import {Search} from "@mui/icons-material";
 import {useCartItem} from "../utils/CartItemContext";
 import {useAuth} from "../utils/AuthContext";
-import {getAvatarByToken, getLastNameByToken, hasRole, isToken, logout} from "../utils/JwtService";
+import {getIdUserByToken, getLastNameByToken, hasRole, isToken, logout} from "../utils/JwtService";
 import Button from "@mui/material/Button";
 import Avatar from "@mui/material/Avatar";
 import GenreModel from "../../models/GenreModel";
 import {getAllGenres} from "../../api/GenreApi";
+import { get1User } from "../../api/UserApi";
 interface NavbarProps {
     tuKhoaTimKiem: string;
     setTuKhoaTimKiem: (tuKhoa: string) => void;
@@ -19,6 +20,7 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
     const {setLoggedIn} = useAuth();
     const [genreList, setGenreList] = useState<GenreModel[]>([]);
     const navigate = useNavigate();
+    const [avatar, setAvatar] = useState("");
     const [erroring, setErroring] = useState(null);
     useEffect(() => {
         getAllGenres().then((response) => {
@@ -27,9 +29,20 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
             setErroring(error.message);
         });
     }, []);
+    
     const onsearchInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
        setTuKhoaTamThoi(event.target.value);
     }
+        useEffect(() => {
+        if (isToken()) {
+            const id = getIdUserByToken();
+            get1User(id)
+                .then((res) => {
+                    setAvatar(res.avatar || "");
+                })
+                .catch((err) => console.log(err));
+        }
+    }, []);
     const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
         handleSearch();
@@ -191,11 +204,17 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
                                 aria-expanded='false'
                             >
                                 <Avatar
+                                style={{ fontSize: "14px" }}
+                                alt={getLastNameByToken()?.toUpperCase()}
+                                src={avatar}
+                                sx={{ width: 30, height: 30 }}
+                            />
+                                {/* <Avatar
                                     style={{fontSize: "14px"}}
                                     alt={getLastNameByToken()?.toUpperCase()}
                                     src={getAvatarByToken()}
                                     sx={{width: 30, height: 30}}
-                                />
+                                /> */}
                             </a>
                             <ul
                                 className='dropdown-menu dropdown-menu-end'
