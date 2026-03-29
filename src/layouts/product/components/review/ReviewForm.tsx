@@ -109,7 +109,7 @@ export const ReviewForm: React.FC<ReviewFormProps> = (props) => {
 				idBook: props.idBook,
 			};
 
-			console.log("🔥 Payload get-review:", payload); // ✅ LOG Ở ĐÂY
+			
 
 			fetch(endpointBE + `/review/get-review`, {
 				method: "POST",
@@ -121,7 +121,6 @@ export const ReviewForm: React.FC<ReviewFormProps> = (props) => {
 			})
 			.then((res) => {
 		if (res.status === 204) {
-			console.log("⚠️ Chưa có review");
 			return null;
 		}
 		return res.json();

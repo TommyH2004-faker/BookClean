@@ -156,7 +156,6 @@ export async function timKiemSach(
 
 	const endpoint = `${endpointBE}/book/search?${params.toString()}`;
 
-	console.log("timKiemSach:", endpoint);
 
 	return laySach(endpoint);
 }

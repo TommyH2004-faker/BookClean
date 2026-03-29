@@ -162,7 +162,7 @@ export const UserForm: React.FC<UserFormProps> = (props) => {
 	if (avatar) {
 		formData.append("file", avatar); // 👈 cái này BE sẽ nhận IFormFile
 	}
-	console.log("Request body:", formData);
+
 	toast.promise(
 		// fetch(endpoint, {
 		// 	method: method,

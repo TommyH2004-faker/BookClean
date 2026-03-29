@@ -34,7 +34,7 @@ export const BookTable: React.FC<BookTableProps> = (props) => {
 		const fetchData = async () => {
 			try {
 				const bookResponse = await getAllBook(1000, 0);
-				console.log(bookResponse);
+				
 				const promises = bookResponse.ketQua.map(async (book) => {
 					const imagesList = await layToanBoHinhAnhMotSach(book.idBook);
 					
@@ -67,7 +67,7 @@ export const BookTable: React.FC<BookTableProps> = (props) => {
 			cancellationText: ["Huỷ"],
 		})
 			.then(() => {
-				fetch(endpointBE + `/book/${id}`, {
+				fetch(endpointBE + `/book/delete-book/${id}`, {
 					method: "DELETE",
 					headers: {
 						Authorization: `Bearer ${token}`,
@@ -78,7 +78,7 @@ export const BookTable: React.FC<BookTableProps> = (props) => {
 							toast.success("Xoá sách thành công");
 							props.setKeyCountReload(Math.random());
 						} else {
-							toast.error("Lỗi khi xoá sách");
+							toast.error("Lỗi khi xoá sách do sách đang tồn tại trong đơn hàng");
 						}
 					})
 					.catch((error) => {

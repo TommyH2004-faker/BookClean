@@ -35,8 +35,7 @@ const BookCartProps: React.FC<BookCartProps> = (props) => {
     const [imageList, setImageList] = useState<ImageModel[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [erroring, setErroring] = useState(null);
-        console.log("🛒 cartItem:", props.cartItem);
-console.log("📚 book:", props.cartItem.book);
+     
     function handleConfirm() {
         confirm({
             title: "Xoá sản phẩm",
@@ -49,9 +48,9 @@ console.log("📚 book:", props.cartItem.book);
                 if (isToken()) {
                     const token = localStorage.getItem("token");
                     const idCart = props.cartItem.idCart;
-                    console.log("🗑️ Xoá cart item, idCart =", idCart, "| cartItem =", props.cartItem);
+             
                     if (!idCart) {
-                        console.error("❌ idCart undefined, không thể xoá trên server! Kiểm tra lại CartApi mapping.");
+                        console.error(" idCart undefined, không thể xoá trên server! Kiểm tra lại CartApi mapping.");
                         return;
                     }
                     try {
@@ -63,10 +62,10 @@ console.log("📚 book:", props.cartItem.book);
                             },
                         });
                         if (!res.ok) {
-                            console.error("❌ Xoá cart trên server thất bại, status:", res.status);
+                            console.error(" Xoá cart trên server thất bại, status:", res.status);
                         }
                     } catch (err) {
-                        console.error("❌ Lỗi khi gọi DELETE cart:", err);
+                        console.error(" Lỗi khi gọi DELETE cart:", err);
                     }
                 }
             })
@@ -77,12 +76,11 @@ console.log("📚 book:", props.cartItem.book);
     useEffect(() => {
         layToanBoHinhAnhMotSach(props.cartItem.book.idBook ?? props.cartItem.book.id)
             .then((response) => {
-                console.log("Dữ liệu ảnh từ BE:", response); // Kiểm tra dữ liệu
+          
                 setImageList(response);
                 setLoading(false);
             })
             .catch((error) => {
-                console.error("Lỗi khi lấy ảnh:", error);
                 setLoading(false);
                 setErroring(error.message);
             });

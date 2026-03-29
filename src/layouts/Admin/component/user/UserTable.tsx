@@ -83,7 +83,6 @@ export const UserTable: React.FC<UserTableProps> = (props) => {
 			})
 			.catch((error) => console.log(error));
 	}, [props.keyCountReload]);
-	console.log(data);
 
 	const columns: GridColDef[] = [
 		{ field: "id", headerName: "ID", width: 50 },

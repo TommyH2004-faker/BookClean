@@ -21,7 +21,6 @@ interface BookFormProps {
 	setKeyCountReload?: any;
 	handleCloseModal: any;
 }
-
 export const BookForm: React.FC<BookFormProps> = (props) => {
 	const [book, setBook] = useState<BookModel>({
 		idBook: 0,
@@ -38,6 +37,9 @@ export const BookForm: React.FC<BookFormProps> = (props) => {
 		relatedImg: [],
 		idGenres: [],
 	});
+	const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+	const [relatedFiles, setRelatedFiles] = useState<File[]>([]);
+	const [isRemoveAllImages, setIsRemoveAllImages] = useState(false);
 	const [genresList, setGenresList] = useState<GenreModel[]>([]);
 	const [genresListSelected, setGenresListSelected] = useState<number[]>([]);
 	const [previewThumbnail, setPreviewThumbnail] = useState("");
@@ -91,7 +93,8 @@ export const BookForm: React.FC<BookFormProps> = (props) => {
 
     const formData = new FormData();
 
-    formData.append("IdBook", book.idBook.toString());
+	
+	formData.append("Id", book.idBook.toString());
     formData.append("NameBook", book.nameBook || "");
     formData.append("Author", book.author || "");
     formData.append("Description", book.description || "");
@@ -99,26 +102,17 @@ export const BookForm: React.FC<BookFormProps> = (props) => {
     formData.append("SellPrice", book.sellPrice?.toString() || "0");
     formData.append("Quantity", book.quantity?.toString() || "0");
     formData.append("DiscountPercent", book.discountPercent?.toString() || "0");
+	formData.append("IsRemoveAllImages", isRemoveAllImages ? "true" : "false");
+		// ✅ Thumbnail
+	if (thumbnailFile) {
+	formData.append("Thumbnail", thumbnailFile);
+	}
 
-    // Thumbnail
-    const thumbnailFileInput = (document.querySelector<HTMLInputElement>(
-        "input[type='file'][accept='image/*']"
-    ) as HTMLInputElement)?.files?.[0];
+	// ✅ RelatedImages
+	relatedFiles.forEach((file) => {
+	formData.append("RelatedImages", file);
+	});
 
-    if (thumbnailFileInput) {
-        formData.append("Thumbnail", thumbnailFileInput);
-    }
-
-    // RelatedImages
-    const relatedFilesInput = (document.querySelector<HTMLInputElement>(
-        "input[type='file'][multiple]"
-    ) as HTMLInputElement)?.files;
-
-    if (relatedFilesInput) {
-        Array.from(relatedFilesInput).forEach((file) => {
-            formData.append("RelatedImages", file);
-        });
-    }
 
     // Genres
     book.idGenres?.forEach((id) => formData.append("IdGenres", id.toString()));
@@ -126,7 +120,7 @@ export const BookForm: React.FC<BookFormProps> = (props) => {
     const endpoint =
         props.option === "add"
             ? endpointBE + "/book/add-book"
-            : endpointBE + "/book/update-book";
+            : endpointBE + `/book/update-book/${book.idBook}`;
 
     const method = props.option === "add" ? "POST" : "PUT";
     toast.promise(
@@ -160,69 +154,39 @@ export const BookForm: React.FC<BookFormProps> = (props) => {
         { pending: "Đang xử lý..." }
     );
 }
+
 	function handleThumnailImageUpload(
-		event: React.ChangeEvent<HTMLInputElement>
-	) {
-		const inputElement = event.target as HTMLInputElement;
+  event: React.ChangeEvent<HTMLInputElement>
+) {
+  const file = event.target.files?.[0];
+  if (!file) return;
 
-		if (inputElement.files && inputElement.files.length > 0) {
-			const selectedFile = inputElement.files[0];
+  setThumbnailFile(file);
 
-			const reader = new FileReader();
+  setPreviewThumbnail(URL.createObjectURL(file));
 
-			// Xử lý sự kiện khi tệp đã được đọc thành công
-			reader.onload = (e: any) => {
-				// e.target.result chính là chuỗi base64
-				const thumnailBase64 = e.target?.result as string;
+  
+}
+function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
+  const files = event.target.files;
+  if (!files) return;
 
-				setBook({ ...book, thumbnail: thumnailBase64 });
+  const fileArr = Array.from(files);
 
-				setPreviewThumbnail(URL.createObjectURL(selectedFile));
-			};
+  if (previewRelatedImages.length + fileArr.length > 5) {
+    toast.warning("Chỉ được tải lên tối đa 5 ảnh");
+    return;
+  }
 
-			// Đọc tệp dưới dạng chuỗi base64
-			reader.readAsDataURL(selectedFile);
-		}
-	}
+  setIsRemoveAllImages(false); // 🔥 QUAN TRỌNG
 
-	function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
-		const inputElement = event.target as HTMLInputElement;
+  setRelatedFiles((prev) => [...prev, ...fileArr]);
 
-		if (inputElement.files && inputElement.files.length > 0) {
-			const newPreviewImages = [...previewRelatedImages];
-
-			if (newPreviewImages.length + inputElement.files.length > 5) {
-				toast.warning("Chỉ được tải lên tối đa 5 ảnh");
-				return;
-			}
-
-			// Duyệt qua từng file đã chọn
-			for (let i = 0; i < inputElement.files.length; i++) {
-				const selectedFile = inputElement.files[i];
-
-				const reader = new FileReader();
-
-				// Xử lý sự kiện khi tệp đã được đọc thành công
-				reader.onload = (e: any) => {
-					// e.target.result chính là chuỗi base64
-					const thumbnailBase64 = e.target?.result as string;
-
-					setBook((prevBook) => ({
-						...prevBook,
-						relatedImg: [...(prevBook.relatedImg || []), thumbnailBase64],
-					}));
-
-					newPreviewImages.push(URL.createObjectURL(selectedFile));
-
-					// Cập nhật trạng thái với mảng mới
-					setPreviewRelatedImages(newPreviewImages);
-				};
-
-				// Đọc tệp dưới dạng chuỗi base64
-				reader.readAsDataURL(selectedFile);
-			}
-		}
-	}
+  setPreviewRelatedImages((prev) => [
+    ...prev,
+    ...fileArr.map((f) => URL.createObjectURL(f)),
+  ]);
+}
 
 
 	return (
@@ -347,20 +311,7 @@ export const BookForm: React.FC<BookFormProps> = (props) => {
 									}}
 									size='small'
 								/>
-								 <TextField
-									label="Điểm đánh giá"
-									select
-									value={Number.isNaN(book.avgRating) ? 0 : book.avgRating}
-									onChange={(e) => setBook({ ...book, avgRating: parseFloat(e.target.value) })}
-									size="small"
-									style={{ width: "100%" }}
-									>
-									{[0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5].map((val) => (
-										<MenuItem key={val} value={val}>
-										{val}
-										</MenuItem>
-									))}
-									</TextField>
+
 							</Box>
 						</div>
 						{props.option === "update" && (
@@ -393,32 +344,7 @@ export const BookForm: React.FC<BookFormProps> = (props) => {
 										size='small'
 									/>
 
-									{/* <TextField
-										id='filled-required'
-										label='Điểm đánh giá'
-										style={{ width: "100%" }}
-										value={book.avgRating}
-										InputProps={{
-											disabled: true,
-										}}
-										size='small'
-									/> */}
-
-
-							<TextField
-							label="Điểm đánh giá"
-							select
-							value={Number.isNaN(book.avgRating) ? 0 : book.avgRating}
-							onChange={(e) => setBook({ ...book, avgRating: parseFloat(e.target.value) })}
-							size="small"
-							style={{ width: "100%" }}
-							>
-							{[0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5].map((val) => (
-								<MenuItem key={val} value={val}>
-								{val}
-								</MenuItem>
-							))}
-							</TextField>	
+							
 								</Box>
 							</div>
 						)}
@@ -480,10 +406,15 @@ export const BookForm: React.FC<BookFormProps> = (props) => {
 							))}
 							{previewRelatedImages.length > 0 && (
 								<Button
+									// onClick={() => {
+									// 	setPreviewRelatedImages([]);
+									// 	setBook({ ...book, relatedImg: [] });
+									// }}
 									onClick={() => {
-										setPreviewRelatedImages([]);
-										setBook({ ...book, relatedImg: [] });
-									}}
+								setPreviewRelatedImages([]);
+								setRelatedFiles([]);
+								setIsRemoveAllImages(true); // ✅ cực quan trọng
+								}}
 								>
 									Xoá tất cả
 								</Button>

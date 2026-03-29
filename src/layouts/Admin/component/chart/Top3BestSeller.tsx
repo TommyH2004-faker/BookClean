@@ -36,7 +36,7 @@ const Top3BestSeller = () => {
 							<th scope='row'>{book.idBook}</th>
 							<td>
 								<Link
-									to={`/book/${book.idBook}`}
+									to={`/books/${book.idBook}`}
 									className='d-inline text-black'
 								>
 									<img src={book.thumbnail} alt='' width={30} />
@@ -45,7 +45,7 @@ const Top3BestSeller = () => {
 							<Tooltip title={book.nameBook} arrow>
 								<td>
 									<Link
-										to={`/book/${book.idBook}`}
+										to={`/books/${book.idBook}`}
 										className='d-inline text-black'
 									>
 										<TextEllipsis
