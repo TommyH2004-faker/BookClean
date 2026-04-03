@@ -101,3 +101,15 @@ export async function clearMyCart(cartList: CartItemModel[]): Promise<void> {
         })
     );
 }
+// CartApi.ts
+// export async function clearMyCart(ids: number[]): Promise<void> {
+//     await Promise.all(
+//         ids.map(async (idCart) => {
+//             try {
+//                 await deleteCartItemById(idCart);
+//             } catch (error) {
+//                 console.error("Không xoá được cart-item:", idCart, error);
+//             }
+//         })
+//     );
+// }

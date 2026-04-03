@@ -23,3 +23,4 @@ export const CheckoutFail = () => {
 		</div>
 	);
 };
+export default CheckoutFail;

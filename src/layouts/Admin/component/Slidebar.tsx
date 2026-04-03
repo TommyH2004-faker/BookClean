@@ -31,7 +31,7 @@ export const Slidebar: React.FC<SlidebarProps> = (props) => {
 					href='#'
 				>
 					<img
-						src='/images/public/logo.svg'
+						src={"./../../../images/books/logo.png"}
 						alt=''
 						width={100}
 					/>

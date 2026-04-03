@@ -31,6 +31,7 @@ import {Slidebar} from "./layouts/Admin/component/Slidebar";
 import {CheckoutSuccess} from "./page/components/CheckoutSuccess";
 import { ResendActiveCode } from "./layouts/User/ResendActiveCode";
 import DangNhap from "./layouts/User/DangNhap";
+import CheckoutFail from "./page/components/CheckoutFail";
 
 const MyRoutes = () => {
     const [tuKhoaTimKiem, setTuKhoaTimKiem] = useState('');
@@ -75,7 +76,9 @@ const MyRoutes = () => {
                             <Route path='/feedback' element={<FeedbackCustomerPage />} />
                             <Route path='/forgot-password' element={<ForgotPassword />} />
                             <Route path='/profile' element={<ProfilePage setReloadAvatar={setReloadAvatar} />} />
-                            <Route path='/check-out/status' element={<CheckoutSuccess />} />
+                            <Route path='/check-out/success' element={<CheckoutSuccess />} />
+                            <Route path='/check-out/failure' element={<CheckoutFail />} />
+
                             {/* Nếu không tìm thấy trang */}
                             <Route path='*' element={<Error403Page />} />
                         </Routes>

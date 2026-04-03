@@ -64,7 +64,7 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
             <div className="container-fluid">
                 <Link className="navbar-brand" to={"/"}>
                     <img
-                        src="/images/books/LogoPage.jpg"
+                        src={"./../../../images/books/logo.png"}
                         alt="Logo"
                         className="img-fluid"
                         style={{

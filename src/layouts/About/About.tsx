@@ -30,7 +30,7 @@ function About() {
                             style={{ border: "1px solid #ccc" }}
                         >
                             <img
-                                src={"./../../../images/public/logo.svg"}
+                                src={"./../../../images/books/logo.png"}
                                 width='150'
                                 alt='MDB Logo'
                                 loading='lazy'
