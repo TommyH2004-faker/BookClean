@@ -423,11 +423,11 @@ function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
 					</div>
 					{props.option !== "view" && (
 						<LoadingButton
-							className='w-100 my-3'
+							className='my-3'
 							type='submit'
 							loading={statusBtn}
 							variant='outlined'
-							sx={{ width: "25%", padding: "10px" }}
+							sx={{ width: { xs: "100%", md: "25%" }, padding: "10px" }}
 						>
 							{props.option === "add" ? "Tạo sách" : "Lưu sách"}
 						</LoadingButton>

@@ -278,7 +278,7 @@ const DangKyNguoiDung: React.FC = () => {
                         type='submit'
                         loading={statusBtn}
                         variant='outlined'
-                        sx={{ width: "25%", padding: "10px" }}
+                        sx={{ width: { xs: "100%", sm: "50%", md: "25%" }, padding: "10px" }}
                     >
                         ĐĂNG KÝ
                     </LoadingButton>

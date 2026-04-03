@@ -22,8 +22,8 @@ export const Slidebar: React.FC<SlidebarProps> = (props) => {
 	const navigate = useNavigate();
 	return (
 		<div
-			className='position-fixed bg-primary d-flex flex-column justify-content-between min-vh-100'
-			style={{ zIndex: "100" }}
+			className='position-sticky top-0 bg-primary d-flex flex-column justify-content-between min-vh-100'
+			style={{ zIndex: "100", width: "100%" }}
 		>
 			<div className='px-3'>
 				<a

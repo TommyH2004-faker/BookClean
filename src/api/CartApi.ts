@@ -64,3 +64,40 @@ export async function getCartAllByIdUser(): Promise<CartItemModel[]> {
         return [];
     }
 }
+
+export async function deleteCartItemById(idCart: number): Promise<void> {
+    const endpoint = `${endpointBE}/cart-items/${idCart}`;
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        throw new Error("Chưa đăng nhập (thiếu token)");
+    }
+
+    const response = await fetch(endpoint, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error(`Xoá cart-item thất bại (status: ${response.status})`);
+    }
+}
+
+export async function clearMyCart(cartList: CartItemModel[]): Promise<void> {
+    const ids: number[] = cartList
+        .map((item) => item.idCart)
+        .filter((idCart): idCart is number => typeof idCart === "number");
+
+    await Promise.all(
+        ids.map(async (idCart) => {
+            try {
+                await deleteCartItemById(idCart);
+            } catch (error) {
+                console.error("Không xoá được cart-item:", idCart, error);
+            }
+        })
+    );
+}

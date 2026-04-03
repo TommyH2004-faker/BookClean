@@ -127,7 +127,7 @@ const BookCartList: React.FC<BookCartListProps> = () => {
                                         toast.warning(
                                             "Bạn cần đăng nhập để thực hiện chức năng này"
                                         );
-                                        navigation("/login");
+                                        navigation("/dangnhap");
                                     }
                                 }}
                             >

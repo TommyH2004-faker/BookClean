@@ -56,14 +56,14 @@ export const ForgotPassword: React.FC = () => {
 
     return (
         <div
-            className='container my-5 py-4 rounded-5 shadow-5 bg-light'
-            style={{ width: "450px" }}
+            className='container my-5 py-4 rounded-5 shadow-5 bg-light w-100'
+            style={{ maxWidth: "450px" }}
         >
             <h1 className='text-center'>QUÊN MẬT KHẨU</h1>
             <form
                 onSubmit={handleSubmit}
                 className='form'
-                style={{ padding: "0 20px" }}
+                style={{ width: "100%" }}
             >
                 <TextField
                     fullWidth
@@ -86,7 +86,7 @@ export const ForgotPassword: React.FC = () => {
                     </Button>
                 </div>
             </form>
-            <div className='d-flex justify-content-end mt-2' style={{ padding: "0 20px" }}>
+            <div className='d-flex justify-content-end mt-2 px-3'>
                 <Link to='/dangnhap'>Quay lại đăng nhập</Link>
             </div>
         </div>

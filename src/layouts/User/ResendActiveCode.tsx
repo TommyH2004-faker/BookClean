@@ -55,14 +55,14 @@ export const ResendActiveCode: React.FC = () => {
 
 	return (
 		<div
-			className='container my-5 py-4 rounded-5 shadow-5 bg-light'
-			style={{ width: "450px" }}
+			className='container my-5 py-4 rounded-5 shadow-5 bg-light w-100'
+			style={{ maxWidth: "450px" }}
 		>
 			<h1 className='text-center'>GỬI LẠI MÃ KÍCH HOẠT</h1>
 			<form
 				onSubmit={handleSubmit}
 				className='form'
-				style={{ padding: "0 20px" }}
+				style={{ width: "100%" }}
 			>
 				<TextField
 					fullWidth

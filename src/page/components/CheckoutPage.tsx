@@ -11,6 +11,7 @@ import React, { FormEvent, useEffect, useState } from "react";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 import { get1User } from "../../api/UserApi";
+import { clearMyCart } from "../../api/CartApi";
 
 import { toast } from "react-toastify";
 
@@ -138,14 +139,27 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
 			},
 			body: JSON.stringify(request),
 		})
-			.then((response) => {
-				localStorage.removeItem("cart");
-				if (!isPayNow) {
-					setIsSuccessPayment(true);
+			.then(async (response) => {
+				if (!response.ok) {
+					throw new Error(`HTTP error! Status: ${response.status}`);
 				}
+
+				// Checkout từ giỏ hàng: xoá giỏ ở local + server.
+				// Mua ngay (isBuyNow): KHÔNG đụng giỏ hàng hiện tại của user.
 				if (!props.isBuyNow) {
+					localStorage.removeItem("cart");
 					setCartList([]);
 					setTotalCart(0);
+
+					try {
+						await clearMyCart(props.cartList);
+					} catch (error) {
+						console.error("Không thể xoá giỏ hàng trên server:", error);
+					}
+				}
+
+				if (!isPayNow) {
+					setIsSuccessPayment(true);
 				}
 				toast.success("Thanh toán thành công");
 			})

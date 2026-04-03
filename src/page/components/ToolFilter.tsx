@@ -157,7 +157,7 @@ const ToolFilter: React.FC<ToolFilterProps> = (props) => {
 				{/* Search */}
 				<div className='col-lg-6 col-md-12 col-sm-12'>
 					<div className='d-inline-flex align-items-center justify-content-lg-end w-100 justify-content-md-center'>
-						<div className='d-inline-flex align-items-center justify-content-between mx-5'>
+						<div className='d-inline-flex align-items-center justify-content-between mx-0 mx-lg-5'>
 							<TextField
 								size='small'
 								id='outlined-search'

@@ -61,13 +61,13 @@ const PolicyPage: React.FC = () => {
                 để tìm hiểu thêm về chính sách đổi/trả:
             </p>
             <strong>1. Thời gian áp dụng đổi/trả</strong> <br />
-            <table
-                style={{ width: "772px" }}
-                cellSpacing='1'
-                cellPadding='1'
-                className='table table-bordered'
-            >
-                <tbody>
+            <div className='table-responsive'>
+                <table
+                    cellSpacing='1'
+                    cellPadding='1'
+                    className='table table-bordered'
+                >
+                    <tbody>
                 <tr>
                     <td>
                         <p>&nbsp;</p>
@@ -205,8 +205,9 @@ const PolicyPage: React.FC = () => {
                         <p>Không hỗ trợ đổi/ trả</p>
                     </td>
                 </tr>
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
             <p>&nbsp;</p>
             <ul>
                 <li>
@@ -336,27 +337,27 @@ const PolicyPage: React.FC = () => {
                     </p>
                 </li>
             </ul>
-            <p style={{ paddingLeft: "60px" }}>
+            <p className='ps-md-5'>
                 + Video clip quay rõ các mặt của kiện hàng trước khi khui để thể
                 hiện tình trạng của kiện hàng.
             </p>
-            <p style={{ paddingLeft: "60px" }}>
+            <p className='ps-md-5'>
                 + Video clip mở kiện hàng từ lúc bắt đầu khui ngoại quan đến kiểm
                 tra sản phẩm bên trong thùng hàng.
             </p>
-            <p style={{ paddingLeft: "60px" }}>
+            <p className='ps-md-5'>
                 + Video quay rõ nét , không mờ , nhoè, thể hiện đầy đủ thông tin mã
                 đơn hàng và quay cận cảnh lỗi của sản phẩm.
             </p>
-            <p style={{ paddingLeft: "60px" }}>
+            <p className='ps-md-5'>
                 + Hình chụp tem kiện hàng có thể hiện mã đơn hàng.
             </p>
-            <p style={{ paddingLeft: "60px" }}>
+            <p className='ps-md-5'>
                 + Hình chụp tình trạng ngoại quan (băng keo, seal, hình dạng thùng
                 hàng, bao bì), đặc biệt các vị trí nghi ngờ có tác động đến sản phẩm
                 (móp méo, ướt, rách...)
             </p>
-            <p style={{ paddingLeft: "60px" }}>
+            <p className='ps-md-5'>
                 + Hình chụp tình trạng sản phẩm bên trong, nêu rõ lỗi kỹ thuật nếu
                 có.
             </p>
@@ -370,13 +371,13 @@ const PolicyPage: React.FC = () => {
                     trợ.
                 </li>
             </ul>
-            <table
-                style={{ width: "756px" }}
-                cellSpacing='0'
-                cellPadding='7'
-                className='table table-bordered'
-            >
-                <tbody>
+            <div className='table-responsive'>
+                <table
+                    cellSpacing='0'
+                    cellPadding='7'
+                    className='table table-bordered'
+                >
+                    <tbody>
                 <tr>
                     <td>
                         <p>
@@ -507,8 +508,9 @@ const PolicyPage: React.FC = () => {
                         <p>Đổi /trả không thu phí</p>
                     </td>
                 </tr>
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
             <p>&nbsp;</p>
         </div>
     );

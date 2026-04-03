@@ -21,14 +21,17 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
     const [genreList, setGenreList] = useState<GenreModel[]>([]);
     const navigate = useNavigate();
     const [avatar, setAvatar] = useState("");
-    const [erroring, setErroring] = useState(null);
     useEffect(() => {
         getAllGenres().then((response) => {
             setGenreList(response.genreList);
         }).catch((error) => {
-            setErroring(error.message);
+            console.error(error);
         });
     }, []);
+
+    useEffect(() => {
+        setTuKhoaTamThoi(tuKhoaTimKiem || "");
+    }, [tuKhoaTimKiem]);
     
     const onsearchInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
        setTuKhoaTamThoi(event.target.value);
@@ -52,8 +55,7 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
         setTuKhoaTimKiem(tuKhoaTamThoi);
     }
     const location = useLocation();
-    const adminEndpoint = ["/admin"]; // Thêm các path bạn muốn ẩn Navbar vào đây
-    if(adminEndpoint.includes(location.pathname)){
+    if (location.pathname.startsWith("/admin")) {
         return null;
     }
 
@@ -61,7 +63,18 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
         <nav className="navbar navbar-expand-lg navbar-light bg-light">
             <div className="container-fluid">
                 <Link className="navbar-brand" to={"/"}>
-                    <img src="/images/books/LogoPage.jpg" alt="Logo" style={{ height: "90px", width: "150px" }} />
+                    <img
+                        src="/images/books/LogoPage.jpg"
+                        alt="Logo"
+                        className="img-fluid"
+                        style={{
+                            width: "100%",
+                            maxWidth: "150px",
+                            height: "auto",
+                            maxHeight: "90px",
+                            objectFit: "contain",
+                        }}
+                    />
                 </Link>
                 <button className="navbar-toggler" type="button" data-bs-toggle="collapse"
                         data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
@@ -71,24 +84,74 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
 
                 <div className="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li className="nav-item">
-                            <NavLink className="nav-link active" aria-current="page" to="/">Trang chủ</NavLink>
+                        {/* Desktop tabs */}
+                        <li className='nav-item d-none d-lg-block'>
+                            <NavLink className='nav-link' aria-current='page' to='/'>
+                                Trang chủ
+                            </NavLink>
                         </li>
-                        <li className='nav-item'>
+                        <li className='nav-item d-none d-lg-block'>
                             <NavLink className='nav-link' to='/about'>
                                 Giới thiệu
                             </NavLink>
                         </li>
+                        <li className='nav-item d-none d-lg-block'>
+                            <NavLink className='nav-link' to='/policy'>
+                                Chính sách
+                            </NavLink>
+                        </li>
+                        {isToken() && (
+                            <li className='nav-item d-none d-lg-block'>
+                                <NavLink className='nav-link' to='/feedback'>
+                                    Feedback
+                                </NavLink>
+                            </li>
+                        )}
+
+                        {/* Mobile dropdown */}
+                        <li className='nav-item dropdown d-lg-none'>
+    <button
+        type='button'
+        className='nav-link dropdown-toggle bg-transparent border-0'
+        data-bs-toggle='dropdown'
+        aria-expanded='false'
+    >
+        Trang
+    </button>
+    <ul className='dropdown-menu w-100'>
+        <li>
+            <NavLink className='dropdown-item' to='/'>
+                Trang chủ
+            </NavLink>
+        </li>
+        <li>
+            <NavLink className='dropdown-item' to='/about'>
+                Giới thiệu
+            </NavLink>
+        </li>
+        <li>
+            <NavLink className='dropdown-item' to='/policy'>
+                Chính sách
+            </NavLink>
+        </li>
+        {isToken() && (
+            <li>
+                <NavLink className='dropdown-item' to='/feedback'>
+                    Feedback
+                </NavLink>
+            </li>
+        )}
+    </ul>
+</li>
                         <li className='nav-item dropdown dropdown-hover'>
-                        <a
-                            className='nav-link dropdown-toggle'
-                            href='#'
-                            role='button'
+                        <button
+                            type='button'
+                            className='nav-link dropdown-toggle bg-transparent border-0'
                             data-bs-toggle='dropdown'
                             aria-expanded='false'
                         >
                             Thể loại
-                            </a>
+                            </button>
                             <ul 
                                 className='dropdown-menu' 
                                 style={{
@@ -110,18 +173,6 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
                                 })}
                             </ul>
                         </li>
-                        <li className='nav-item'>
-                            <Link className='nav-link' to={"/policy"}>
-                                Chính sách
-                            </Link>
-                        </li>
-                        {isToken() && (
-                            <li className='nav-item'>
-                                <NavLink className='nav-link' to={"/feedback"}>
-                                    Feedback
-                                </NavLink>
-                            </li>
-                        )}
                     </ul>
                 </div>
 
@@ -159,11 +210,10 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
                     <>
                         {/* <!-- Notifications --> */}
                         <div className='dropdown'>
-                            <a
-                                className='text-reset me-3 dropdown-toggle hidden-arrow'
-                                href='#'
+                            <button
+                                type='button'
+                                className='text-reset me-3 dropdown-toggle hidden-arrow bg-transparent border-0'
                                 id='navbarDropdownMenuLink'
-                                role='button'
                                 data-mdb-toggle='dropdown'
                                 aria-expanded='false'
                             >
@@ -171,35 +221,34 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
                                 <span className='badge rounded-pill badge-notification bg-danger'>
 										1
 									</span>
-                            </a>
+                            </button>
                             <ul
                                 className='dropdown-menu dropdown-menu-end'
                                 aria-labelledby='navbarDropdownMenuLink'
                             >
                                 <li>
-                                    <a className='dropdown-item' href='#'>
+                                    <button type='button' className='dropdown-item'>
                                         Tin tức
-                                    </a>
+                                    </button>
                                 </li>
                                 <li>
-                                    <a className='dropdown-item' href='#'>
+                                    <button type='button' className='dropdown-item'>
                                         Thông báo mới
-                                    </a>
+                                    </button>
                                 </li>
                                 <li>
-                                    <a className='dropdown-item' href='#'>
+                                    <button type='button' className='dropdown-item'>
                                         Tất cả thông báo
-                                    </a>
+                                    </button>
                                 </li>
                             </ul>
                         </div>
                     {/* <!-- Avatar --> */}
-                        <div className='dropdown'>
-                            <a
-                                className='dropdown-toggle d-flex align-items-center hidden-arrow'
-                                href='#'
+                        {/* <div className='dropdown'>
+                            <button
+                                type='button'
+                                className='dropdown-toggle d-flex align-items-center hidden-arrow bg-transparent border-0'
                                 id='navbarDropdownMenuAvatar'
-                                role='button'
                                 data-mdb-toggle='dropdown'
                                 aria-expanded='false'
                             >
@@ -209,17 +258,30 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
                                 src={avatar}
                                 sx={{ width: 30, height: 30 }}
                             />
-                                {/* <Avatar
-                                    style={{fontSize: "14px"}}
-                                    alt={getLastNameByToken()?.toUpperCase()}
-                                    src={getAvatarByToken()}
-                                    sx={{width: 30, height: 30}}
-                                /> */}
-                            </a>
+                            </button>
                             <ul
                                 className='dropdown-menu dropdown-menu-end'
                                 aria-labelledby='navbarDropdownMenuAvatar'
-                            >
+                            > */}
+                            <div className='dropdown'>
+    <button
+        type='button'
+        className='dropdown-toggle d-flex align-items-center hidden-arrow bg-transparent border-0'
+        id='navbarDropdownMenuAvatar'
+        data-bs-toggle='dropdown'
+        aria-expanded='false'
+    >
+        <Avatar
+            style={{ fontSize: "14px" }}
+            alt={getLastNameByToken()?.toUpperCase()}
+            src={avatar}
+            sx={{ width: 30, height: 30 }}
+        />
+    </button>
+    <ul
+        className='dropdown-menu dropdown-menu-end'
+        aria-labelledby='navbarDropdownMenuAvatar'
+    >
                                 <li>
                                     <Link to={"/profile"} className='dropdown-item'>
                                         Thông tin cá nhân
@@ -244,9 +306,9 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
                                     </li>
                                 )}
                                 <li>
-                                    <a
+                                    <button
+                                        type='button'
                                         className='dropdown-item'
-                                        style={{cursor: "pointer"}}
                                         onClick={() => {
                                             setTotalCart(0);
                                             logout(navigate);
@@ -255,7 +317,7 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
                                         }}
                                     >
                                         Đăng xuất
-                                    </a>
+                                    </button>
                                 </li>
                             </ul>
                         </div>

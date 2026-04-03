@@ -11,10 +11,12 @@ export const DataTable: React.FC<DataTableProps> = (props) => {
 		<div
 			style={{
 				width: "100%",
-				height: props.rows.length > 0 ? "auto" : "200px",
+					minHeight: props.rows.length > 0 ? "auto" : "200px",
+					overflowX: "auto",
 			}}
 		>
 			<DataGrid
+				autoHeight
 				rows={props.rows}
 				columns={props.columns}
 				initialState={{

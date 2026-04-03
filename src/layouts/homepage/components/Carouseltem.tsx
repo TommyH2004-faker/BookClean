@@ -65,16 +65,27 @@ const Carouseltem: React.FC<CaroselItemPropsInterface> = (props) => {
     // );
 
        return (
-        <div className="row align-items-center">
-            <div className="col-5 text-center">
+        <div className="row align-items-center g-3">
+            <div className="col-12 col-md-5 text-center">
                 <Link to={`/books/${maSach}`}>
-                    <img src={duLieuAnh} alt={props.sach.nameBook} style={{ width: '300px', borderRadius: '10px' }} />
+                    <img
+                        src={duLieuAnh}
+                        alt={props.sach.nameBook}
+                        className="img-fluid"
+                        style={{
+                            width: "100%",
+                            maxWidth: "300px",
+                            height: "auto",
+                            borderRadius: "10px",
+                            objectFit: "cover",
+                        }}
+                    />
                 </Link>
             </div>
-            <div className="col-7">
+            <div className="col-12 col-md-7">
                 <Link to={`/books/${maSach}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                    <h5>{props.sach.nameBook}</h5>
-                    <p>{props.sach.author}</p>
+                    <h5 className="mb-1">{props.sach.nameBook}</h5>
+                    <p className="mb-0">{props.sach.author}</p>
                 </Link>
             </div>
         </div>

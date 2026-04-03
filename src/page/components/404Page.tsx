@@ -11,7 +11,7 @@ export const Error404Page: React.FC = () => {
 			className='container text-center text-black'
 			style={{ height: "85vh" }}
 		>
-			<p className='fw-bolder ' style={{ fontSize: "200px" }}>
+			<p className='fw-bolder ' style={{ fontSize: "clamp(96px, 22vw, 200px)" }}>
 				404!
 			</p>
 			<p className='fs-2'>Trang không tồn tại</p>

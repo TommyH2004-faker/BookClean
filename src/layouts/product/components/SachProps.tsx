@@ -198,42 +198,89 @@ const SachProps: React.FC<SachPropsInterface> = ({ sach }) => {
 
     const duLieuAnh = danhSachAnh.length > 0 ? danhSachAnh[0].url : "";
 
+    const listPrice = sach.listPrice ?? 0;
+    const sellPrice = sach.sellPrice ?? 0;
+    const discountPercent =
+        listPrice > 0 && sellPrice > 0 && sellPrice < listPrice
+            ? Math.round(((listPrice - sellPrice) / listPrice) * 100)
+            : 0;
+
     return (
         <div className="col-md-3 mt-2">
-            <div className="card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                <Link to={`/books/${sach.idBook}`}>
-                    <img
-                        src={duLieuAnh}
-                        className="card-img-top"
-                        alt={sach.nameBook}
-                        style={{ height: "250px", objectFit: "cover", borderRadius: "10px" }}
-                    />
+            <div
+                className="card border-0 shadow-4 rounded h-100 bg-white"
+                style={{ position: "relative", overflow: "hidden" }}
+            >
+                {discountPercent > 0 && (
+                    <div
+                        className="badge bg-danger"
+                        style={{
+                            position: "absolute",
+                            top: "10px",
+                            left: "10px",
+                            padding: "8px 10px",
+                            fontSize: "0.85rem",
+                            zIndex: 2,
+                        }}
+                    >
+                        -{discountPercent}%
+                    </div>
+                )}
+                <Link to={`/books/${sach.idBook}`} className="d-block text-decoration-none">
+                    <div style={{ height: "290px", background: "#f8f9fa" }}>
+                        <img
+                            src={duLieuAnh}
+                            alt={sach.nameBook}
+                            className="w-100 h-100"
+                            style={{ objectFit: "cover" }}
+                        />
+                    </div>
                 </Link>
-                <div className="card-body" style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                    <Link to={`/books/${sach.idBook}`} style={{ textDecoration: 'none' }}>
-                        <h5 className="card-title" style={{ minHeight: "50px", textAlign: "center" }}>
+
+                <div className="card-body p-3 d-flex flex-column">
+                    <Link to={`/books/${sach.idBook}`} className="text-decoration-none text-dark">
+                        <div
+                            className="fw-semibold"
+                            style={{
+                                minHeight: "44px",
+                                display: "-webkit-box",
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: "vertical",
+                                overflow: "hidden",
+                            }}
+                        >
                             {sach.nameBook}
-                        </h5>
+                        </div>
                     </Link>
 
-                    <div className="price row" style={{ minHeight: "40px" }}>
-                        <span className="original-price col-6 text-end">
-                            <del>{dinhDangSo(sach.listPrice)}</del>
+                    <div className="mt-2">
+                        <span className="discounted-price text-danger me-2">
+                            <strong style={{ fontSize: "18px" }}>
+                                {dinhDangSo(sach.sellPrice)}đ
+                            </strong>
                         </span>
-                        <span className="discounted-price col-6 text-end">
-                            <strong>{dinhDangSo(sach.sellPrice)} đ</strong>
+                        <span className="original-price small text-muted">
+                            <del>{dinhDangSo(sach.listPrice)}đ</del>
                         </span>
                     </div>
 
-                    <div className="row mt-2" role="group">
-                        <div className="col-6">
-                            {renderRating(sach.avgRating || 0)}
-                        </div>
-                        <div className="col-6 text-end">
-                            <button className="btn btn-secondary btn-block me-2" onClick={handleFavoriteBook}>
-                                <i className={`fas fa-heart ${isFavoriteBook ? "text-danger" : ""}`}></i>
+                    <div className="mt-2 d-flex align-items-center justify-content-between">
+                        <div>{renderRating(sach.avgRating || 0)}</div>
+                        <div className="d-flex gap-2" role="group" aria-label="Product actions">
+                            <button
+                                type="button"
+                                className={`btn btn-sm ${isFavoriteBook ? "btn-danger" : "btn-outline-danger"}`}
+                                onClick={handleFavoriteBook}
+                                title="Yêu thích"
+                            >
+                                <i className="fas fa-heart"></i>
                             </button>
-                            <button className="btn btn-danger btn-block" onClick={() => handleAddProduct(sach)}>
+                            <button
+                                type="button"
+                                className="btn btn-danger btn-sm"
+                                onClick={() => handleAddProduct(sach)}
+                                title="Thêm vào giỏ"
+                            >
                                 <i className="fas fa-shopping-cart"></i>
                             </button>
                         </div>

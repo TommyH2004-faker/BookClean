@@ -146,14 +146,14 @@ const DangNhap: React.FC = () => {
 
     return (
         <div
-            className='container my-5 py-4 rounded-5 shadow-5 bg-light'
-            style={{ width: "450px" }}
+            className='container my-5 py-4 rounded-5 shadow-5 bg-light w-100'
+            style={{ maxWidth: "450px" }}
         >
             <h1 className='text-center'>ĐĂNG NHẬP</h1>
 
             {error && <p className='text-danger text-center'>{error}</p>}
 
-            <form onSubmit={handleSubmit} style={{ padding: "0 20px" }}>
+            <form onSubmit={handleSubmit} className='px-3'>
                 <TextField
                     fullWidth
                     required

@@ -591,7 +591,7 @@ function handleSubmitChangePassword(event: FormEvent<HTMLFormElement>): void {
 													fullWidth
 													variant='outlined'
 													type='submit'
-													sx={{width: "50%", padding: "10px"}}
+													sx={{ width: { xs: "100%", sm: "50%" }, padding: "10px" }}
 												>
 													Lưu và thay đổi
 												</Button>
@@ -625,8 +625,7 @@ function handleSubmitChangePassword(event: FormEvent<HTMLFormElement>): void {
 								<TabPanel value='3'>
 									<form
 										onSubmit={handleSubmitChangePassword}
-										className='form position-relative'
-										style={{padding: "0 120px"}}
+											className='form position-relative px-3 px-md-5'
 									>
 										<TextField
 											error={errorCurrentPassword.length > 0}
@@ -691,7 +690,7 @@ function handleSubmitChangePassword(event: FormEvent<HTMLFormElement>): void {
 												fullWidth
 												variant='outlined'
 												type='submit'
-												sx={{width: "50%", padding: "10px"}}
+													sx={{ width: { xs: "100%", sm: "50%" }, padding: "10px" }}
 											>
 												Lưu và thay đổi
 											</Button>

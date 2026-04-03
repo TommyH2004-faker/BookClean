@@ -86,11 +86,11 @@ const MyRoutes = () => {
 
                     {/* Admin Routes */}
                     {isAdminPath && (
-                        <div className='row overflow-hidden w-100'>
-                            <div className='col-2 col-md-3 col-lg-2'>
-                                <Slidebar/>
+                        <div className='row w-100 m-0'>
+                            <div className='d-none d-md-block col-md-3 col-lg-2 px-0'>
+                                <Slidebar />
                             </div>
-                            <div className='col-10 col-md-9 col-lg-10'>
+                            <div className='col-12 col-md-9 col-lg-10'>
                                 <Routes>
                                     <Route path='/admin/dashboard' element={<DashboardPage/>}/>
                                     <Route path='/admin/book' element={<BookManagementPage/>}/>

@@ -513,11 +513,11 @@ export const UserForm: React.FC<UserFormProps> = (props) => {
 						</div>
 					</div>
 					<LoadingButton
-						className='w-100 my-3'
+						className='my-3'
 						type='submit'
 						loading={statusBtn}
 						variant='outlined'
-						sx={{ width: "25%", padding: "10px" }}
+						sx={{ width: { xs: "100%", md: "25%" }, padding: "10px" }}
 					>
 						{props.option === "add" ? "Tạo người dùng" : "Lưu người dùng"}
 					</LoadingButton>
