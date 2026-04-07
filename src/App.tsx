@@ -32,6 +32,7 @@ import {CheckoutSuccess} from "./page/components/CheckoutSuccess";
 import { ResendActiveCode } from "./layouts/User/ResendActiveCode";
 import DangNhap from "./layouts/User/DangNhap";
 import CheckoutFail from "./page/components/CheckoutFail";
+import ChatWidget from "./layouts/ChatBot/ChatWidget";
 
 const MyRoutes = () => {
     const [tuKhoaTimKiem, setTuKhoaTimKiem] = useState('');
@@ -120,6 +121,7 @@ const MyRoutes = () => {
 function App() {
     return (
         <BrowserRouter>
+            <ChatWidget />
             <MyRoutes />
         </BrowserRouter>
     );
