@@ -1,66 +1,170 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
+import {
+    Box,
+    Button,
+    Container,
+    Divider,
+    Grid,
+    IconButton,
+    Link as MuiLink,
+    Stack,
+    TextField,
+    Typography,
+} from "@mui/material";
+import FacebookIcon from "@mui/icons-material/Facebook";
+import InstagramIcon from "@mui/icons-material/Instagram";
+import TwitterIcon from "@mui/icons-material/Twitter";
+import { Link as RouterLink } from "react-router-dom";
+
+type FooterLink = { label: string; to: string };
 
 function Footer() {
+    const [email, setEmail] = useState("");
+
+    const columns = useMemo(
+        () =>
+            [
+                {
+                    title: "Liên kết",
+                    links: [
+                        { label: "Trang chủ", to: "/" },
+                        { label: "Giới thiệu", to: "/about" },
+                        { label: "Chính sách", to: "/policy" },
+                        { label: "Giỏ hàng", to: "/cart" },
+                    ] satisfies FooterLink[],
+                },
+                {
+                    title: "Tài khoản",
+                    links: [
+                        { label: "Đăng nhập", to: "/dangnhap" },
+                        { label: "Đăng ký", to: "/dangky" },
+                        { label: "Sách yêu thích", to: "/my-favorite-books" },
+                        { label: "Feedback", to: "/feedback" },
+                    ] satisfies FooterLink[],
+                },
+                {
+                    title: "Hỗ trợ",
+                    links: [
+                        { label: "Tìm sách", to: "/search" },
+                        { label: "Kích hoạt tài khoản", to: "/activate" },
+                        { label: "Gửi lại mã kích hoạt", to: "/resend-active-code" },
+                        { label: "Quên mật khẩu", to: "/forgot-password" },
+                    ] satisfies FooterLink[],
+                },
+            ] as const,
+        []
+    );
+
+    const year = new Date().getFullYear();
+
+    const onSubmit = (event: React.FormEvent) => {
+        event.preventDefault();
+        setEmail("");
+    };
+
     return (
-        <div className="container">
-            <footer className="py-5">
-                <div className="row">
-                    <div className="col-6 col-md-2 mb-3">
-                        <h5>Section</h5>
-                        <ul className="nav flex-column">
-                            <li className="nav-item mb-2"><a href="#" className="nav-link p-0 text-body-secondary">Home</a></li>
-                            <li className="nav-item mb-2"><a href="#" className="nav-link p-0 text-body-secondary">Features</a></li>
-                            <li className="nav-item mb-2"><a href="#" className="nav-link p-0 text-body-secondary">Pricing</a></li>
-                            <li className="nav-item mb-2"><a href="#" className="nav-link p-0 text-body-secondary">FAQs</a></li>
-                            <li className="nav-item mb-2"><a href="#" className="nav-link p-0 text-body-secondary">About</a></li>
-                        </ul>
-                    </div>
+        <Box component='footer' sx={{ mt: 6, borderTop: 1, borderColor: "divider" }}>
+            <Container maxWidth='lg' sx={{ py: { xs: 4, md: 6 } }}>
+                <Grid container spacing={4}>
+                    <Grid item xs={12} md={3}>
+                        <Stack spacing={1.25}>
+                            <Typography variant='h6' fontWeight={700}>
+                                Minh Hiệp Book
+                            </Typography>
+                            <Typography variant='body2' color='text.secondary'>
+                                Xã Yên Bình, Huyện Vĩnh Tường, Tỉnh Vĩnh Phúc
+                            </Typography>
+                            <Typography variant='body2' color='text.secondary'>
+                                Hotline: 0813535314
+                            </Typography>
+                            <Typography variant='body2' color='text.secondary'>
+                                Email: hiept81331@gmail.com
+                            </Typography>
 
-                    <div className="col-6 col-md-2 mb-3">
-                        <h5>Section</h5>
-                        <ul className="nav flex-column">
-                            <li className="nav-item mb-2"><a href="#" className="nav-link p-0 text-body-secondary">Home</a></li>
-                            <li className="nav-item mb-2"><a href="#" className="nav-link p-0 text-body-secondary">Features</a></li>
-                            <li className="nav-item mb-2"><a href="#" className="nav-link p-0 text-body-secondary">Pricing</a></li>
-                            <li className="nav-item mb-2"><a href="#" className="nav-link p-0 text-body-secondary">FAQs</a></li>
-                            <li className="nav-item mb-2"><a href="#" className="nav-link p-0 text-body-secondary">About</a></li>
-                        </ul>
-                    </div>
+                            <Stack direction='row' spacing={1} sx={{ pt: 1 }}>
+                                <IconButton aria-label='Facebook' size='small'>
+                                    <FacebookIcon fontSize='inherit' />
+                                </IconButton>
+                                <IconButton aria-label='Instagram' size='small'>
+                                    <InstagramIcon fontSize='inherit' />
+                                </IconButton>
+                                <IconButton aria-label='Twitter' size='small'>
+                                    <TwitterIcon fontSize='inherit' />
+                                </IconButton>
+                            </Stack>
+                        </Stack>
+                    </Grid>
 
-                    <div className="col-6 col-md-2 mb-3">
-                        <h5>Section</h5>
-                        <ul className="nav flex-column">
-                            <li className="nav-item mb-2"><a href="#" className="nav-link p-0 text-body-secondary">Home</a></li>
-                            <li className="nav-item mb-2"><a href="#" className="nav-link p-0 text-body-secondary">Features</a></li>
-                            <li className="nav-item mb-2"><a href="#" className="nav-link p-0 text-body-secondary">Pricing</a></li>
-                            <li className="nav-item mb-2"><a href="#" className="nav-link p-0 text-body-secondary">FAQs</a></li>
-                            <li className="nav-item mb-2"><a href="#" className="nav-link p-0 text-body-secondary">About</a></li>
-                        </ul>
-                    </div>
+                    {columns.map((col) => (
+                        <Grid key={col.title} item xs={12} sm={4} md={2}>
+                            <Typography variant='subtitle1' fontWeight={700} sx={{ mb: 1 }}>
+                                {col.title}
+                            </Typography>
+                            <Stack spacing={0.75}>
+                                {col.links.map((link) => (
+                                    <MuiLink
+                                        key={link.to}
+                                        component={RouterLink}
+                                        to={link.to}
+                                        underline='hover'
+                                        color='text.secondary'
+                                        sx={{ width: "fit-content" }}
+                                    >
+                                        {link.label}
+                                    </MuiLink>
+                                ))}
+                            </Stack>
+                        </Grid>
+                    ))}
 
-                    <div className="col-md-5 offset-md-1 mb-3">
-                        <form>
-                            <h5>Subscribe to our newsletter</h5>
-                            <p>Monthly digest of what's new and exciting from us.</p>
-                            <div className="d-flex flex-column flex-sm-row w-100 gap-2">
-                                <label  className="visually-hidden">Email address</label>
-                                <input id="newsletter1" type="text" className="form-control" placeholder="Email address"/>
-                                <button className="btn btn-primary" type="button">Subscribe</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+                    <Grid item xs={12} md={3}>
+                        <Box component='form' onSubmit={onSubmit} noValidate>
+                            <Typography variant='subtitle1' fontWeight={700}>
+                                Nhận tin mới
+                            </Typography>
+                            <Typography variant='body2' color='text.secondary' sx={{ mt: 0.5, mb: 1.5 }}>
+                                Nhập email để nhận thông báo sách mới và ưu đãi.
+                            </Typography>
+                            <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25}>
+                                <TextField
+                                    size='small'
+                                    fullWidth
+                                    type='email'
+                                    label='Email'
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    autoComplete='email'
+                                />
+                                <Button type='submit' variant='contained' sx={{ whiteSpace: "nowrap" }}>
+                                    Đăng ký
+                                </Button>
+                            </Stack>
+                        </Box>
+                    </Grid>
+                </Grid>
 
-                <div className="d-flex flex-column flex-sm-row justify-content-between py-4 my-4 border-top">
-                    <p>&copy; 2023 Company, Inc. All rights reserved.</p>
-                    <ul className="list-unstyled d-flex">
-                        <li className="ms-3"><a className="link-body-emphasis" href="#"> <i className="fas fa-tweeter"></i></a></li>
-                        <li className="ms-3"><a className="link-body-emphasis" href="#"> <i className="fas fa-instagram"></i></a></li>
-                        <li className="ms-3"><a className="link-body-emphasis" href="#"> <i className="fas fa-facebook"></i></a></li>
-                    </ul>
-                </div>
-            </footer>
-        </div>
+                <Divider sx={{ my: 3 }} />
+
+                <Stack
+                    direction={{ xs: "column", sm: "row" }}
+                    spacing={1}
+                    justifyContent='space-between'
+                    alignItems={{ xs: "flex-start", sm: "center" }}
+                >
+                    <Typography variant='body2' color='text.secondary'>
+                        © {year} Minh Hiệp Book. All rights reserved.
+                    </Typography>
+                    <Stack direction='row' spacing={2}>
+                        <MuiLink component={RouterLink} to='/policy' underline='hover' color='text.secondary'>
+                            Điều khoản
+                        </MuiLink>
+                        <MuiLink component={RouterLink} to='/policy' underline='hover' color='text.secondary'>
+                            Bảo mật
+                        </MuiLink>
+                    </Stack>
+                </Stack>
+            </Container>
+        </Box>
     );
 }
 

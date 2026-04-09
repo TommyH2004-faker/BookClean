@@ -1,5 +1,7 @@
+import { endpointBE } from "../layouts/utils/Constant";
+
 export const askChat = async (question: string): Promise<string> => {
-  const res = await fetch("http://localhost:5000/chat/ask", {
+  const res = await fetch(`${endpointBE}/chat/ask`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
