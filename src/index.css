@@ -51,9 +51,29 @@ body {
 }
 
 .app-header .nav-link {
+
+:root {
+	--app-header-height: 20vh;
+	--app-footer-height: 20vh;
+	--app-content-height: calc(100vh - var(--app-header-height) - var(--app-footer-height));
+}
+
+.app-header {
+	height: var(--app-header-height);
+	overflow: hidden;
+	display: flex;
+	align-items: center;
+}
+
+.app-footer {
+	height: var(--app-footer-height);
+	overflow: hidden;
+	display: flex;
+}
 	padding-top: 0.25rem;
 	padding-bottom: 0.25rem;
-	font-size: 0.95rem;
+	height: var(--app-content-height);
+	flex: 0 0 auto;
 }
 
 .app-scroll {
