@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import BookModel from "../../models/BookModel";
 import {layToanBoSach, timKiemSach} from "../../api/SachAPI";
 import {PhanTrang} from "../utils/PhanTrang";
-import BookProps from "./components/SachProps";
 import SachProps from "./components/SachProps";
 
 interface DanhSachSanPhamProps {
@@ -18,10 +17,9 @@ function DanhSachSanPham({ tuKhoaTimKiem, idGenre }: DanhSachSanPhamProps) {
     const [baoLoi, setBaoLoi] = useState(null);
     const [trangHienTai, setTrangHienTai] = useState(1);
     const [tongSoTrang, setTongSoTrang] = useState(0);
-    const [tongSoSach, setSoSach] = useState(0);
 
     useEffect(() => {
-        if (tuKhoaTimKiem === '' && idGenre==0) {
+        if (tuKhoaTimKiem === '' && idGenre === 0) {
             layToanBoSach(trangHienTai - 1).then(
                 kq => {
                     setDanhSachQuyenSach(kq.ketQua);

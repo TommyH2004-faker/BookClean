@@ -18,7 +18,7 @@ const Comment: React.FC<CommentProps> = (props) => {
 			setReviews(respose);
 			console.log(respose);
 		});
-	}, []);
+	}, [props.idBook]);
 
 	if (reviews?.length === 0) {
 		return <p>Không có đánh giá nào</p>;

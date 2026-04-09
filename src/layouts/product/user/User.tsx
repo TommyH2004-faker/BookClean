@@ -1,8 +1,5 @@
-
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Avatar from "@mui/material/Avatar";
-import { UserModel } from "../../../models/UserModel";
-import {getUserByIdReview} from "../../../api/UserApi";
 import ReviewModel from "../../../models/ReviewModel";
 
 

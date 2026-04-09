@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 import { Tooltip } from "@mui/material";
 import { Link } from "react-router-dom";
-import {get3BestSellerBooks, lay3SachMoiNhat} from "../../../../api/SachAPI";
+import { get3BestSellerBooks } from "../../../../api/SachAPI";
 import BookModel from "../../../../models/BookModel";
 import TextEllipsis from "../../../product/components/text-ellipsis/TextEllipsis";
 

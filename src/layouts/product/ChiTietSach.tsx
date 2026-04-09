@@ -15,7 +15,7 @@ import React from "react";
 import ReactSimpleImageViewer from "react-simple-image-viewer";
 import { toast } from "react-toastify";
 import { endpointBE } from "../utils/Constant";
-import { getIdUserByToken, isToken } from "../utils/JwtService";
+import { isToken } from "../utils/JwtService";
 import { useCartItem } from "../utils/CartItemContext";
 import { Skeleton } from "@mui/material";
 

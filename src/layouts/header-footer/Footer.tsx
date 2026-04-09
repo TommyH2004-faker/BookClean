@@ -6,7 +6,6 @@ import {
     Divider,
     Grid,
     IconButton,
-    Link as MuiLink,
     Stack,
     TextField,
     Typography,
@@ -102,16 +101,16 @@ function Footer() {
                             </Typography>
                             <Stack spacing={0.75}>
                                 {col.links.map((link) => (
-                                    <MuiLink
+                                    <Typography
                                         key={link.to}
                                         component={RouterLink}
                                         to={link.to}
-                                        underline='hover'
                                         color='text.secondary'
-                                        sx={{ width: "fit-content" }}
+                                        variant='body2'
+                                        sx={{ width: "fit-content", textDecoration: "none", "&:hover": { textDecoration: "underline" } }}
                                     >
                                         {link.label}
-                                    </MuiLink>
+                                    </Typography>
                                 ))}
                             </Stack>
                         </Grid>
@@ -155,12 +154,24 @@ function Footer() {
                         © {year} Minh Hiệp Book. All rights reserved.
                     </Typography>
                     <Stack direction='row' spacing={2}>
-                        <MuiLink component={RouterLink} to='/policy' underline='hover' color='text.secondary'>
+                        <Typography
+                            component={RouterLink}
+                            to='/policy'
+                            color='text.secondary'
+                            variant='body2'
+                            sx={{ textDecoration: "none", "&:hover": { textDecoration: "underline" } }}
+                        >
                             Điều khoản
-                        </MuiLink>
-                        <MuiLink component={RouterLink} to='/policy' underline='hover' color='text.secondary'>
+                        </Typography>
+                        <Typography
+                            component={RouterLink}
+                            to='/policy'
+                            color='text.secondary'
+                            variant='body2'
+                            sx={{ textDecoration: "none", "&:hover": { textDecoration: "underline" } }}
+                        >
                             Bảo mật
-                        </MuiLink>
+                        </Typography>
                     </Stack>
                 </Stack>
             </Container>

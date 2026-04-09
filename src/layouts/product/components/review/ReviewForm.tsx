@@ -18,6 +18,7 @@ interface ReviewFormProps {
 }
 
 export const ReviewForm: React.FC<ReviewFormProps> = (props) => {
+	const { idBook, idOrder, cartItem, setCartItem } = props;
 	const [idReview, setIdReview] = useState(0);
 	const [ratingValue, setRatingValue] = useState(0);
 	const [errorRating, setErrorRating] = useState("");
@@ -39,10 +40,10 @@ export const ReviewForm: React.FC<ReviewFormProps> = (props) => {
 		}
 
 		const token = localStorage.getItem("token");
-		const endpoint = props.cartItem?.review
+		const endpoint = cartItem?.review
 			? "/review/update-review"
 			: "/review/add-review";
-		const method = props.cartItem?.review ? "PUT" : "POST";
+		const method = cartItem?.review ? "PUT" : "POST";
 		fetch(endpointBE + endpoint, {
 			method: method,
 			headers: {
@@ -52,23 +53,23 @@ export const ReviewForm: React.FC<ReviewFormProps> = (props) => {
 			body: JSON.stringify({
 				idReview,
 				idUser: getIdUserByToken(),
-				idOrder: props.idOrder,
-				idBook: props.idBook,
+				idOrder,
+				idBook,
 				ratingPoint: ratingValue,
 				content,
 			}),
 		})
 			.then((response) => {
-				props.cartItem?.review
+				cartItem?.review
 					? toast.success("Chỉnh sửa đánh giá thành công")
 					: toast.success("Đánh giá sản phẩm thành công");
-				props.handleCloseModal();
-				props.handleCloseModalOrderDetail();
-				props.setCartItem({ ...props.cartItem, review: true });
+				props.handleCloseModal?.();
+				props.handleCloseModalOrderDetail?.();
+				setCartItem?.({ ...cartItem, review: true });
 			})
 			.catch((error) => {
 				toast.error("Gặp lỗi trong quá trình đánh giá");
-				props.handleCloseModal();
+				props.handleCloseModal?.();
 			});
 	}
 
@@ -99,14 +100,14 @@ export const ReviewForm: React.FC<ReviewFormProps> = (props) => {
 	// 	}
 	// }, []);
 			useEffect(() => {
-			if (!props.idBook || !props.idOrder) return;
+			if (!idBook || !idOrder) return;
 
 			const token = localStorage.getItem("token");
 
 			const payload = {
 				idUser: getIdUserByToken(),
-				idOrder: props.idOrder,
-				idBook: props.idBook,
+				idOrder,
+				idBook,
 			};
 
 			
@@ -129,8 +130,8 @@ export const ReviewForm: React.FC<ReviewFormProps> = (props) => {
 			console.log("Response:", data);
 
 			if (!data) {
-				props.setCartItem({
-					...props.cartItem,
+				setCartItem?.({
+					...cartItem,
 					review: false,
 				});
 				return;
@@ -139,12 +140,12 @@ export const ReviewForm: React.FC<ReviewFormProps> = (props) => {
 			setContent(data.comment);
 			setIdReview(data.id);
 
-			props.setCartItem({
-				...props.cartItem,
+			setCartItem?.({
+				...cartItem,
 				review: true,
 			});
 		})
-		}, [props.idBook, props.idOrder]);
+		}, [idBook, idOrder, cartItem, setCartItem]);
 	return (
 		<div className='container'>
 			<form onSubmit={handleSubmitReview}>

@@ -17,7 +17,6 @@ import {endpointBE} from "../../../utils/Constant";
 import {DataTable} from "../../../utils/DataTable";
 import { getAllUsers } from "../../../../api/UserApi";
 import { UserModel } from "../../../../models/UserModel";
-import { c } from "framer-motion/dist/types.d-6pKw1mTI";
 
 
 interface UserTableProps {

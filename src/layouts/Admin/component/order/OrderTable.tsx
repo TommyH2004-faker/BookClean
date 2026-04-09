@@ -12,7 +12,7 @@ import React, { useEffect, useState } from "react";
 import {getAllOrders, getMyOrders} from "../../../../api/OrderApi";
 import OrderModel from "../../../../models/OrderModel";
 import {DataTable} from "../../../utils/DataTable";
-import { getIdUserByToken, getRoleByToken } from "../../../utils/JwtService";
+import { getRoleByToken } from "../../../utils/JwtService";
 
 
 interface OrderTableProps {

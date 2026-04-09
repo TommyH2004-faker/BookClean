@@ -201,15 +201,16 @@ export const BookHorizontal: React.FC<BookHorizontalProps> = (props) => {
 	// ================= STATE =================
 	const [cartItem, setCartItem] = useState<CartItemModel>(props.cartItem);
 	const [imageList, setImageList] = useState<ImageModel[]>([]);
+	const bookId = props.cartItem?.book?.idBook;
 
 	// ================= LOAD IMAGE =================
 	useEffect(() => {
-		if (!props.cartItem?.book) return;
+		if (!bookId) return;
 
-		layToanBoHinhAnhMotSach(props.cartItem.book.idBook)
+		layToanBoHinhAnhMotSach(bookId)
 			.then((response) => setImageList(response))
 			.catch((error) => console.log(error));
-	}, [props.cartItem?.book?.idBook]);
+	}, [bookId]);
 
 	// ================= IMAGE =================
 	let dataImage = "";

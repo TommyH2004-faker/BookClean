@@ -9,30 +9,6 @@ function unwrapData(response: any) {
    return response?.data ?? response;
 }
 
-function normalizeGender(gender: any): string {
-   if (!gender) {
-      return "";
-   }
-
-   const value = String(gender).toLowerCase();
-   if (value === "m" || value === "male" || value === "nam") {
-      return "Male";
-   }
-
-   if (value === "f" || value === "female" || value === "nu" || value === "nữ") {
-      return "Female";
-   }
-
-   return String(gender);
-}
-
-async function getUser(endpoint: string): Promise<UserModel> {
-   // Gọi phương thức request()
-   const response =await my_request(endpoint);
-   return response;
-}
-
-
 export async function getAllUsers(): Promise<UserModel[]> {
     const endpoint = `${endpointBE}/user/get-all`;
 

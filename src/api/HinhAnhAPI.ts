@@ -1,4 +1,3 @@
-import React from "react";
 import ImageModel from "../models/ImageModel";
 import { my_request } from "../api/Request";
 import { endpointBE } from "../layouts/utils/Constant";

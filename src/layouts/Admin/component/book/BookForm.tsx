@@ -2,7 +2,7 @@ import React, { FormEvent, useEffect, useState } from "react";
 
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
-import { Box, Button, MenuItem } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import { CloudUpload } from "@mui/icons-material";
 import { toast } from "react-toastify";
 
@@ -50,8 +50,6 @@ export const BookForm: React.FC<BookFormProps> = (props) => {
 	const [SelectedListName, setSelectedListName] = useState<any[]>([]);
 	// Khi submit thì btn loading ...
 	const [statusBtn, setStatusBtn] = useState(false);
-	// Biến reload (cho selectMultiple)
-	const [reloadCount, setReloadCount] = useState(0);
 
 	// Lấy dữ liệu khi update
 	useEffect(() => {
@@ -82,7 +80,7 @@ export const BookForm: React.FC<BookFormProps> = (props) => {
 
 	// Khúc này để lưu danh sách thể loại của sách
 	useEffect(() => {
-		setBook({ ...book, idGenres: genresListSelected });
+		setBook((prevBook) => ({ ...prevBook, idGenres: genresListSelected }));
 	}, [genresListSelected]);
 
 	async function handleSubmit(event: FormEvent<HTMLFormElement>) {

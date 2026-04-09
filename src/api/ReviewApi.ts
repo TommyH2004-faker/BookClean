@@ -1,19 +1,6 @@
-import { a } from "framer-motion/dist/types.d-6pKw1mTI";
 import { endpointBE } from "../layouts/utils/Constant";
 import ReviewModel from "../models/ReviewModel";
 import {my_request, requestAdmin} from "./Request";
-
-
-
-
-async function getReview(endpoint: string): Promise<ReviewModel[]> {
-   // Gọi phương thức request()
-   const response = await my_request(endpoint);
-
-   return response.data.map((reviewData: any) => ({
-      ...reviewData,
-   }));
-}
 
 // export async function getAllReview(idBook: number): Promise<ReviewModel[]> {
 //    // Xác định endpoint
