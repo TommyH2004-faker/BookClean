@@ -1,6 +1,6 @@
 import React, {useEffect} from "react";
 import { useState } from "react";
-import {Link, NavLink, useNavigate} from "react-router-dom";
+import {Link, NavLink, useLocation, useNavigate} from "react-router-dom";
 import {Search} from "@mui/icons-material";
 import {useCartItem} from "../utils/CartItemContext";
 import {useAuth} from "../utils/AuthContext";
@@ -54,8 +54,12 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
     const handleSearch = () => {
         setTuKhoaTimKiem(tuKhoaTamThoi);
     }
+    const location = useLocation();
+    if (location.pathname.startsWith("/admin")) {
+        return null;
+    }
     return(
-        <nav className="navbar navbar-expand-lg navbar-light bg-light py-1">
+        <nav className="navbar navbar-expand-lg navbar-light bg-light">
             <div className="container-fluid">
                 <Link className="navbar-brand" to={"/"}>
                     <img
@@ -64,9 +68,9 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
                         className="img-fluid"
                         style={{
                             width: "100%",
-                            maxWidth: "120px",
+                            maxWidth: "150px",
                             height: "auto",
-                            maxHeight: "56px",
+                            maxHeight: "90px",
                             objectFit: "contain",
                         }}
                     />
@@ -173,9 +177,9 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
 
                 {/* Tìm kiếm */}
                 <div className="d-flex">
-                    <input className="form-control form-control-sm me-2" type="search" placeholder="Tìm kiếm" aria-label="Search"
+                    <input className="form-control me-2" type="search" placeholder="Tìm kiếm" aria-label="Search"
                            onChange={onsearchInputChange} value={tuKhoaTamThoi} onKeyDown={handleKeyDown}/>
-                    <button className="btn btn-outline-success btn-sm" type="submit" onClick={handleSearch}>Search
+                    <button className="btn btn-outline-success" type="submit" onClick={handleSearch}>Search
                         <Search/>
                     </button>
                 </div>
