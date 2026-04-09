@@ -62,7 +62,7 @@ function Footer() {
     };
 
     return (
-        <Box component='footer' sx={{ mt: 6, borderTop: 1, borderColor: "divider" }}>
+        <Box component='footer' sx={{ borderTop: 1, borderColor: "divider" }}>
             <Container maxWidth='lg' sx={{ py: { xs: 4, md: 6 } }}>
                 <Grid container spacing={4}>
                     <Grid item xs={12} md={3}>

@@ -45,70 +45,83 @@ const MyRoutes = () => {
         <AuthProvider>
             <CartItemProvider>
                 <ConfirmProvider>
-                    {/* Hiển thị Navbar và Footer cho trang khách hàng */}
-                    {!isAdminPath && (
-                        <>
+                    <div className='app-shell'>
+                        {/* Header (cố định) */}
+                        <div className='app-header'>
                             <Navbar
                                 key={reloadAvatar}
                                 tuKhoaTimKiem={tuKhoaTimKiem}
                                 setTuKhoaTimKiem={setTuKhoaTimKiem}
                             />
-                        </>
-                    )}
-
-                    {/* Customer Routes */}
-                    {!isAdminPath && (
-                        <Routes>
-                            <Route path='/' element={<HomePage tuKhoaTimKiem={tuKhoaTimKiem} />} />
-                            <Route path='/:idGenre' element={<HomePage tuKhoaTimKiem={tuKhoaTimKiem} />} />
-                            <Route path='/about' element={<About/>} />
-                            <Route path='/books/:idBook' element={<ChiTietSach />} />
-                            <Route path='/dangky' element={<DangKyNguoiDung />} />
-                            <Route path='/dangnhap' element={<DangNhap />} />
-                            <Route path='/activate' element={<KichHoatTaiKhoan />} />
-                            <Route path='/search/:idGenreParam' element={<FilterPage />} />
-                            <Route path='/search' element={<FilterPage />} />
-                            <Route path='/my-favorite-books' element={<MyFavoriteBooksPage />} />
-                             <Route path='/resend-active-code' element={<ResendActiveCode />} />
-                            <Route path='/dangnhap' element={<DangNhap />} />
-                            <Route path='/bao-loi-403' element={<Error403Page />} />
-                            <Route path='/policy' element={<PolicyPage />} />
-                            <Route path='/cart' element={<CartPage />} />
-                            <Route path='/feedback' element={<FeedbackCustomerPage />} />
-                            <Route path='/forgot-password' element={<ForgotPassword />} />
-                            <Route path='/profile' element={<ProfilePage setReloadAvatar={setReloadAvatar} />} />
-                            <Route path='/check-out/success' element={<CheckoutSuccess />} />
-                            <Route path='/check-out/failure' element={<CheckoutFail />} />
-
-                            {/* Nếu không tìm thấy trang */}
-                            <Route path='*' element={<Error403Page />} />
-                        </Routes>
-                    )}
-
-                    {/* Hiển thị Footer cho trang khách hàng */}
-                    {!isAdminPath && <Footer />}
-
-                    {/* Admin Routes */}
-                    {isAdminPath && (
-                        <div className='row w-100 m-0'>
-                            <div className='d-none d-md-block col-md-3 col-lg-2 px-0'>
-                                <Slidebar />
-                            </div>
-                            <div className='col-12 col-md-9 col-lg-10'>
-                                <Routes>
-                                    <Route path='/admin/dashboard' element={<DashboardPage/>}/>
-                                    <Route path='/admin/book' element={<BookManagementPage/>}/>
-                                    <Route path='/admin/user' element={<UserManagementPage/>}/>
-                                    <Route path='/admin/genre' element={<GenreManagementPage/>}/>
-                                    <Route path='/admin/order' element={<OrderManagementPage/>}/>
-                                    <Route path='/admin/feedback' element={<FeedbackPage/>}/>
-
-                                    {/* Bắt lỗi 404 cho trang Admin */}
-                                    <Route path='/admin/*' element={<Error404Page/>}/>
-                                </Routes>
-                            </div>
                         </div>
-                    )}
+
+                        {/* Main content (cuộn bên trong) */}
+                        <div id='app-scroll-container' className='app-scroll'>
+                            {/* Customer Routes */}
+                            {!isAdminPath && (
+                                <Routes>
+                                    <Route
+                                        path='/'
+                                        element={<HomePage tuKhoaTimKiem={tuKhoaTimKiem} />}
+                                    />
+                                    <Route
+                                        path='/:idGenre'
+                                        element={<HomePage tuKhoaTimKiem={tuKhoaTimKiem} />}
+                                    />
+                                    <Route path='/about' element={<About />} />
+                                    <Route path='/books/:idBook' element={<ChiTietSach />} />
+                                    <Route path='/dangky' element={<DangKyNguoiDung />} />
+                                    <Route path='/dangnhap' element={<DangNhap />} />
+                                    <Route path='/activate' element={<KichHoatTaiKhoan />} />
+                                    <Route path='/search/:idGenreParam' element={<FilterPage />} />
+                                    <Route path='/search' element={<FilterPage />} />
+                                    <Route path='/my-favorite-books' element={<MyFavoriteBooksPage />} />
+                                    <Route path='/resend-active-code' element={<ResendActiveCode />} />
+                                    <Route path='/bao-loi-403' element={<Error403Page />} />
+                                    <Route path='/policy' element={<PolicyPage />} />
+                                    <Route path='/cart' element={<CartPage />} />
+                                    <Route path='/feedback' element={<FeedbackCustomerPage />} />
+                                    <Route path='/forgot-password' element={<ForgotPassword />} />
+                                    <Route
+                                        path='/profile'
+                                        element={<ProfilePage setReloadAvatar={setReloadAvatar} />}
+                                    />
+                                    <Route path='/check-out/success' element={<CheckoutSuccess />} />
+                                    <Route path='/check-out/failure' element={<CheckoutFail />} />
+
+                                    {/* Nếu không tìm thấy trang */}
+                                    <Route path='*' element={<Error403Page />} />
+                                </Routes>
+                            )}
+
+                            {/* Admin Routes */}
+                            {isAdminPath && (
+                                <div className='row w-100 m-0'>
+                                    <div className='d-none d-md-block col-md-3 col-lg-2 px-0'>
+                                        <Slidebar />
+                                    </div>
+                                    <div className='col-12 col-md-9 col-lg-10'>
+                                        <Routes>
+                                            <Route path='/admin/dashboard' element={<DashboardPage />} />
+                                            <Route path='/admin/book' element={<BookManagementPage />} />
+                                            <Route path='/admin/user' element={<UserManagementPage />} />
+                                            <Route path='/admin/genre' element={<GenreManagementPage />} />
+                                            <Route path='/admin/order' element={<OrderManagementPage />} />
+                                            <Route path='/admin/feedback' element={<FeedbackPage />} />
+
+                                            {/* Bắt lỗi 404 cho trang Admin */}
+                                            <Route path='/admin/*' element={<Error404Page />} />
+                                        </Routes>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Footer (cố định) */}
+                        <div className='app-footer'>
+                            <Footer />
+                        </div>
+                    </div>
 
                     {/* Toast thông báo */}
                     <ToastContainer position='bottom-center' autoClose={3000} pauseOnFocusLoss={false} />

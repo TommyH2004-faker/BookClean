@@ -1,6 +1,6 @@
 import React, {useEffect} from "react";
 import { useState } from "react";
-import {Link, NavLink, useLocation, useNavigate} from "react-router-dom";
+import {Link, NavLink, useNavigate} from "react-router-dom";
 import {Search} from "@mui/icons-material";
 import {useCartItem} from "../utils/CartItemContext";
 import {useAuth} from "../utils/AuthContext";
@@ -54,11 +54,6 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
     const handleSearch = () => {
         setTuKhoaTimKiem(tuKhoaTamThoi);
     }
-    const location = useLocation();
-    if (location.pathname.startsWith("/admin")) {
-        return null;
-    }
-
     return(
         <nav className="navbar navbar-expand-lg navbar-light bg-light">
             <div className="container-fluid">
