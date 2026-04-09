@@ -55,7 +55,7 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
         setTuKhoaTimKiem(tuKhoaTamThoi);
     }
     return(
-        <nav className="navbar navbar-expand-lg navbar-light bg-light">
+        <nav className="navbar navbar-expand-lg navbar-light bg-light py-1">
             <div className="container-fluid">
                 <Link className="navbar-brand" to={"/"}>
                     <img
@@ -64,9 +64,9 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
                         className="img-fluid"
                         style={{
                             width: "100%",
-                            maxWidth: "150px",
+                            maxWidth: "120px",
                             height: "auto",
-                            maxHeight: "90px",
+                            maxHeight: "56px",
                             objectFit: "contain",
                         }}
                     />
@@ -173,9 +173,9 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
 
                 {/* Tìm kiếm */}
                 <div className="d-flex">
-                    <input className="form-control me-2" type="search" placeholder="Tìm kiếm" aria-label="Search"
+                    <input className="form-control form-control-sm me-2" type="search" placeholder="Tìm kiếm" aria-label="Search"
                            onChange={onsearchInputChange} value={tuKhoaTamThoi} onKeyDown={handleKeyDown}/>
-                    <button className="btn btn-outline-success" type="submit" onClick={handleSearch}>Search
+                    <button className="btn btn-outline-success btn-sm" type="submit" onClick={handleSearch}>Search
                         <Search/>
                     </button>
                 </div>

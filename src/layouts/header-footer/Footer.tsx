@@ -63,20 +63,20 @@ function Footer() {
 
     return (
         <Box component='footer' sx={{ borderTop: 1, borderColor: "divider" }}>
-            <Container maxWidth='lg' sx={{ py: { xs: 4, md: 6 } }}>
-                <Grid container spacing={4}>
+            <Container maxWidth='lg' sx={{ py: { xs: 2, md: 3 } }}>
+                <Grid container spacing={2}>
                     <Grid item xs={12} md={3}>
                         <Stack spacing={1.25}>
-                            <Typography variant='h6' fontWeight={700}>
+                            <Typography variant='subtitle1' fontWeight={700}>
                                 Minh Hiệp Book
                             </Typography>
-                            <Typography variant='body2' color='text.secondary'>
+                            <Typography variant='caption' color='text.secondary'>
                                 Xã Yên Bình, Huyện Vĩnh Tường, Tỉnh Vĩnh Phúc
                             </Typography>
-                            <Typography variant='body2' color='text.secondary'>
+                            <Typography variant='caption' color='text.secondary'>
                                 Hotline: 0813535314
                             </Typography>
-                            <Typography variant='body2' color='text.secondary'>
+                            <Typography variant='caption' color='text.secondary'>
                                 Email: hiept81331@gmail.com
                             </Typography>
 
@@ -96,7 +96,7 @@ function Footer() {
 
                     {columns.map((col) => (
                         <Grid key={col.title} item xs={12} sm={4} md={2}>
-                            <Typography variant='subtitle1' fontWeight={700} sx={{ mb: 1 }}>
+                            <Typography variant='subtitle2' fontWeight={700} sx={{ mb: 0.75 }}>
                                 {col.title}
                             </Typography>
                             <Stack spacing={0.75}>
@@ -106,7 +106,7 @@ function Footer() {
                                         component={RouterLink}
                                         to={link.to}
                                         color='text.secondary'
-                                        variant='body2'
+                                        variant='caption'
                                         sx={{ width: "fit-content", textDecoration: "none", "&:hover": { textDecoration: "underline" } }}
                                     >
                                         {link.label}
@@ -118,10 +118,10 @@ function Footer() {
 
                     <Grid item xs={12} md={3}>
                         <Box component='form' onSubmit={onSubmit} noValidate>
-                            <Typography variant='subtitle1' fontWeight={700}>
+                            <Typography variant='subtitle2' fontWeight={700}>
                                 Nhận tin mới
                             </Typography>
-                            <Typography variant='body2' color='text.secondary' sx={{ mt: 0.5, mb: 1.5 }}>
+                            <Typography variant='caption' color='text.secondary' sx={{ mt: 0.25, mb: 1 }}>
                                 Nhập email để nhận thông báo sách mới và ưu đãi.
                             </Typography>
                             <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25}>
@@ -134,7 +134,7 @@ function Footer() {
                                     onChange={(e) => setEmail(e.target.value)}
                                     autoComplete='email'
                                 />
-                                <Button type='submit' variant='contained' sx={{ whiteSpace: "nowrap" }}>
+                                <Button size='small' type='submit' variant='contained' sx={{ whiteSpace: "nowrap" }}>
                                     Đăng ký
                                 </Button>
                             </Stack>
@@ -142,7 +142,7 @@ function Footer() {
                     </Grid>
                 </Grid>
 
-                <Divider sx={{ my: 3 }} />
+                <Divider sx={{ my: 2 }} />
 
                 <Stack
                     direction={{ xs: "column", sm: "row" }}
@@ -150,7 +150,7 @@ function Footer() {
                     justifyContent='space-between'
                     alignItems={{ xs: "flex-start", sm: "center" }}
                 >
-                    <Typography variant='body2' color='text.secondary'>
+                    <Typography variant='caption' color='text.secondary'>
                         © {year} Minh Hiệp Book. All rights reserved.
                     </Typography>
                     <Stack direction='row' spacing={2}>
@@ -158,7 +158,7 @@ function Footer() {
                             component={RouterLink}
                             to='/policy'
                             color='text.secondary'
-                            variant='body2'
+                            variant='caption'
                             sx={{ textDecoration: "none", "&:hover": { textDecoration: "underline" } }}
                         >
                             Điều khoản
@@ -167,7 +167,7 @@ function Footer() {
                             component={RouterLink}
                             to='/policy'
                             color='text.secondary'
-                            variant='body2'
+                            variant='caption'
                             sx={{ textDecoration: "none", "&:hover": { textDecoration: "underline" } }}
                         >
                             Bảo mật
