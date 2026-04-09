@@ -45,6 +45,17 @@ body {
 	flex: 0 0 auto;
 }
 
+.app-header .navbar {
+	padding-top: 0.125rem;
+	padding-bottom: 0.125rem;
+}
+
+.app-header .nav-link {
+	padding-top: 0.25rem;
+	padding-bottom: 0.25rem;
+	font-size: 0.95rem;
+}
+
 .app-scroll {
 	flex: 1 1 auto;
 	overflow-y: auto;
