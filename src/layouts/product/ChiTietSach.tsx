@@ -404,7 +404,7 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
                                     <p className='me-5'>
                                         Thể loại:{" "}
                                         <strong>
-                                            {genres?.map((genre) => genre.nameGenre + " ")}
+                                            {genres?.map((genre) => genre.nameGenre + ",")}
                                         </strong>
                                     </p>
                                     <p className='ms-5'>
@@ -459,16 +459,16 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
                                     </h4>
                                 </div>
                                 <div className='mt-3'>
-                                    <p>
+                                    {/* <p>
                                         Vận chuyển tới:{" "}
-                                        <strong>Quận Bình Thạnh, TP.HCM</strong>{" "}
+                                        <strong>MH Bookstore </strong>{" "}
                                         <span
                                             className='ms-3 text-primary'
                                             style={{ cursor: "pointer" }}
                                         >
 											Thay đổi
 										</span>
-                                    </p>
+                                    </p> */}
                                     <div className='d-flex align-items-center mt-3'>
                                         <img
                                             src='https://deo.shopeemobile.com/shopee/shopee-pcmall-live-sg/d9e992985b18d96aab90969636ebfd0e.png'
