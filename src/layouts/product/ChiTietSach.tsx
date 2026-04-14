@@ -21,13 +21,14 @@ import { Skeleton } from "@mui/material";
 
 import useScrollToTop from "../../hooks/ScrollToTop";
 import BookModel from "../../models/BookModel";
-import {laySachTheoMaSach} from "../../api/SachAPI";
+import { laySachTheoMaSach, searchBook } from "../../api/SachAPI";
 import GenreModel from "../../models/GenreModel";
 import ImageModel from "../../models/ImageModel";
 import {layToanBoHinhAnhMotSach} from "../../api/HinhAnhAPI";
 import {CheckoutPage} from "../../page/components/CheckoutPage";
 import RatingStar from "./rating/Rating";
 import CartItemModel from "../../models/CartItemModel";
+import SachProps from "./components/SachProps";
 
 
 interface BookDetailProps {}
@@ -56,36 +57,116 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
     const [erroring, setErroring] = useState(null);
     // Lấy sách ra
     useEffect(() => {
+        let cancelled = false;
+
+        setLoading(true);
+        setErroring(null);
+        setBook(null);
+
         laySachTheoMaSach(idBookNumber)
             .then((response) => {
+                if (cancelled) return;
                 setBook(response);
                 setLoading(false);
             })
             .catch((error) => {
+                if (cancelled) return;
                 setLoading(false);
                 setErroring(error.message);
             });
-    }, []);
+
+        return () => {
+            cancelled = true;
+        };
+    }, [idBookNumber]);
 
     // Lấy ra thể loại của sách
     const [genres, setGenres] = useState<GenreModel[] | null>(null);
     useEffect(() => {
-        getGenreByIdBook(idBookNumber).then((response) => {
-            setGenres(response.genreList);
-        });
-    }, []);
+        let cancelled = false;
+
+        setGenres(null);
+        getGenreByIdBook(idBookNumber)
+            .then((response) => {
+                if (cancelled) return;
+                setGenres(response.genreList);
+            })
+            .catch(() => {
+                if (cancelled) return;
+                setGenres([]);
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [idBookNumber]);
 
     // Lấy ra hình ảnh của sách
     const [images, setImages] = useState<ImageModel[] | null>(null);
     useEffect(() => {
+        let cancelled = false;
+
+        setImages(null);
         layToanBoHinhAnhMotSach(idBookNumber)
             .then((response) => {
+                if (cancelled) return;
                 setImages(response);
             })
             .catch((error) => {
                 console.error(error);
+                if (cancelled) return;
+                setImages([]);
             });
-    }, []);
+
+        return () => {
+            cancelled = true;
+        };
+    }, [idBookNumber]);
+
+    // Sách liên quan (cùng thể loại)
+    const [relatedBooks, setRelatedBooks] = useState<BookModel[]>([]);
+    const [loadingRelatedBooks, setLoadingRelatedBooks] = useState(false);
+
+    useEffect(() => {
+        if (!genres || genres.length === 0) {
+            setRelatedBooks([]);
+            return;
+        }
+
+        let cancelled = false;
+        setLoadingRelatedBooks(true);
+
+        const genreIds = Array.from(
+            new Set(genres.map((g) => g.idGenre).filter(Boolean))
+        ) as number[];
+
+        Promise.all(
+            genreIds.map((genreId) =>
+                searchBook("", genreId, undefined, 12, 0)
+                    .then((res) => res.ketQua)
+                    .catch(() => [])
+            )
+        )
+            .then((lists) => {
+                if (cancelled) return;
+                const merged = lists.flat();
+                const dedup = new Map<number, BookModel>();
+                for (const b of merged) {
+                    if (!b?.idBook) continue;
+                    if (b.idBook === idBookNumber) continue;
+                    if (!dedup.has(b.idBook)) dedup.set(b.idBook, b);
+                }
+                setRelatedBooks(Array.from(dedup.values()).slice(0, 12));
+            })
+            .finally(() => {
+                if (cancelled) return;
+                setLoadingRelatedBooks(false);
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [genres, idBookNumber]);
 
     const [quantity, setQuantity] = useState(1);
     // Xử lý tăng số lượng
@@ -102,82 +183,6 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
         }
     };
 
-    // Xử lý thêm sản phẩm vào giỏ hàng
-    // const handleAddProduct = async (newBook: BookModel) => {
-    //     // cái isExistBook này sẽ tham chiếu đến cái cart ở trên, nên khi update thì cart nó cũng update theo
-      
-    //     let isExistBook = cartList.find(
-    //         (cartItem) => cartItem.book.idBook === newBook.idBook
-    //     );
-    //     // Thêm 1 sản phẩm vào giỏ hàng
-    //     if (isExistBook) {
-    //         // nếu có rồi thì sẽ tăng số lượng
-    //         isExistBook.quantity += quantity;
-
-    //         // Lưu vào db
-    //         if (isToken()) {
-    //             const request = {
-    //                 idCart: isExistBook.idCart,
-    //                 quantity: isExistBook.quantity,
-    //             };
-    //             const token = localStorage.getItem("token");
-    //             fetch(endpointBE + `/cart-item/update-item`, {
-    //                 method: "PUT",
-    //                 headers: {
-    //                     Authorization: `Bearer ${token}`,
-    //                     "content-type": "application/json",
-    //                 },
-    //                 body: JSON.stringify(request),
-    //             }).catch((err) => console.log(err));
-    //         }
-    //     } else {
-    //         // Lưu vào db
-    //         if (isToken()) {
-    //             try {
-    //                 const request = [
-    //                     {
-    //                         quantity: quantity,
-    //                         book: newBook,
-    //                         idUser: getIdUserByToken(),
-    //                     },
-    //                 ];
-    //                 const token = localStorage.getItem("token");
-    //                 const response = await fetch(
-    //                     endpointBE + "/cart-item/add-item",
-    //                     {
-    //                         method: "POST",
-    //                         headers: {
-    //                             Authorization: `Bearer ${token}`,
-    //                             "content-type": "application/json",
-    //                         },
-    //                         body: JSON.stringify(request),
-    //                     }
-    //                 );
-
-    //                 if (response.ok) {
-    //                     const idCart = await response.json();
-    //                     cartList.push({
-    //                         idCart: idCart,
-    //                         quantity: quantity,
-    //                         book: newBook,
-    //                     });
-    //                 }
-    //             } catch (error) {
-    //                 console.log(error);
-    //             }
-    //         } else {
-    //             cartList.push({
-    //                 quantity: quantity,
-    //                 book: newBook,
-    //             });
-    //         }
-    //     }
-    //     // Lưu vào localStorage
-    //     localStorage.setItem("cart", JSON.stringify(cartList));
-    //     // Thông báo toast
-    //     toast.success("Thêm vào giỏ hàng thành công");
-    //     setTotalCart(cartList.length);
-    // };
     const handleAddProduct = async (newBook: BookModel, quantity: number = 1) => {
     // Lấy số lượng tồn kho, nếu undefined thì mặc định 0
     const availableStock = newBook.quantity ?? 0;
@@ -518,6 +523,34 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
                             text={book.description + ""}
                             limit={1000}
                         />
+                    </div>
+                    <div className='container p-4 bg-white my-3 rounded'>
+                        <h5 className='my-3'>Sách liên quan</h5>
+                        <hr />
+                        <div className='row'>
+                            {loadingRelatedBooks ? (
+                                <>
+                                    <div className='col-md-3 mt-2'>
+                                        <Skeleton className='my-3' variant='rectangular' height={400} />
+                                    </div>
+                                    <div className='col-md-3 mt-2'>
+                                        <Skeleton className='my-3' variant='rectangular' height={400} />
+                                    </div>
+                                    <div className='col-md-3 mt-2'>
+                                        <Skeleton className='my-3' variant='rectangular' height={400} />
+                                    </div>
+                                    <div className='col-md-3 mt-2'>
+                                        <Skeleton className='my-3' variant='rectangular' height={400} />
+                                    </div>
+                                </>
+                            ) : relatedBooks.length > 0 ? (
+                                relatedBooks.map((sach) => (
+                                    <SachProps key={sach.idBook} sach={sach} />
+                                ))
+                            ) : (
+                                <div className='col-12 text-muted'>Không có sách liên quan</div>
+                            )}
+                        </div>
                     </div>
                     <div className='container p-4 bg-white my-3 rounded'>
                         <h5 className='my-3'>Khách hàng đánh giá</h5>
