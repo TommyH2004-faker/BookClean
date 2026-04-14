@@ -99,6 +99,11 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
                                 Chính sách
                             </NavLink>
                         </li>
+                        <li className='nav-item d-none d-lg-block'>
+                            <NavLink className='nav-link' to='/flash-sale'>
+                                Flash Sale
+                            </NavLink>
+                        </li>
                         {isToken() && (
                             <li className='nav-item d-none d-lg-block'>
                                 <NavLink className='nav-link' to='/feedback'>
@@ -131,6 +136,11 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
         <li>
             <NavLink className='dropdown-item' to='/policy'>
                 Chính sách
+            </NavLink>
+        </li>
+        <li>
+            <NavLink className='dropdown-item' to='/flash-sale'>
+                Flash Sale
             </NavLink>
         </li>
         {isToken() && (

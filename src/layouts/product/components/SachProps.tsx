@@ -12,9 +12,10 @@ import { toast } from "react-toastify";
 
 interface SachPropsInterface {
     sach: BookModel;
+    showSoldProgress?: boolean;
 }
 
-const SachProps: React.FC<SachPropsInterface> = ({ sach }) => {
+const SachProps: React.FC<SachPropsInterface> = ({ sach, showSoldProgress = false }) => {
     const maSach: number = sach.idBook;
     const [danhSachAnh, setDanhSachAnh] = useState<ImageModel[]>([]);
     const [dangTaiDuLieu, setDangTaiDuLieu] = useState(true);
@@ -205,6 +206,11 @@ const SachProps: React.FC<SachPropsInterface> = ({ sach }) => {
             ? Math.round(((listPrice - sellPrice) / listPrice) * 100)
             : 0;
 
+    const soldQuantity = sach.soldQuantity ?? 0;
+    const stockQuantity = sach.quantity ?? 0;
+    const totalForProgress = soldQuantity + stockQuantity;
+    const soldPercent = totalForProgress > 0 ? Math.round((soldQuantity / totalForProgress) * 100) : 0;
+
     return (
         <div className="col-md-3 mt-2">
             <div
@@ -263,6 +269,29 @@ const SachProps: React.FC<SachPropsInterface> = ({ sach }) => {
                             <del>{dinhDangSo(sach.listPrice)}đ</del>
                         </span>
                     </div>
+
+                    {showSoldProgress && (
+                        <div className="mt-2">
+                            <div className="d-flex justify-content-between align-items-center">
+                                <span className="small text-body-secondary">Đã bán {soldQuantity}</span>
+                                {totalForProgress > 0 && (
+                                    <span className="small text-body-secondary">{soldPercent}%</span>
+                                )}
+                            </div>
+                            {totalForProgress > 0 && (
+                                <div className="progress" style={{ height: 8 }}>
+                                    <div
+                                        className="progress-bar bg-danger"
+                                        role="progressbar"
+                                        style={{ width: `${Math.min(100, Math.max(0, soldPercent))}%` }}
+                                        aria-valuenow={soldPercent}
+                                        aria-valuemin={0}
+                                        aria-valuemax={100}
+                                    ></div>
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     <div className="mt-2 d-flex align-items-center justify-content-between">
                         <div>{renderRating(sach.avgRating || 0)}</div>

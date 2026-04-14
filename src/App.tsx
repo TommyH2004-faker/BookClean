@@ -33,6 +33,7 @@ import { ResendActiveCode } from "./layouts/User/ResendActiveCode";
 import DangNhap from "./layouts/User/DangNhap";
 import CheckoutFail from "./page/components/CheckoutFail";
 import ChatWidget from "./layouts/ChatBot/ChatWidget";
+import FlashSalePage from "./page/FlashSalePage";
 
 const MyRoutes = () => {
     const [tuKhoaTimKiem, setTuKhoaTimKiem] = useState('');
@@ -77,6 +78,7 @@ const MyRoutes = () => {
                             <Route path='/feedback' element={<FeedbackCustomerPage />} />
                             <Route path='/forgot-password' element={<ForgotPassword />} />
                             <Route path='/profile' element={<ProfilePage setReloadAvatar={setReloadAvatar} />} />
+                            <Route path='/flash-sale' element={<FlashSalePage />} />
                             <Route path='/check-out/success' element={<CheckoutSuccess />} />
                             <Route path='/check-out/failure' element={<CheckoutFail />} />
 
