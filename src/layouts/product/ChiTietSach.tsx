@@ -168,6 +168,11 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
         };
     }, [genres, idBookNumber]);
 
+    const relatedSlides: BookModel[][] = [];
+    for (let i = 0; i < relatedBooks.length; i += 4) {
+        relatedSlides.push(relatedBooks.slice(i, i + 4));
+    }
+
     const [quantity, setQuantity] = useState(1);
     // Xử lý tăng số lượng
     const add = () => {
@@ -525,37 +530,48 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
                         />
                     </div>
                     <div className='container p-4 bg-white my-3 rounded'>
-                        <h5 className='my-3'>Sách liên quan</h5>
-                        <hr />
-                        <div className='row'>
-                            {loadingRelatedBooks ? (
-                                <>
-                                    <div className='col-md-3 mt-2'>
-                                        <Skeleton className='my-3' variant='rectangular' height={400} />
-                                    </div>
-                                    <div className='col-md-3 mt-2'>
-                                        <Skeleton className='my-3' variant='rectangular' height={400} />
-                                    </div>
-                                    <div className='col-md-3 mt-2'>
-                                        <Skeleton className='my-3' variant='rectangular' height={400} />
-                                    </div>
-                                    <div className='col-md-3 mt-2'>
-                                        <Skeleton className='my-3' variant='rectangular' height={400} />
-                                    </div>
-                                </>
-                            ) : relatedBooks.length > 0 ? (
-                                relatedBooks.map((sach) => (
-                                    <SachProps key={sach.idBook} sach={sach} />
-                                ))
-                            ) : (
-                                <div className='col-12 text-muted'>Không có sách liên quan</div>
-                            )}
-                        </div>
-                    </div>
-                    <div className='container p-4 bg-white my-3 rounded'>
                         <h5 className='my-3'>Khách hàng đánh giá</h5>
                         <hr />
                         <Comment idBook={idBookNumber} />
+                        <hr />
+                        <h6 className='my-3'>Xem thêm sách cùng thể loại</h6>
+                        {loadingRelatedBooks ? (
+                            <div className='row'>
+                                <div className='col-md-3 mt-2'>
+                                    <Skeleton className='my-3' variant='rectangular' height={400} />
+                                </div>
+                                <div className='col-md-3 mt-2'>
+                                    <Skeleton className='my-3' variant='rectangular' height={400} />
+                                </div>
+                                <div className='col-md-3 mt-2'>
+                                    <Skeleton className='my-3' variant='rectangular' height={400} />
+                                </div>
+                                <div className='col-md-3 mt-2'>
+                                    <Skeleton className='my-3' variant='rectangular' height={400} />
+                                </div>
+                            </div>
+                        ) : relatedBooks.length > 0 ? (
+                            <Carousel
+                                emulateTouch={true}
+                                swipeable={true}
+                                showThumbs={false}
+                                showStatus={false}
+                                showIndicators={false}
+                                infiniteLoop={relatedSlides.length > 1}
+                            >
+                                {relatedSlides.map((slideBooks, index) => (
+                                    <div key={index}>
+                                        <div className='row'>
+                                            {slideBooks.map((sach) => (
+                                                <SachProps key={sach.idBook} sach={sach} />
+                                            ))}
+                                    </div>
+                                </div>
+                                ))}
+                            </Carousel>
+                        ) : (
+                            <div className='text-muted'>Không có sách liên quan</div>
+                        )}
                     </div>
                 </>
             ) : (
