@@ -280,7 +280,7 @@ function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
 									setSelectedListName={setSelectedListName}
 									values={genresList}
 									setValue={setBook}
-									key={reloadCount}
+									key={`${props.option}-${props.id}`}
 									required={true}
 								/>
 
