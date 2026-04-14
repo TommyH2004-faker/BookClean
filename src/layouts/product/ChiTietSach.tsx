@@ -404,7 +404,7 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
                                     <p className='me-5'>
                                         Thể loại:{" "}
                                         <strong>
-                                            {genres?.map((genre) => genre.nameGenre + ",")}
+										{genres?.map((genre) => genre.nameGenre).join(", ")}
                                         </strong>
                                     </p>
                                     <p className='ms-5'>
