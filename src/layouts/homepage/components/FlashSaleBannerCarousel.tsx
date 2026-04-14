@@ -20,25 +20,25 @@ const FlashSaleBannerCarousel: React.FC = () => {
 	const banners: FlashSaleBanner[] = [
 		{
 			slotHour: 0,
-			imageSrc: "/images/books/banner-1.jpg",
+			imageSrc: "/images/books/flashsale1.png",
 			heading: "FLASH SALE 0H",
 			subtitle: "Deal nửa đêm • Số lượng có hạn",
 		},
 		{
 			slotHour: 12,
-			imageSrc: "/images/books/banner-2.jpg",
+			imageSrc: "/images/books/flashsale2.png",
 			heading: "FLASH SALE 12H",
 			subtitle: "Giờ vàng trưa • Giảm sâu mỗi ngày",
 		},
 		{
 			slotHour: 18,
-			imageSrc: "/images/books/banner-3.jpg",
+			imageSrc: "/images/books/flashsale3.png",
 			heading: "FLASH SALE 18H",
 			subtitle: "Deal tan tầm • Săn ngay kẻo lỡ",
 		},
 		{
 			slotHour: 21,
-			imageSrc: "/images/books/LogoPage.jpg",
+			imageSrc: "/images/books/flashsale4.png",
 			heading: "FLASH SALE 21H",
 			subtitle: "Deal buổi tối • Mua nhanh chốt lẹ",
 		},
