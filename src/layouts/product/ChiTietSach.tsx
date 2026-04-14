@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { Carousel } from "react-responsive-carousel";
@@ -142,7 +142,7 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
 
         Promise.all(
             genreIds.map((genreId) =>
-                searchBook("", genreId, undefined, 12, 0)
+                searchBook("", genreId, undefined, 100, 0)
                     .then((res) => res.ketQua)
                     .catch(() => [])
             )
@@ -156,7 +156,7 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
                     if (b.idBook === idBookNumber) continue;
                     if (!dedup.has(b.idBook)) dedup.set(b.idBook, b);
                 }
-                setRelatedBooks(Array.from(dedup.values()).slice(0, 12));
+				setRelatedBooks(Array.from(dedup.values()));
             })
             .finally(() => {
                 if (cancelled) return;
@@ -168,10 +168,16 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
         };
     }, [genres, idBookNumber]);
 
-    const relatedSlides: BookModel[][] = [];
-    for (let i = 0; i < relatedBooks.length; i += 4) {
-        relatedSlides.push(relatedBooks.slice(i, i + 4));
-    }
+    const relatedScrollRef = useRef<HTMLDivElement | null>(null);
+    const scrollRelated = (direction: "prev" | "next") => {
+        const el = relatedScrollRef.current;
+        if (!el) return;
+        const amount = el.clientWidth || 600;
+        el.scrollBy({
+            left: direction === "prev" ? -amount : amount,
+            behavior: "smooth",
+        });
+    };
 
     const [quantity, setQuantity] = useState(1);
     // Xử lý tăng số lượng
@@ -551,24 +557,32 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
                                 </div>
                             </div>
                         ) : relatedBooks.length > 0 ? (
-                            <Carousel
-                                emulateTouch={true}
-                                swipeable={true}
-                                showThumbs={false}
-                                showStatus={false}
-                                showIndicators={false}
-                                infiniteLoop={relatedSlides.length > 1}
-                            >
-                                {relatedSlides.map((slideBooks, index) => (
-                                    <div key={index}>
-                                        <div className='row'>
-                                            {slideBooks.map((sach) => (
-                                                <SachProps key={sach.idBook} sach={sach} />
-                                            ))}
-                                    </div>
+                            <>
+                                <div className='d-flex justify-content-end gap-2 mb-2'>
+                                    <Button
+                                        variant='outlined'
+                                        size='small'
+                                        onClick={() => scrollRelated("prev")}
+                                    >
+                                        Trước
+                                    </Button>
+                                    <Button
+                                        variant='outlined'
+                                        size='small'
+                                        onClick={() => scrollRelated("next")}
+                                    >
+                                        Sau
+                                    </Button>
                                 </div>
-                                ))}
-                            </Carousel>
+                                <div
+                                    ref={relatedScrollRef}
+                                    className='d-flex flex-row flex-nowrap gap-3 overflow-auto pb-2'
+                                >
+                                    {relatedBooks.map((sach) => (
+                                        <SachProps key={sach.idBook} sach={sach} />
+                                    ))}
+                                </div>
+                            </>
                         ) : (
                             <div className='text-muted'>Không có sách liên quan</div>
                         )}
