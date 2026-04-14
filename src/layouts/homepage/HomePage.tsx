@@ -1,6 +1,7 @@
 import React from 'react';
 import Carousel from "./components/Carousel";
 import Banner from "./components/Banner";
+import FlashSaleBannerCarousel from "./components/FlashSaleBannerCarousel";
 import DanhSachSanPham from "../product/DanhSachSanPham";
 import { useParams } from 'react-router-dom';
 interface HomePageProps {
@@ -22,6 +23,7 @@ function HomePage({tuKhoaTimKiem}: HomePageProps) {
     return (
         <div>
           <Banner/>
+                        <FlashSaleBannerCarousel/>
             <Carousel/>
             <DanhSachSanPham tuKhoaTimKiem={tuKhoaTimKiem} idGenre={idGenreNumber}/>
         </div>

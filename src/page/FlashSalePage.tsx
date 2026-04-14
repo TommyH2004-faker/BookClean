@@ -14,7 +14,7 @@ import {
 	type FlashSaleSlotHour,
 } from "../layouts/utils/flashSale";
 
-type SlotPhase = "upcoming" | "active" | "ended";
+type SlotPhase = "upcoming" | "active";
 
 function calcDiscountPercent(book: BookModel): number {
 	const listPrice = book.listPrice ?? 0;
@@ -36,6 +36,26 @@ function rotate<T>(items: T[], offset: number): T[] {
 	const normalized = ((offset % items.length) + items.length) % items.length;
 	if (normalized === 0) return items;
 	return items.slice(normalized).concat(items.slice(0, normalized));
+}
+
+function pickBooksForSlot(books: BookModel[], slotIndex: number): BookModel[] {
+	if (books.length === 0) return books;
+
+	// Prefer distinct sets per slot using a stable bucket.
+	const buckets = [0, 1, 2, 3];
+	const orderedBuckets = rotate(buckets, slotIndex);
+
+	const picked: BookModel[] = [];
+	for (const bucket of orderedBuckets) {
+		for (const book of books) {
+			const key = book.idBook ?? 0;
+			if (key % 4 === bucket) picked.push(book);
+		}
+		// If the bucket is already large enough, stop early.
+		if (picked.length >= PAGE_SIZE * 3) break;
+	}
+
+	return picked.length > 0 ? picked : books;
 }
 
 function pad2(value: number): string {
@@ -66,7 +86,7 @@ function getSlotWindow(now: Date, slotHour: FlashSaleSlotHour): { phase: SlotPha
 		const nextEnd = new Date(todayEnd);
 		nextEnd.setDate(nextEnd.getDate() + 1);
 
-		return { phase: "ended", start: nextStart, end: nextEnd };
+		return { phase: "upcoming", start: nextStart, end: nextEnd };
 	}
 
 	if (now < todayStart) {
@@ -146,9 +166,9 @@ const FlashSalePage: React.FC = () => {
 			return sb - sa;
 		});
 
-		// Make each time slot feel different without requiring backend support
+		// Each slot shows a stable subset of deals (client-side only)
 		const slotIndex = getFlashSaleSlotIndex(selectedSlotHour);
-		return rotate(filtered, slotIndex * 5);
+		return pickBooksForSlot(filtered, slotIndex);
 	}, [allBooks, selectedSlotHour]);
 
 	const totalPages = Math.max(1, Math.ceil(saleBooks.length / PAGE_SIZE));
