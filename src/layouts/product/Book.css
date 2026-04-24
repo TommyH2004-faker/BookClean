@@ -7,3 +7,24 @@
 hr {
 	color: #aaa;
 }
+/* // flashsale */
+/* Hiệu ứng nháy màu chữ (Đỏ -> Vàng sáng -> Đỏ) */
+@keyframes blink-text {
+  0% {
+    color: #dc3545; /* Đỏ */
+    text-shadow: 0 0 2px rgba(220, 53, 69, 0.3);
+  }
+  50% {
+    color: #ffc107; /* Vàng */
+    text-shadow: 0 0 8px rgba(255, 193, 7, 0.8);
+  }
+  100% {
+    color: #dc3545; /* Đỏ */
+    text-shadow: 0 0 2px rgba(220, 53, 69, 0.3);
+  }
+}
+
+/* Class gắn vào tên sản phẩm */
+.blinking-text-flash-sale {
+  animation: blink-text 0.8s infinite ease-in-out !important;
+}

@@ -41,19 +41,29 @@ export async function getCartAllByIdUser(): Promise<CartItemModel[]> {
 
         const cartResponse = await response.json();
 
-        return cartResponse.map((item: any) => ({
+        return cartResponse.map((item: any) => {
+			const isFlashSale = Boolean(item.book?.isFlashSale);
+			const flashSalePrice = typeof item.book?.flashSalePrice === "number" ? item.book.flashSalePrice : null;
+			const effectiveSellPrice = isFlashSale && typeof flashSalePrice === "number" && flashSalePrice > 0
+				? flashSalePrice
+				: (item.book?.sellPrice ?? 0);
+
+			return {
             idCart: item.idCart ?? item.id,
             quantity: item.quantity,
             book: {
                 id: item.book?.id ?? 0,
                 idBook: item.book?.id ?? 0,
                 nameBook: item.book?.name ?? "",
-                sellPrice: item.book?.sellPrice ?? 0,
+                sellPrice: effectiveSellPrice,
                 listPrice: item.book?.listPrice ?? 0,
+                isFlashSale,
+                flashSalePrice,
                 quantity: item.book?.quantity ?? 0,
                 soldQuantity: item.book?.soldQuantity ?? 0,
             },
-        }));
+			};
+		});
     } catch (error) {
         console.error("Error: ", error);
         return [];

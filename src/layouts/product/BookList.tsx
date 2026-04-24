@@ -1,7 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react";
 
-import "./Book.css";
 
 import Button from "@mui/material/Button";
 import { Link } from "react-router-dom";

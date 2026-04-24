@@ -10,6 +10,8 @@ class BookModel {
    description?: string; // mo ta
    listPrice: number; // gia goc
    sellPrice: number; // gia ban
+   isFlashSale?: boolean; // đang flash sale
+   flashSalePrice?: number | null; // giá flash sale (nếu có)
    quantity?: number; // so luong
    avgRating?: number; // diem trung binh
    soldQuantity?: number; // so luong da ban
@@ -20,6 +22,7 @@ class BookModel {
    genresList?: GenreModel[]; // danh sach the loai
    isFavorited?: boolean; // da yeu thich
    images?: ImageModel[]; // danh sach hinh anh
+
 
    constructor(idBook: number, nameBook: string, author: string, isbn: string, description: string, listPrice: number, sellPrice: number, quantity: number, avgRating: number, soldQuantity: number, discountPercent: number, thumbnail: string) {
       this.idBook = idBook;

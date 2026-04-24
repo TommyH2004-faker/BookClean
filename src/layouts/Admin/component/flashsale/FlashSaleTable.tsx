@@ -27,6 +27,7 @@ export const FlashSaleTable: React.FC<FlashSaleTableProps> = (props) => {
 	const [items, setItems] = useState<FlashSaleItemModel[]>([]);
 	const [flashSaleNameById, setFlashSaleNameById] = useState<Record<number, string>>({});
 	const [thumbnailByBookName, setThumbnailByBookName] = useState<Record<string, string>>({});
+	const [autoReloadTick, setAutoReloadTick] = useState(0);
 
 	const [openEdit, setOpenEdit] = useState(false);
 	const [editingItem, setEditingItem] = useState<FlashSaleItemModel | null>(null);
@@ -138,7 +139,14 @@ export const FlashSaleTable: React.FC<FlashSaleTableProps> = (props) => {
 		return () => {
 			cancelled = true;
 		};
-	}, [props.keyCountReload, props.flashSaleId]);
+	}, [props.keyCountReload, props.flashSaleId, autoReloadTick]);
+
+	useEffect(() => {
+		const id = setInterval(() => {
+			setAutoReloadTick((v) => v + 1);
+		}, 15000);
+		return () => clearInterval(id);
+	}, []);
 
 	const rows = useMemo(() => {
 		return items.map((item, index) => {

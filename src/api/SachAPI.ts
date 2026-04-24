@@ -11,6 +11,19 @@ interface KetQuaInterface {
     tongSoSach: number;
 }
 
+function resolveSellPrice(item: any): { isFlashSale: boolean; flashSalePrice: number | null; sellPrice: number } {
+    const isFlashSale = Boolean(item?.isFlashSale);
+    const rawFlashSalePrice = item?.flashSalePrice;
+    const flashSalePrice = typeof rawFlashSalePrice === "number" ? rawFlashSalePrice : null;
+    const normalSellPrice = item?.sellPrice ?? 0;
+
+    if (isFlashSale && typeof flashSalePrice === "number" && flashSalePrice > 0) {
+        return { isFlashSale, flashSalePrice, sellPrice: flashSalePrice };
+    }
+
+    return { isFlashSale, flashSalePrice, sellPrice: normalSellPrice };
+}
+
 // async function laySach(duongDan: string): Promise<KetQuaInterface> {
 //     const ketQua: BookModel[] = [];
 
@@ -53,6 +66,7 @@ async function laySach(duongDan: string): Promise<KetQuaInterface> {
     const tongSoSach = response.totalElements;
 
     for (const item of responseData) {
+		const pricing = resolveSellPrice(item);
         ketQua.push({
             idBook: item.id,
             nameBook: item.name ?? "",
@@ -60,7 +74,9 @@ async function laySach(duongDan: string): Promise<KetQuaInterface> {
             isbn: item.isbn ?? "",
             description: item.description ?? "",
             listPrice: item.listPrice ?? 0,
-            sellPrice: item.sellPrice ?? 0,
+			sellPrice: pricing.sellPrice,
+			isFlashSale: pricing.isFlashSale,
+			flashSalePrice: pricing.flashSalePrice,
             quantity: item.quantity ?? 0,
             avgRating: item.avgRating ?? 0,
             soldQuantity: item.soldQuantity ?? 0,
@@ -116,18 +132,6 @@ export async function get3BestSellerBooks(): Promise<BookModel[]> {
     return newBookList;
 }
 
-// export async function timKiemSach(tuKhoaTimKiem: string, idGenre: number): Promise<KetQuaInterface> {
-//     // Xác định endpoint
-//     let duongDan: string = `${endpointBE}/book/all-book?sort=idBook,desc&size=8&page=0`;
-//     if (tuKhoaTimKiem !== '' && idGenre == 0) {
-//         duongDan = `${endpointBE}/book/all-book/search/findByNameBookContaining?sort=idBook,desc&size=8&page=0&nameBook=${tuKhoaTimKiem}`;
-//     } else if (tuKhoaTimKiem === '' && idGenre > 0) {
-//         duongDan = `${endpointBE}/book/all-book/search/findByListGenres_idGenre?sort=idBook,desc&size=8&page=0&idGenre=${idGenre}`;
-//     } else if (tuKhoaTimKiem !== '' && idGenre > 0) {
-//         duongDan = `${endpointBE}/book/all-book/search/findByNameBookContainingAndListGenres_idGenre?sort=idBook,desc&size=8&page=0&nameBook=${tuKhoaTimKiem}&idGenre=${idGenre}`;
-//     }
-//     return laySach(duongDan);
-// }
 export async function timKiemSach(
 	tuKhoaTimKiem: string,
 	idGenre: number
@@ -175,6 +179,7 @@ export async function laySachTheoMaSach(idBook: number): Promise<BookModel|null>
         const sachData = await response.json();
         var responseData = sachData.data;
         if(sachData){
+			const pricing = resolveSellPrice(responseData);
             const bookResponse: BookModel = {
                 idBook: responseData.id, // id sach
                 nameBook: responseData.name, // Có thể NULL
@@ -182,7 +187,9 @@ export async function laySachTheoMaSach(idBook: number): Promise<BookModel|null>
                 isbn: responseData.isbn, // ma isbn
                 description: responseData.description, // mo ta
                 listPrice: responseData.listPrice, // gia goc
-                sellPrice: responseData.sellPrice, // gia ban
+				sellPrice: pricing.sellPrice, // gia ban (ưu tiên flash sale nếu có)
+				isFlashSale: pricing.isFlashSale,
+				flashSalePrice: pricing.flashSalePrice,
                 quantity: responseData.quantity, // so luong
                 avgRating: responseData.avgRating, // diem trung binh
                 soldQuantity: responseData.soldQuantity, // so luong da ban
@@ -204,15 +211,30 @@ export async function getBookByIdCartItem(idCart: number): Promise<BookModel | n
     const endpoint = `${endpointBE}/cart-items/${idCart}/book`;
 
     try {
-        // Gọi phương thức request()
         const response = await my_request(endpoint);
+        const responseData = response?.data ?? response;
 
-        // Kiểm tra xem dữ liệu endpoint trả về có dữ liệu không
-        if (response) {
-			return response;
-		} else {
+        if (!responseData) {
             throw new Error("Sách không tồn tại");
         }
+
+        const pricing = resolveSellPrice(responseData);
+        return {
+            idBook: responseData.id ?? responseData.idBook ?? 0,
+            nameBook: responseData.name ?? responseData.nameBook ?? "",
+            author: responseData.author ?? "",
+            isbn: responseData.isbn ?? "",
+            description: responseData.description ?? "",
+            listPrice: responseData.listPrice ?? 0,
+            sellPrice: pricing.sellPrice,
+            isFlashSale: pricing.isFlashSale,
+            flashSalePrice: pricing.flashSalePrice,
+            quantity: responseData.quantity ?? 0,
+            avgRating: responseData.avgRating ?? 0,
+            soldQuantity: responseData.soldQuantity ?? 0,
+            discountPercent: responseData.discountPercent ?? 0,
+            thumbnail: responseData.thumbnail ?? "",
+        };
 
     } catch (error) {
         console.error('Error: ', error);
@@ -292,45 +314,7 @@ export async function getBookByIdAllInformation(idBook: number): Promise<BookMod
         return null;
     }
 }
-// Lấy sách theo id (chỉ lấy thumbnail)
-// export async function getBookById(idBook: number): Promise<BookModel | null> {
-//     let bookResponse: BookModel = {
-//         idBook: 0,
-//         nameBook: "",
-//         author: "",
-//         description: "",
-//         listPrice: NaN,
-//         sellPrice: NaN,
-//         quantity: NaN,
-//         avgRating: NaN,
-//         soldQuantity: NaN,
-//         discountPercent: NaN,
-//         thumbnail: "",
-//     }
-//     const endpoint = endpointBE + `/books/${idBook}`;
-//     try {
-//         // Gọi phương thức request()
-//         const response = await my_request(endpoint);
 
-//         // Kiểm tra xem dữ liệu endpoint trả về có dữ liệu không
-//         if (response) {
-//             bookResponse = response;
-//             // Trả về quyển sách
-//             const responseImg = await layToanBoHinhAnhMotSach(response.idBook);
-//             const thumbnail = responseImg.filter(image => image.isThumbnail);
-//             return {
-//                 ...bookResponse,
-//                 thumbnail: thumbnail[0].url || thumbnail[0].data,
-//             };
-//         } else {
-//             throw new Error("Sách không tồn tại");
-//         }
-
-//     } catch (error) {
-//         console.error('Error: ', error);
-//         return null;
-//     }
-// }
 export async function getBookById(idBook: number): Promise<BookModel | null> {
     const endpoint = endpointBE + `/book/${idBook}`;
     try {
@@ -338,6 +322,7 @@ export async function getBookById(idBook: number): Promise<BookModel | null> {
         var responseData = response.data;
 
         if (responseData) {
+			const pricing = resolveSellPrice(responseData);
 
             // map lại đúng field
             const bookResponse: BookModel = {
@@ -346,7 +331,9 @@ export async function getBookById(idBook: number): Promise<BookModel | null> {
                 author: responseData.author,
                 description: responseData.description,
                 listPrice: responseData.listPrice,
-                sellPrice: responseData.sellPrice,
+				sellPrice: pricing.sellPrice,
+				isFlashSale: pricing.isFlashSale,
+				flashSalePrice: pricing.flashSalePrice,
                 quantity: responseData.quantity,
                 avgRating: responseData.avgRating,
                 soldQuantity: responseData.soldQuantity,
@@ -372,62 +359,7 @@ export async function getBookById(idBook: number): Promise<BookModel | null> {
         return null;
     }
 }
-// export async function searchBook(keySearch?: string, idGenre?: number, filter?: number, size?: number, page?: number): Promise<KetQuaInterface> {
 
-//     // Nếu key search không undifined
-//     if (keySearch) {
-//         keySearch = keySearch.trim();
-//     }
-
-//     const optionsShow = `size=${size}&page=${page}`;
-
-//     // Endpoint mặc định
-//     let endpoint: string = endpointBE + `/book?` + optionsShow;
-
-//     let filterEndpoint = '';
-//     if (filter === 1) {
-//         filterEndpoint = "sort=nameBook";
-//     } else if (filter === 2) {
-//         filterEndpoint = "sort=nameBook,desc";
-//     } else if (filter === 3) {
-//         filterEndpoint = "sort=sellPrice";
-//     } else if (filter === 4) {
-//         filterEndpoint = "sort=sellPrice,desc";
-//     } else if (filter === 5) {
-//         filterEndpoint = "sort=soldQuantity,desc";
-//     }
-
-//     // Nếu có key search và không có lọc thể loại
-//     if (keySearch !== '') {
-//         // Mặc đinh nếu không có filter
-//         endpoint = endpointBE + `/book/search/findByNameBookContaining?nameBook=${keySearch}&` + optionsShow + '&' + filterEndpoint;
-//     }
-
-//     // Nếu idGenre không undifined
-//     if (idGenre !== undefined) {
-//         // Nếu có không có key search và có lọc thể loại
-//         if (keySearch === '' && idGenre > 0) {
-//             // Mặc định nếu không có filter
-//             endpoint = endpointBE + `/book/search/findByListGenres_idGenre?idGenre=${idGenre}&` + optionsShow + '&' + filterEndpoint;
-//         }
-
-//         // Nếu có key search và có lọc thể loại
-//         if (keySearch !== '' && idGenre > 0) {
-//             endpoint = endpointBE + `/book/search/findByNameBookContainingAndListGenres_idGenre?nameBook=${keySearch}&idGenre=${idGenre}&` + optionsShow + '&' + filterEndpoint;
-//         }
-
-//         // Chỉ lọc filter
-//         if (keySearch === '' && (idGenre === 0 || typeof (idGenre) === 'string')) {
-//             endpoint = endpointBE + "/book?" + optionsShow + '&' + filterEndpoint;
-//         }
-
-//         // console.log("idGenre: " + typeof (idGenre) + idGenre + ", filter: " + typeof (filter) + filter + ", keySearch" + +typeof (keySearch) + keySearch);
-//     }
-
-//     // console.log(endpoint);
-
-//     return laySach(endpoint);
-// }
 export async function searchBook(
 	keySearch?: string,
 	idGenre?: number,

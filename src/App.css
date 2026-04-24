@@ -1,1 +1,79 @@
 
+
+.sale-card-glow {
+	border: 1px solid rgba(var(--bs-danger-rgb), 0.22) !important;
+	box-shadow: 0 10px 26px rgba(var(--bs-danger-rgb), 0.12) !important;
+	animation: sale-glow-pulse 1.6s ease-in-out infinite;
+}
+
+.sale-card-glow::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	padding: 2px;
+	background: linear-gradient(
+		90deg,
+		rgba(var(--bs-danger-rgb), 0.08),
+		rgba(var(--bs-danger-rgb), 0.85),
+		rgba(var(--bs-danger-rgb), 0.08)
+	);
+	background-size: 220% 100%;
+	animation: sale-border-run 1.15s linear infinite;
+	-webkit-mask:
+		linear-gradient(#000 0 0) content-box,
+		linear-gradient(#000 0 0);
+	mask:
+		linear-gradient(#000 0 0) content-box,
+		linear-gradient(#000 0 0);
+	-webkit-mask-composite: xor;
+	mask-composite: exclude;
+	pointer-events: none;
+	z-index: 0;
+}
+
+.sale-card-glow > * {
+	position: relative;
+	z-index: 1;
+}
+
+@keyframes sale-border-run {
+	0% {
+		background-position: 0% 50%;
+	}
+	100% {
+		background-position: 220% 50%;
+	}
+}
+
+@keyframes sale-glow-pulse {
+	0%,
+	100% {
+		box-shadow: 0 10px 26px rgba(var(--bs-danger-rgb), 0.12) !important;
+	}
+	50% {
+		box-shadow: 0 12px 34px rgba(var(--bs-danger-rgb), 0.22) !important;
+	}
+}
+
+.sale-fire-badge {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	left: auto;
+	z-index: 2;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 10px;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: var(--bs-white);
+	background: var(--bs-danger);
+	box-shadow: 0 6px 16px rgba(var(--bs-danger-rgb), 0.18);
+	user-select: none;
+	pointer-events: none;
+	white-space: nowrap;
+}
+

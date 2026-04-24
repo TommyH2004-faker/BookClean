@@ -14,6 +14,7 @@ import { getGenreByIdBook } from "../../api/GenreApi";
 import React from "react";
 import ReactSimpleImageViewer from "react-simple-image-viewer";
 import { toast } from "react-toastify";
+import { getFlashSaleMaxPerUser } from "../utils/flashSaleLimit";
 import { endpointBE } from "../utils/Constant";
 import { isToken } from "../utils/JwtService";
 import { useCartItem } from "../utils/CartItemContext";
@@ -205,6 +206,14 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
 
     const currentQuantityInCart = isExistBook ? isExistBook.quantity : 0;
 
+    if (newBook.isFlashSale) {
+        const maxPerUser = await getFlashSaleMaxPerUser(newBook.idBook);
+        if (maxPerUser && currentQuantityInCart + quantity > maxPerUser) {
+            toast.error(`Flash Sale: tối đa ${maxPerUser} sản phẩm/khách`);
+            return;
+        }
+    }
+
     // Nếu tổng số lượng vượt quá tồn kho, thông báo và dừng
     if (currentQuantityInCart + quantity > availableStock) {
         toast.error("Không thể thêm, đã vượt quá số lượng tồn kho!");
@@ -213,7 +222,8 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
 
     if (isExistBook) {
         // Nếu đã có trong giỏ, tăng số lượng
-        isExistBook.quantity += quantity;
+        const prevQuantity = isExistBook.quantity;
+        isExistBook.quantity = prevQuantity + quantity;
 
         // Cập nhật trên server nếu đã đăng nhập
         if (isToken()) {
@@ -222,14 +232,25 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
                 quantity: isExistBook.quantity,
             };
             const token = localStorage.getItem("token");
-            fetch(endpointBE + `/cart-item/update-item`, {
-                method: "PUT",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "content-type": "application/json",
-                },
-                body: JSON.stringify(request),
-            }).catch((err) => console.log(err));
+            try {
+                const res = await fetch(endpointBE + `/cart-items/update-item`, {
+                    method: "PUT",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "content-type": "application/json",
+                    },
+                    body: JSON.stringify(request),
+                });
+                if (!res.ok) {
+                    isExistBook.quantity = prevQuantity;
+                    toast.error("Không thể cập nhật số lượng trong giỏ hàng");
+                    return;
+                }
+            } catch (err) {
+                isExistBook.quantity = prevQuantity;
+                toast.error("Không thể cập nhật số lượng trong giỏ hàng");
+                return;
+            }
         }
     } else {
         // Nếu chưa có trong giỏ, thêm mới
@@ -248,16 +269,26 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
                     }),
                 });
 
-                if (response.ok) {
-                    const idCart = await response.json();
-                    cartList.push({
-                        idCart: idCart,
-                        quantity: quantity,
-                        book: newBook,
-                    });
+				if (!response.ok) {
+                    toast.error("Không thể thêm vào giỏ hàng");
+					return;
+				}
+
+                const payload = await response.json();
+                const idCart = payload?.data ?? payload?.idCart ?? payload;
+                if (typeof idCart !== "number") {
+                    toast.error("Không thể thêm vào giỏ hàng");
+                    return;
                 }
+				cartList.push({
+					idCart: idCart,
+					quantity: quantity,
+					book: newBook,
+				});
             } catch (error) {
                 console.log(error);
+				toast.error("Không thể thêm vào giỏ hàng");
+				return;
             }
         } else {
             // Nếu chưa đăng nhập, lưu vào localStorage
@@ -305,9 +336,20 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
             toast.warning("Bạn cần đăng nhập để mua hàng");
             return;
         }
-        setCartItem([{ quantity, book: newBook }]);
-        setIsCheckout(!isCheckout);
-        setTotalPriceProduct(newBook.sellPrice * quantity);
+        void (async () => {
+            const currentQuantityInCart = cartList.find((cartItem) => cartItem.book.idBook === newBook.idBook)?.quantity ?? 0;
+            if (newBook.isFlashSale) {
+                const maxPerUser = await getFlashSaleMaxPerUser(newBook.idBook);
+                if (maxPerUser && currentQuantityInCart + quantity > maxPerUser) {
+                    toast.error(`Flash Sale: tối đa ${maxPerUser} sản phẩm/khách`);
+                    return;
+                }
+            }
+
+            setCartItem([{ quantity, book: newBook }]);
+            setIsCheckout(!isCheckout);
+            setTotalPriceProduct(newBook.sellPrice * quantity);
+        })();
     }
 
     if (loading) {

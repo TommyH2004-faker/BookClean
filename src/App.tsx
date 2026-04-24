@@ -35,6 +35,7 @@ import CheckoutFail from "./page/components/CheckoutFail";
 import ChatWidget from "./layouts/ChatBot/ChatWidget";
 import FlashSalePage from "./page/FlashSalePage";
 import FlashSaleManagementPage from "./layouts/Admin/FlashSaleManagement";
+import "./layouts/product/Book.css";
 
 const MyRoutes = () => {
     const [tuKhoaTimKiem, setTuKhoaTimKiem] = useState('');

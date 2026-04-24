@@ -1,4 +1,4 @@
-import React, {useEffect} from "react";
+import React, {useEffect, useMemo} from "react";
 import { useState } from "react";
 import {Link, NavLink, useLocation, useNavigate} from "react-router-dom";
 import {Search} from "@mui/icons-material";
@@ -10,6 +10,8 @@ import Avatar from "@mui/material/Avatar";
 import GenreModel from "../../models/GenreModel";
 import {getAllGenres} from "../../api/GenreApi";
 import { get1User } from "../../api/UserApi";
+import { getFlashSales } from "../../api/FlashSaleApi";
+import { FlashSaleStatus, type FlashSaleModel } from "../../models/FlashSaleModel";
 interface NavbarProps {
     tuKhoaTimKiem: string;
     setTuKhoaTimKiem: (tuKhoa: string) => void;
@@ -19,6 +21,7 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
     const {totalCart , setTotalCart , setCartList} = useCartItem();
     const {setLoggedIn} = useAuth();
     const [genreList, setGenreList] = useState<GenreModel[]>([]);
+    const [flashSales, setFlashSales] = useState<FlashSaleModel[]>([]);
     const navigate = useNavigate();
     const [avatar, setAvatar] = useState("");
     useEffect(() => {
@@ -27,6 +30,25 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
         }).catch((error) => {
             console.error(error);
         });
+    }, []);
+
+    useEffect(() => {
+        let cancelled = false;
+
+        getFlashSales()
+            .then((data) => {
+                if (cancelled) return;
+                const list = Array.isArray(data) ? data : [];
+                setFlashSales(list);
+            })
+            .catch(() => {
+                if (cancelled) return;
+                setFlashSales([]);
+            });
+
+        return () => {
+            cancelled = true;
+        };
     }, []);
 
     useEffect(() => {
@@ -55,6 +77,28 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
         setTuKhoaTimKiem(tuKhoaTamThoi);
     }
     const location = useLocation();
+    const selectedFlashSaleId = useMemo(() => {
+        if (!location.pathname.startsWith("/flash-sale")) return null;
+        const params = new URLSearchParams(location.search);
+        const raw = params.get("saleId") ?? params.get("flashSaleId");
+        const parsed = Number(raw);
+        return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+    }, [location.pathname, location.search]);
+
+    const flashSaleDropdownItems = useMemo(() => {
+        const list = [...flashSales];
+        list.sort((a, b) => {
+            const statusA = Number(a?.status ?? 0);
+            const statusB = Number(b?.status ?? 0);
+            if (statusA === FlashSaleStatus.Active && statusB !== FlashSaleStatus.Active) return -1;
+            if (statusB === FlashSaleStatus.Active && statusA !== FlashSaleStatus.Active) return 1;
+
+            const startA = a?.startTime ? new Date(a.startTime).getTime() : 0;
+            const startB = b?.startTime ? new Date(b.startTime).getTime() : 0;
+            return startB - startA;
+        });
+        return list;
+    }, [flashSales]);
     if (location.pathname.startsWith("/admin")) {
         return null;
     }
@@ -99,10 +143,35 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
                                 Chính sách
                             </NavLink>
                         </li>
-                        <li className='nav-item d-none d-lg-block'>
-                            <NavLink className='nav-link' to='/flash-sale'>
+                        <li className='nav-item dropdown dropdown-hover d-none d-lg-block'>
+                            <button
+                                type='button'
+                                className='nav-link dropdown-toggle bg-transparent border-0'
+                                data-bs-toggle='dropdown'
+                                aria-expanded='false'
+                            >
                                 Flash Sale
-                            </NavLink>
+                            </button>
+                            <ul
+                                className='dropdown-menu'
+                                style={{ maxHeight: "300px", overflowY: "auto" }}
+                            >
+                                {flashSaleDropdownItems
+                                    .filter((sale) => sale?.id != null)
+                                    .map((sale, index) => (
+                                        <li key={String(sale.id ?? index)}>
+                                            <Link
+                                                className={
+                                                    'dropdown-item' +
+                                                    (Number(sale.id) === Number(selectedFlashSaleId) ? ' active' : '')
+                                                }
+                                                to={`/flash-sale?saleId=${sale.id}`}
+                                            >
+											{sale.name || `Flash Sale #${sale.id}`}
+                                            </Link>
+                                        </li>
+                                    ))}
+                            </ul>
                         </li>
                         {isToken() && (
                             <li className='nav-item d-none d-lg-block'>
@@ -143,6 +212,15 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
                 Flash Sale
             </NavLink>
         </li>
+        {flashSaleDropdownItems
+            .filter((sale) => sale?.id != null)
+            .map((sale, index) => (
+                <li key={String(sale.id ?? index)}>
+                    <NavLink className='dropdown-item' to={`/flash-sale?saleId=${sale.id}`}> 
+                        {sale.name || `Flash Sale #${sale.id}`}
+                    </NavLink>
+                </li>
+            ))}
         {isToken() && (
             <li>
                 <NavLink className='dropdown-item' to='/feedback'>

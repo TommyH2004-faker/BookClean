@@ -1,3 +1,338 @@
+// import React, { useEffect, useState } from 'react';
+// import { Link, useNavigate } from 'react-router-dom';
+// import BookModel from "../../../models/BookModel";
+// import ImageModel from "../../../models/ImageModel";
+// import { lay1AnhCuaMotSach } from "../../../api/HinhAnhAPI";
+// import dinhDangSo from "../../utils/dinhDangSo";
+// import renderRating from "../../utils/SaoXepHang";
+// import { useCartItem } from "../../utils/CartItemContext";
+// import { getIdUserByToken, isToken } from "../../utils/JwtService";
+// import { endpointBE } from "../../utils/Constant";
+// import { toast } from "react-toastify";
+// import { getFlashSaleMaxPerUser } from "../../utils/flashSaleLimit";
+// import LocalFireDepartmentIcon from "@mui/icons-material/LocalFireDepartment";
+
+// interface SachPropsInterface {
+//     sach: BookModel;
+//     showSoldProgress?: boolean;
+// }
+
+// const SachProps: React.FC<SachPropsInterface> = ({ sach, showSoldProgress = false }) => {
+//     const maSach: number = sach.idBook;
+//     const [danhSachAnh, setDanhSachAnh] = useState<ImageModel[]>([]);
+//     const [dangTaiDuLieu, setDangTaiDuLieu] = useState(true);
+//     const [baoLoi, setBaoLoi] = useState<string | null>(null);
+//     const { setTotalCart, cartList, setCartList } = useCartItem();
+//     const [isFavoriteBook, setIsFavoriteBook] = useState(false);
+//     const navigation = useNavigate();
+
+//     useEffect(() => {
+//         lay1AnhCuaMotSach(maSach)
+//             .then(hinhAnhData => {
+//                 setDanhSachAnh(hinhAnhData);
+//                 setDangTaiDuLieu(false);
+//             })
+//             .catch(error => {
+//                 setDangTaiDuLieu(false);
+//                 setBaoLoi(error.message);
+//             });
+
+//         if (isToken()) {
+//             fetch(endpointBE + `/favorite-book/get-favorite-book/${getIdUserByToken()}`)
+//                 .then(response => response.json())
+//                 .then(data => {
+//                     if (data.includes(maSach)) {
+//                         setIsFavoriteBook(true);
+//                     }
+//                 })
+//                 .catch(error => {
+//                     console.log(error);
+//                 });
+//         }
+//     }, [maSach]);
+//     const handleAddProduct = async (newBook: BookModel) => {
+//         const existingCartItem = cartList.find(
+//             (item) => item.book.idBook === newBook.idBook
+//         );
+
+//         // Tính tổng số lượng sau khi add
+//         const currentQuantityInCart = existingCartItem ? existingCartItem.quantity : 0;
+//         // Nếu newBook.quantity undefined, mặc định là 0
+//         const availableQuantity = newBook.quantity ?? 0;
+
+//         if (newBook.isFlashSale) {
+//             const maxPerUser = await getFlashSaleMaxPerUser(newBook.idBook);
+//             if (maxPerUser && currentQuantityInCart + 1 > maxPerUser) {
+//                 toast.error(`Flash Sale: tối đa ${maxPerUser} sản phẩm/khách`);
+//                 return;
+//             }
+//         }
+
+//         if (currentQuantityInCart + 1 > availableQuantity) {
+//             toast.error("Không thể thêm, đã vượt quá số lượng tồn kho!");
+//             return;
+//         }
+
+//         if (existingCartItem) {
+//             const prevQuantity = existingCartItem.quantity;
+//             existingCartItem.quantity = prevQuantity + 1;
+
+//             if (isToken()) {
+//                 try {
+//                     const res = await fetch(`${endpointBE}/cart-items/update-item`, {
+//                         method: "PUT",
+//                         headers: {
+//                             Authorization: `Bearer ${localStorage.getItem("token")}`,
+//                             "content-type": "application/json",
+//                         },
+//                         body: JSON.stringify({
+//                             idCart: existingCartItem.idCart,
+//                             quantity: existingCartItem.quantity,
+//                         }),
+//                     });
+
+//                     if (!res.ok) {
+//                         existingCartItem.quantity = prevQuantity;
+//                         toast.error("Không thể cập nhật số lượng trong giỏ hàng");
+//                         return;
+//                     }
+//                 } catch (error) {
+//                     existingCartItem.quantity = prevQuantity;
+//                     toast.error("Không thể cập nhật số lượng trong giỏ hàng");
+//                     return;
+//                 }
+//             }
+//         } else {
+//             if (isToken()) {
+//                 try {
+//                     const request = {
+//                         bookId: newBook.idBook,
+//                         quantity: 1,
+//                     };
+
+//                     const response = await fetch(`${endpointBE}/cart-items/add-item`, {
+//                         method: "POST",
+//                         headers: {
+//                             Authorization: `Bearer ${localStorage.getItem("token")}`,
+//                             "content-type": "application/json",
+//                         },
+//                         body: JSON.stringify(request),
+//                     });
+
+// 					if (!response.ok) {
+//                         toast.error("Không thể thêm vào giỏ hàng");
+// 						return;
+// 					}
+
+//                     const payload = await response.json();
+//                     const idCart = payload?.data ?? payload?.idCart ?? payload;
+//                     if (typeof idCart !== "number") {
+//                         toast.error("Không thể thêm vào giỏ hàng");
+//                         return;
+//                     }
+// 					cartList.push({
+// 						idCart,
+// 						quantity: 1,
+// 						book: newBook,
+// 					});
+//                 } catch (error) {
+//                     console.log(error);
+// 					toast.error("Không thể thêm vào giỏ hàng");
+// 					return;
+//                 }
+//             } else {
+//                 cartList.push({
+//                     quantity: 1,
+//                     book: newBook,
+//                 });
+//             }
+//         }
+
+//         localStorage.setItem("cart", JSON.stringify(cartList));
+//         setCartList([...cartList]); // cập nhật state để component re-render
+//         toast.success("Thêm vào giỏ hàng thành công");
+//         setTotalCart(cartList.length);
+//     };
+
+//     const handleFavoriteBook = async () => {
+//         if (!isToken()) {
+//             toast.info("Bạn phải đăng nhập để sử dụng chức năng này");
+//             navigation("/dangnhap");
+//             return;
+//         }
+
+//         const token = localStorage.getItem("token");
+//         const isRemoving = isFavoriteBook;
+
+//         const url = isRemoving
+//             ? `${endpointBE}/favorite-book/delete-book`
+//             : `${endpointBE}/favorite-book/add-book`;
+
+//         try {
+//             const response = await fetch(url, {
+//                 method: isRemoving ? "DELETE" : "POST",
+//                 headers: {
+//                     Authorization: `Bearer ${token}`,
+//                     "Content-Type": "application/json",
+//                 },
+//                 body: JSON.stringify({
+//                     bookId: maSach
+//                 }),
+//             });
+
+//             if (!response.ok) throw new Error("Lỗi khi xử lý favorite");
+
+//             //  Update UI sau khi BE OK
+//             setIsFavoriteBook(!isFavoriteBook);
+
+//             //  Toast đúng trạng thái
+//             if (isRemoving) {
+//                 toast.success("Đã xóa khỏi danh sách yêu thích");
+//             } else {
+//                 toast.success("Thêm vào yêu thích thành công");
+//             }
+
+//         } catch (err) {
+//             console.log(err);
+//             toast.error("Có lỗi xảy ra, vui lòng thử lại");
+//         }
+//     };
+//     if (dangTaiDuLieu) {
+//         return <h1>Đang tải dữ liệu...</h1>;
+//     }
+
+//     if (baoLoi) {
+//         return <h1>Gặp lỗi: {baoLoi}</h1>;
+//     }
+
+//     const duLieuAnh = danhSachAnh.length > 0 ? danhSachAnh[0].url : "";
+
+//     const listPrice = sach.listPrice ?? 0;
+//     const sellPrice = sach.sellPrice ?? 0;
+//     const discountPercent =
+//         listPrice > 0 && sellPrice > 0 && sellPrice < listPrice
+//             ? Math.round(((listPrice - sellPrice) / listPrice) * 100)
+//             : 0;
+
+// 	const isFlashSale = Boolean(sach.isFlashSale);
+
+//     const soldQuantity = sach.soldQuantity ?? 0;
+//     const stockQuantity = sach.quantity ?? 0;
+//     const totalForProgress = soldQuantity + stockQuantity;
+//     const soldPercent = totalForProgress > 0 ? Math.round((soldQuantity / totalForProgress) * 100) : 0;
+
+//     return (
+//         <div className="col-md-3 mt-2">
+//             <div
+//                 className={`card border-0 shadow-4 rounded h-100 bg-white ${isFlashSale ? "sale-card-glow" : ""}`}
+//                 style={{ position: "relative", overflow: "hidden" }}
+//             >
+//                 {discountPercent > 0 && (
+//                     <div
+//                         className="badge bg-danger"
+//                         style={{
+//                             position: "absolute",
+//                             top: "10px",
+//                             left: "10px",
+//                             padding: "8px 10px",
+//                             fontSize: "0.85rem",
+//                             zIndex: 2,
+//                         }}
+//                     >
+//                         -{discountPercent}%
+//                     </div>
+//                 )}
+				
+//                 <Link to={`/books/${sach.idBook}`} className="d-block text-decoration-none">
+//                     <div style={{ height: "290px", background: "#f8f9fa" }}>
+//                         <img
+//                             src={duLieuAnh}
+//                             alt={sach.nameBook}
+//                             className="w-100 h-100"
+//                             style={{ objectFit: "cover" }}
+//                         />
+//                     </div>
+//                 </Link>
+
+//                 <div className="card-body p-3 d-flex flex-column">
+//                     <Link to={`/books/${sach.idBook}`} className="text-decoration-none text-dark">
+//                         <div
+//                             className="fw-semibold"
+//                             style={{
+//                                 minHeight: "44px",
+//                                 display: "-webkit-box",
+//                                 WebkitLineClamp: 2,
+//                                 WebkitBoxOrient: "vertical",
+//                                 overflow: "hidden",
+//                             }}
+//                         >
+//                             {sach.nameBook}
+//                         </div>
+//                     </Link>
+
+//                     <div className="mt-2">
+//                         <span className="discounted-price text-danger me-2">
+//                             <strong style={{ fontSize: "18px" }}>
+//                                 {dinhDangSo(sach.sellPrice)}đ
+//                             </strong>
+//                         </span>
+//                         <span className="original-price small text-muted">
+//                             <del>{dinhDangSo(sach.listPrice)}đ</del>
+//                         </span>
+//                     </div>
+
+//                     {showSoldProgress && (
+//                         <div className="mt-2">
+//                             <div className="d-flex justify-content-between align-items-center">
+//                                 <span className="small text-body-secondary">Đã bán {soldQuantity}</span>
+//                                 {totalForProgress > 0 && (
+//                                     <span className="small text-body-secondary">{soldPercent}%</span>
+//                                 )}
+//                             </div>
+//                             {totalForProgress > 0 && (
+//                                 <div className="progress" style={{ height: 8 }}>
+//                                     <div
+//                                         className="progress-bar bg-danger"
+//                                         role="progressbar"
+//                                         style={{ width: `${Math.min(100, Math.max(0, soldPercent))}%` }}
+//                                         aria-valuenow={soldPercent}
+//                                         aria-valuemin={0}
+//                                         aria-valuemax={100}
+//                                     ></div>
+//                                 </div>
+//                             )}
+//                         </div>
+//                     )}
+
+//                     <div className="mt-2 d-flex align-items-center justify-content-between">
+//                         <div>{renderRating(sach.avgRating || 0)}</div>
+//                         <div className="d-flex gap-2" role="group" aria-label="Thao tác sản phẩm">
+//                             <button
+//                                 type="button"
+//                                 className={`btn btn-sm ${isFavoriteBook ? "btn-danger" : "btn-outline-danger"}`}
+//                                 onClick={handleFavoriteBook}
+//                                 title="Yêu thích"
+//                             >
+//                                 <i className="fas fa-heart"></i>
+//                             </button>
+//                             <button
+//                                 type="button"
+//                                 className="btn btn-danger btn-sm"
+//                                 onClick={() => handleAddProduct(sach)}
+//                                 title="Thêm vào giỏ"
+//                             >
+//                                 <i className="fas fa-shopping-cart"></i>
+//                             </button>
+//                         </div>
+//                     </div>
+//                 </div>
+//             </div>
+//         </div>
+//     );
+// };
+
+// export default SachProps;
+
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import BookModel from "../../../models/BookModel";
@@ -9,6 +344,7 @@ import { useCartItem } from "../../utils/CartItemContext";
 import { getIdUserByToken, isToken } from "../../utils/JwtService";
 import { endpointBE } from "../../utils/Constant";
 import { toast } from "react-toastify";
+import { getFlashSaleMaxPerUser } from "../../utils/flashSaleLimit";
 
 interface SachPropsInterface {
     sach: BookModel;
@@ -48,15 +384,22 @@ const SachProps: React.FC<SachPropsInterface> = ({ sach, showSoldProgress = fals
                 });
         }
     }, [maSach]);
+
     const handleAddProduct = async (newBook: BookModel) => {
         const existingCartItem = cartList.find(
             (item) => item.book.idBook === newBook.idBook
         );
 
-        // Tính tổng số lượng sau khi add
         const currentQuantityInCart = existingCartItem ? existingCartItem.quantity : 0;
-        // Nếu newBook.quantity undefined, mặc định là 0
         const availableQuantity = newBook.quantity ?? 0;
+
+        if (newBook.isFlashSale) {
+            const maxPerUser = await getFlashSaleMaxPerUser(newBook.idBook);
+            if (maxPerUser && currentQuantityInCart + 1 > maxPerUser) {
+                toast.error(`Flash Sale: tối đa ${maxPerUser} sản phẩm/khách`);
+                return;
+            }
+        }
 
         if (currentQuantityInCart + 1 > availableQuantity) {
             toast.error("Không thể thêm, đã vượt quá số lượng tồn kho!");
@@ -64,20 +407,33 @@ const SachProps: React.FC<SachPropsInterface> = ({ sach, showSoldProgress = fals
         }
 
         if (existingCartItem) {
-            existingCartItem.quantity += 1;
+            const prevQuantity = existingCartItem.quantity;
+            existingCartItem.quantity = prevQuantity + 1;
 
             if (isToken()) {
-                await fetch(`${endpointBE}/cart-items/update-item`, {
-                    method: "PUT",
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem("token")}`,
-                        "content-type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        idCart: existingCartItem.idCart,
-                        quantity: existingCartItem.quantity,
-                    }),
-                });
+                try {
+                    const res = await fetch(`${endpointBE}/cart-items/update-item`, {
+                        method: "PUT",
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem("token")}`,
+                            "content-type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            idCart: existingCartItem.idCart,
+                            quantity: existingCartItem.quantity,
+                        }),
+                    });
+
+                    if (!res.ok) {
+                        existingCartItem.quantity = prevQuantity;
+                        toast.error("Không thể cập nhật số lượng trong giỏ hàng");
+                        return;
+                    }
+                } catch (error) {
+                    existingCartItem.quantity = prevQuantity;
+                    toast.error("Không thể cập nhật số lượng trong giỏ hàng");
+                    return;
+                }
             }
         } else {
             if (isToken()) {
@@ -96,16 +452,26 @@ const SachProps: React.FC<SachPropsInterface> = ({ sach, showSoldProgress = fals
                         body: JSON.stringify(request),
                     });
 
-                    if (response.ok) {
-                        const idCart = await response.json();
-                        cartList.push({
-                            idCart,
-                            quantity: 1,
-                            book: newBook,
-                        });
+                    if (!response.ok) {
+                        toast.error("Không thể thêm vào giỏ hàng");
+                        return;
                     }
+
+                    const payload = await response.json();
+                    const idCart = payload?.data ?? payload?.idCart ?? payload;
+                    if (typeof idCart !== "number") {
+                        toast.error("Không thể thêm vào giỏ hàng");
+                        return;
+                    }
+                    cartList.push({
+                        idCart,
+                        quantity: 1,
+                        book: newBook,
+                    });
                 } catch (error) {
                     console.log(error);
+                    toast.error("Không thể thêm vào giỏ hàng");
+                    return;
                 }
             } else {
                 cartList.push({
@@ -116,36 +482,11 @@ const SachProps: React.FC<SachPropsInterface> = ({ sach, showSoldProgress = fals
         }
 
         localStorage.setItem("cart", JSON.stringify(cartList));
-        setCartList([...cartList]); // cập nhật state để component re-render
+        setCartList([...cartList]);
         toast.success("Thêm vào giỏ hàng thành công");
         setTotalCart(cartList.length);
     };
-    // const handleFavoriteBook = async () => {
-    //     if (!isToken()) {
-    //         toast.info("Bạn phải đăng nhập để sử dụng chức năng này");
-    //         navigation("/dangnhap");
-    //         return;
-    //     }
 
-    //     const token = localStorage.getItem("token");
-    //     const url = isFavoriteBook
-    //         ? endpointBE + `/favorite-book/delete-book`
-    //         : endpointBE + `/favorite-book/add-book`;
-
-    //     fetch(url, {
-    //         method: isFavoriteBook ? "DELETE" : "POST",
-    //         headers: {
-    //             Authorization: `Bearer ${token}`,
-    //             "content-type": "application/json",
-    //         },
-    //         body: JSON.stringify({
-    //             // idBook: maSach
-    //             bookId: maSach 
-    //         }),
-    //     }).catch(err => console.log(err));
-
-    //     setIsFavoriteBook(!isFavoriteBook);
-    // };
     const handleFavoriteBook = async () => {
         if (!isToken()) {
             toast.info("Bạn phải đăng nhập để sử dụng chức năng này");
@@ -174,10 +515,8 @@ const SachProps: React.FC<SachPropsInterface> = ({ sach, showSoldProgress = fals
 
             if (!response.ok) throw new Error("Lỗi khi xử lý favorite");
 
-            //  Update UI sau khi BE OK
             setIsFavoriteBook(!isFavoriteBook);
 
-            //  Toast đúng trạng thái
             if (isRemoving) {
                 toast.success("Đã xóa khỏi danh sách yêu thích");
             } else {
@@ -189,6 +528,7 @@ const SachProps: React.FC<SachPropsInterface> = ({ sach, showSoldProgress = fals
             toast.error("Có lỗi xảy ra, vui lòng thử lại");
         }
     };
+
     if (dangTaiDuLieu) {
         return <h1>Đang tải dữ liệu...</h1>;
     }
@@ -206,6 +546,8 @@ const SachProps: React.FC<SachPropsInterface> = ({ sach, showSoldProgress = fals
             ? Math.round(((listPrice - sellPrice) / listPrice) * 100)
             : 0;
 
+    const isFlashSale = Boolean(sach.isFlashSale);
+
     const soldQuantity = sach.soldQuantity ?? 0;
     const stockQuantity = sach.quantity ?? 0;
     const totalForProgress = soldQuantity + stockQuantity;
@@ -214,6 +556,7 @@ const SachProps: React.FC<SachPropsInterface> = ({ sach, showSoldProgress = fals
     return (
         <div className="col-md-3 mt-2">
             <div
+                // Đã bỏ nháy viền, trả lại card bình thường
                 className="card border-0 shadow-4 rounded h-100 bg-white"
                 style={{ position: "relative", overflow: "hidden" }}
             >
@@ -232,6 +575,7 @@ const SachProps: React.FC<SachPropsInterface> = ({ sach, showSoldProgress = fals
                         -{discountPercent}%
                     </div>
                 )}
+
                 <Link to={`/books/${sach.idBook}`} className="d-block text-decoration-none">
                     <div style={{ height: "290px", background: "#f8f9fa" }}>
                         <img
@@ -245,8 +589,9 @@ const SachProps: React.FC<SachPropsInterface> = ({ sach, showSoldProgress = fals
 
                 <div className="card-body p-3 d-flex flex-column">
                     <Link to={`/books/${sach.idBook}`} className="text-decoration-none text-dark">
+                        {/* 🔥 ĐÃ SỬA: Chèn class nháy chữ vào tên sản phẩm nếu đang Flash Sale */}
                         <div
-                            className="fw-semibold"
+                            className={`fw-semibold ${isFlashSale ? "blinking-text-flash-sale" : ""}`}
                             style={{
                                 minHeight: "44px",
                                 display: "-webkit-box",
@@ -293,7 +638,7 @@ const SachProps: React.FC<SachPropsInterface> = ({ sach, showSoldProgress = fals
                         </div>
                     )}
 
-                    <div className="mt-2 d-flex align-items-center justify-content-between">
+                    <div className="mt-2 d-flex align-items-center justify-content-between mt-auto pt-2">
                         <div>{renderRating(sach.avgRating || 0)}</div>
                         <div className="d-flex gap-2" role="group" aria-label="Thao tác sản phẩm">
                             <button

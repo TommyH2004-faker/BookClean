@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import CartItemModel from "../../models/CartItemModel";
+import { isToken } from "./JwtService";
+import { getCartAllByIdUser } from "../../api/CartApi";
 
 
 interface CartItemProps {
@@ -20,11 +22,33 @@ export const CartItemProvider: React.FC<CartItemProps> = (props) => {
 	const [totalCart, setTotalCart] = useState(0);
 
 	useEffect(() => {
-		const cartData: string | null = localStorage.getItem("cart");
-		let cart: CartItemModel[] = [];
-		cart = cartData ? JSON.parse(cartData) : [];
-		setCartList(cart);
-		setTotalCart(cart.length);
+		let cancelled = false;
+
+		const loadCart = async () => {
+			if (isToken()) {
+				try {
+					const carts = await getCartAllByIdUser();
+					if (cancelled) return;
+					setCartList(carts);
+					setTotalCart(carts.length);
+					localStorage.setItem("cart", JSON.stringify(carts));
+					return;
+				} catch {
+					// fallback to localStorage
+				}
+			}
+
+			const cartData: string | null = localStorage.getItem("cart");
+			const cart: CartItemModel[] = cartData ? JSON.parse(cartData) : [];
+			if (cancelled) return;
+			setCartList(cart);
+			setTotalCart(cart.length);
+		};
+
+		void loadCart();
+		return () => {
+			cancelled = true;
+		};
 	}, []);
 
 	return (

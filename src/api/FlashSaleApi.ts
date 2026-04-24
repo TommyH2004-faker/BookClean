@@ -52,11 +52,42 @@ function getAuthHeaders(): Record<string, string> {
 	};
 }
 
+function normalizeFlashSaleItem(item: any): FlashSaleItemModel {
+	if (!item || typeof item !== "object") return item as FlashSaleItemModel;
+
+	const sold = item.sold ?? item.soldQuantity ?? item.soldCount;
+	const quantity = item.quantity ?? item.remainingQuantity ?? item.stock;
+	const maxPerUser = item.maxPerUser ?? item.maxBuyPerUser ?? item.maxPerCustomer;
+
+	return {
+		...item,
+		sold: sold === undefined ? item.sold : Number(sold),
+		quantity: quantity === undefined ? item.quantity : Number(quantity),
+		maxPerUser: maxPerUser === undefined ? item.maxPerUser : (maxPerUser === null ? null : Number(maxPerUser)),
+	};
+}
+
 export async function getActiveFlashSaleItems(): Promise<FlashSaleItemModel[]> {
-	const endpoint = `${endpointBE}/flash-sale/active-items`;
-	const body = await fetchJson<ApiEnvelope<FlashSaleItemModel[]> | FlashSaleItemModel[]>(endpoint);
-	const data = unwrapApiEnvelope<FlashSaleItemModel[]>(body as any);
-	return Array.isArray(data) ? data : [];
+	// Deprecated: this endpoint may not exist on BE.
+	// Prefer getActiveFlashSaleItemByBookId().
+	return [];
+}
+
+export async function getActiveFlashSaleItemByBookId(bookId: number): Promise<FlashSaleItemModel | null> {
+	if (!Number.isFinite(bookId) || bookId <= 0) return null;
+
+	// New BE endpoint to implement:
+	// GET /flash-sale/active-item-by-book/{bookId}
+	// Response: { success: true, data: FlashSaleItemModel | null }
+	const endpoint = `${endpointBE}/flash-sale/active-item-by-book/${bookId}`;
+
+	try {
+		const body = await fetchJson<ApiEnvelope<FlashSaleItemModel | null> | FlashSaleItemModel | null>(endpoint);
+		const data = unwrapApiEnvelope<FlashSaleItemModel | null>(body as any);
+		return data ? normalizeFlashSaleItem(data) : null;
+	} catch {
+		return null;
+	}
 }
 
 export async function getFlashSales(): Promise<FlashSaleModel[]> {
@@ -80,7 +111,7 @@ export async function getFlashSaleItems(flashSaleId: number): Promise<FlashSaleI
 		},
 	});
 	const data = unwrapApiEnvelope<FlashSaleItemModel[]>(body as any);
-	return Array.isArray(data) ? data : [];
+	return Array.isArray(data) ? data.map(normalizeFlashSaleItem) : [];
 }
 
 export type CreateFlashSalePayload = {

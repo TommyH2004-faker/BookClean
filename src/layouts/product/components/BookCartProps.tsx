@@ -13,6 +13,7 @@ import CartItemModel from "../../../models/CartItemModel";
 import ImageModel from "../../../models/ImageModel";
 import {layToanBoHinhAnhMotSach} from "../../../api/HinhAnhAPI";
 import SelectQuantity from "./select-quantity/SelectQuantity";
+import { getFlashSaleMaxPerUser } from "../../utils/flashSaleLimit";
 
 interface BookCartProps {
     cartItem: CartItemModel;
@@ -95,17 +96,24 @@ const BookCartProps: React.FC<BookCartProps> = (props) => {
 
     // Xử lý tăng số lượng
     const add = () => {
-        if (quantity) {
-            if (
-                quantity <
-                (props.cartItem.book.quantity ? props.cartItem.book.quantity : 1)
-            ) {
-                setQuantity(quantity + 1);
-                handleModifiedQuantity(props.cartItem.book.idBook, 1);
+        void (async () => {
+            if (!quantity) return;
+
+            if (props.cartItem.book.isFlashSale) {
+                const maxPerUser = await getFlashSaleMaxPerUser(props.cartItem.book.idBook);
+                if (maxPerUser && quantity + 1 > maxPerUser) {
+                    toast.error(`Flash Sale: tối đa ${maxPerUser} sản phẩm/khách`);
+                    return;
+                }
+            }
+
+            if (quantity < (props.cartItem.book.quantity ? props.cartItem.book.quantity : 1)) {
+                const ok = await handleModifiedQuantity(props.cartItem.book.idBook, 1);
+                if (ok) setQuantity(quantity + 1);
             } else {
                 toast.warning("Số lượng tồn kho không đủ");
             }
-        }
+        })();
     };
 
     // Xử lý giảm số lượng
@@ -115,14 +123,16 @@ const BookCartProps: React.FC<BookCartProps> = (props) => {
             if (quantity - 1 === 0) {
                 handleConfirm();
             } else if (quantity > 1) {
-                setQuantity(quantity - 1);
-                handleModifiedQuantity(props.cartItem.book.idBook, -1);
+				void (async () => {
+					const ok = await handleModifiedQuantity(props.cartItem.book.idBook, -1);
+					if (ok) setQuantity(quantity - 1);
+				})();
             }
         }
     };
 
     // Xử lý cập nhật lại quantity trong localstorage / database
-    function handleModifiedQuantity(idBook: number, quantity: number) {
+    async function handleModifiedQuantity(idBook: number, delta: number): Promise<boolean> {
         const cartData: string | null = localStorage.getItem("cart");
         const cart: CartItemModel[] = cartData ? JSON.parse(cartData) : [];
         // cái isExistBook này sẽ tham chiếu đến cái cart ở trên, nên khi update thì cart nó cũng update theo
@@ -131,28 +141,55 @@ const BookCartProps: React.FC<BookCartProps> = (props) => {
         );
         // Thêm 1 sản phẩm vào giỏ hàng
         if (isExistBook) {
-            // nếu có rồi thì sẽ tăng số lượng
-            isExistBook.quantity += quantity;
+            if (delta > 0) {
+                if (props.cartItem.book.isFlashSale) {
+                    const maxPerUser = await getFlashSaleMaxPerUser(idBook);
+                    if (maxPerUser && isExistBook.quantity + delta > maxPerUser) {
+                        toast.error(`Flash Sale: tối đa ${maxPerUser} sản phẩm/khách`);
+                        return false;
+                    }
+                }
+            }
 
-            // Cập nhật trong db
+            const nextQuantity = isExistBook.quantity + delta;
+            if (nextQuantity <= 0) {
+                return false;
+            }
+
+            // Cập nhật trong db trước (nếu đã login), rồi mới ghi local
             if (isToken()) {
                 const token = localStorage.getItem("token");
-                fetch(endpointBE + `/cart-items/update-item`, {
-                    method: "PUT",
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "content-type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        idCart: props.cartItem.idCart,
-                        quantity: isExistBook.quantity,
-                    }),
-                }).catch((err) => console.log(err));
+                try {
+                    const res = await fetch(endpointBE + `/cart-items/update-item`, {
+                        method: "PUT",
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            "content-type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            idCart: props.cartItem.idCart,
+                            quantity: nextQuantity,
+                        }),
+                    });
+                    if (!res.ok) {
+						toast.error("Không thể cập nhật số lượng trong giỏ hàng");
+                        return false;
+                    }
+                } catch (err) {
+                    toast.error("Không thể cập nhật số lượng trong giỏ hàng");
+                    return false;
+                }
             }
+
+            // commit local
+            isExistBook.quantity = nextQuantity;
+
+            // Cập nhật trong db
         }
         // Cập nhật lại
         localStorage.setItem("cart", JSON.stringify(cart));
         setCartList(cart);
+		return true;
     }
 
     if (loading) {
