@@ -32,3 +32,11 @@ export async function lay1AnhCuaMotSach(idBook:number): Promise<ImageModel[]> {
     return layAnhMotSach(duongDan);
 }
 
+export async function layThumbnailSachTheoTenSach(nameBook: string): Promise<string> {
+    const duongDan: string = `${endpointBE}/book/thumbnail?nameBook=${encodeURIComponent(nameBook)}`;
+    const response = await my_request(duongDan);
+    const thumbnail = response?.data ?? response;
+
+    return thumbnail?.url || thumbnail?.data || "";
+}
+

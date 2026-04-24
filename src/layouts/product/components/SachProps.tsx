@@ -295,7 +295,7 @@ const SachProps: React.FC<SachPropsInterface> = ({ sach, showSoldProgress = fals
 
                     <div className="mt-2 d-flex align-items-center justify-content-between">
                         <div>{renderRating(sach.avgRating || 0)}</div>
-                        <div className="d-flex gap-2" role="group" aria-label="Product actions">
+                        <div className="d-flex gap-2" role="group" aria-label="Thao tác sản phẩm">
                             <button
                                 type="button"
                                 className={`btn btn-sm ${isFavoriteBook ? "btn-danger" : "btn-outline-danger"}`}

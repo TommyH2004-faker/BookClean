@@ -58,7 +58,7 @@ function Footer() {
                             {isToken() && (
                                 <li className="nav-item mb-2">
                                     <Link to="/feedback" className="nav-link p-0 text-body-secondary">
-                                        Gửi feedback
+                                        Gửi phản hồi
                                     </Link>
                                 </li>
                             )}
@@ -182,7 +182,7 @@ function Footer() {
 
                 <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
                     <p className="mb-0 text-body-secondary small">
-                        &copy; {year} MH Book. All rights reserved.
+                        &copy; {year} MH Book. Đã đăng ký bản quyền.
                     </p>
                     <div className="d-flex flex-wrap gap-3 small">
                         <Link to="/policy" className="text-body-secondary text-decoration-none">

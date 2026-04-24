@@ -7,6 +7,7 @@ import CategoryRoundedIcon from "@mui/icons-material/CategoryRounded";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import LocalMallRoundedIcon from "@mui/icons-material/LocalMallRounded";
 import FeedbackIcon from "@mui/icons-material/Feedback";
+import FlashOnIcon from "@mui/icons-material/FlashOn";
 
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import {useCartItem} from "../../utils/CartItemContext";
@@ -100,7 +101,18 @@ export const Slidebar: React.FC<SlidebarProps> = (props) => {
 						>
 							<FeedbackIcon fontSize='small' />
 							<span className='ms-2 d-none d-sm-inline d-md-inline'>
-								Feedback
+								Phản hồi
+							</span>
+						</NavLink>
+					</li>
+					<li className='nav-item '>
+						<NavLink
+							to={"/admin/flash-sale"}
+							className={`nav-link d-flex align-items-center justify-content-center `}
+						>
+							<FlashOnIcon fontSize='small' />
+							<span className='ms-2 d-none d-sm-inline d-md-inline'>
+								Quản lý Flash Sale
 							</span>
 						</NavLink>
 					</li>

@@ -1,53 +1,53 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import {
-	FLASH_SALE_SLOT_HOURS,
-	formatSlotLabel,
-	getActiveFlashSaleSlotHour,
-	type FlashSaleSlotHour,
-} from "../../utils/flashSale";
+import { getFlashSales } from "../../../api/FlashSaleApi";
+import type { FlashSaleModel } from "../../../models/FlashSaleModel";
+import { FlashSaleStatus } from "../../../models/FlashSaleModel";
+import { Autoplay, Navigation, Pagination } from "swiper/modules";
+import { Swiper, SwiperSlide } from "swiper/react";
 
-type FlashSaleBanner = {
-	slotHour: FlashSaleSlotHour;
-	imageSrc: string;
-	heading: string;
-	subtitle: string;
-};
+function resolveImageUrl(imageUrl?: string): string {
+	if (!imageUrl) return "";
+	if (/^https?:\/\//i.test(imageUrl)) return imageUrl;
+	return imageUrl.startsWith("/") ? imageUrl : `/${imageUrl}`;
+}
 
 const FlashSaleBannerCarousel: React.FC = () => {
-	const activeSlot = getActiveFlashSaleSlotHour();
+	const [flashSales, setFlashSales] = useState<FlashSaleModel[]>([]);
 
-	const banners: FlashSaleBanner[] = [
-		{
-			slotHour: 0,
-			imageSrc: "/images/books/flashsale1.png",
-			heading: "FLASH SALE 0H",
-			subtitle: "Deal nửa đêm • Số lượng có hạn",
-		},
-		{
-			slotHour: 12,
-			imageSrc: "/images/books/flashsale2.png",
-			heading: "FLASH SALE 12H",
-			subtitle: "Giờ vàng trưa • Giảm sâu mỗi ngày",
-		},
-		{
-			slotHour: 18,
-			imageSrc: "/images/books/flashsale3.png",
-			heading: "FLASH SALE 18H",
-			subtitle: "Deal tan tầm • Săn ngay kẻo lỡ",
-		},
-		{
-			slotHour: 21,
-			imageSrc: "/images/books/flashsale4.png",
-			heading: "FLASH SALE 21H",
-			subtitle: "Deal buổi tối • Mua nhanh chốt lẹ",
-		},
-	];
+	useEffect(() => {
+		let cancelled = false;
 
-	const initialIndex = Math.max(
-		0,
-		banners.findIndex((b) => b.slotHour === activeSlot)
-	);
+		getFlashSales()
+			.then((data) => {
+				if (cancelled) return;
+				setFlashSales(Array.isArray(data) ? data : []);
+			})
+			.catch(() => {
+				if (cancelled) return;
+				setFlashSales([]);
+			});
+
+		return () => {
+			cancelled = true;
+		};
+	}, []);
+
+	const banners = useMemo(() => {
+		const activeSales = flashSales.filter((sale) => Number(sale?.status) === FlashSaleStatus.Active);
+		const source = activeSales.length > 0 ? activeSales : flashSales;
+
+		return source.map((sale, index) => ({
+			id: sale.id ?? index,
+			name: sale.name || "Flash Sale",
+			imageSrc: resolveImageUrl(sale.image) || "",
+			subtitle:
+				sale.startTime || sale.endTime
+					? `Từ ${sale.startTime ? new Date(sale.startTime).toLocaleDateString("vi-VN") : ""}${sale.startTime && sale.endTime ? " - " : ""}${sale.endTime ? new Date(sale.endTime).toLocaleDateString("vi-VN") : ""}`
+					: "Chương trình ưu đãi đang diễn ra",
+			saleId: sale.id,
+		}));
+	}, [flashSales]);
 
 	return (
 		<div className="mb-3">
@@ -59,91 +59,60 @@ const FlashSaleBannerCarousel: React.FC = () => {
 							Flash Sale hôm nay
 						</h5>
 						<div className="small text-body-secondary">
-							{FLASH_SALE_SLOT_HOURS.map((h) => formatSlotLabel(h)).join(" • ")}
+							{banners.length > 0 ? "Chọn một chương trình để xem sản phẩm" : "Chương trình ưu đãi đang diễn ra"}
 						</div>
 					</div>
 
-					<div
-						id="flashSaleBannerCarousel"
-						className="carousel slide rounded-3 overflow-hidden"
-						data-bs-ride="carousel"
-						data-bs-interval="3500"
-					>
-						<div className="carousel-indicators">
-							{banners.map((_, idx) => (
-								<button
-									key={idx}
-									type="button"
-									data-bs-target="#flashSaleBannerCarousel"
-									data-bs-slide-to={idx}
-									className={idx === initialIndex ? "active" : ""}
-									aria-current={idx === initialIndex ? "true" : undefined}
-									aria-label={`Slide ${idx + 1}`}
-								/>
-							))}
+					{banners.length === 0 ? (
+						<div className="p-4 rounded-3 bg-white text-center text-body-secondary">
+							Hiện chưa có flash sale nào đang hoạt động.
 						</div>
-
-						<div className="carousel-inner">
-							{banners.map((banner, idx) => (
-								<div
-									key={banner.slotHour}
-									className={`carousel-item ${idx === initialIndex ? "active" : ""}`}
-									data-bs-interval="3500"
-								>
+					) : (
+						<Swiper
+							modules={[Autoplay, Navigation, Pagination]}
+							slidesPerView={1}
+							spaceBetween={16}
+							loop={banners.length > 1}
+							autoplay={{ delay: 4200, disableOnInteraction: false }}
+							navigation
+							pagination={{ clickable: true }}
+							className="flash-sale-swiper"
+							style={{ borderRadius: 18, overflow: "hidden" }}
+						>
+							{banners.map((banner) => (
+								<SwiperSlide key={String(banner.id)}>
 									<Link
-										to={`/flash-sale?slot=${banner.slotHour}`}
+										to={`/flash-sale?saleId=${banner.saleId ?? ""}`}
 										className="d-block position-relative text-decoration-none"
 										style={{ cursor: "pointer" }}
 									>
-										<img
-											src={banner.imageSrc}
-											className="d-block w-100"
-											alt={`Flash Sale ${formatSlotLabel(banner.slotHour)}`}
-											loading="lazy"
-											style={{ height: "clamp(240px, 30vw, 480px)", objectFit: "cover" }}
-										/>
-
-										<div
-											className="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-25"
-											style={{ pointerEvents: "none" }}
-										/>
-										<div className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-end align-items-md-center">
-											<div
-												className="p-3 p-md-4 text-white bg-dark bg-opacity-50 rounded-3"
-												style={{ maxWidth: 720 }}
-											>
-												<div className="d-flex align-items-center gap-2 mb-2">
-													<span className="badge bg-danger">{formatSlotLabel(banner.slotHour)}</span>
-													<span className="small fw-semibold">Khung giờ Flash Sale</span>
+										<div style={{ position: "relative", minHeight: 280, height: "clamp(260px, 30vw, 520px)" }}>
+											<img
+												src={banner.imageSrc || "https://via.placeholder.com/1200x480?text=Flash+Sale"}
+												className="d-block w-100 h-100"
+												alt={banner.name}
+												loading="lazy"
+												style={{ objectFit: "cover" }}
+											/>
+											<div className="position-absolute top-0 start-0 w-100 h-100" style={{ background: "linear-gradient(90deg, rgba(0,0,0,.70) 0%, rgba(0,0,0,.35) 45%, rgba(0,0,0,.08) 100%)" }} />
+											<div className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-end align-items-md-center p-3 p-md-4">
+												<div className="text-white" style={{ maxWidth: 760 }}>
+													<div className="d-flex align-items-center gap-2 mb-2 flex-wrap">
+														<span className="badge bg-danger">Flash Sale</span>
+														<span className="badge bg-dark bg-opacity-50">{banner.subtitle}</span>
+													</div>
+													<h2 className="mb-2 fw-bold" style={{ textShadow: "0 2px 12px rgba(0,0,0,.35)", lineHeight: 1.05 }}>
+														{banner.name}
+													</h2>
+													<div className="small opacity-75">Bấm để xem sản phẩm đang nằm trong chương trình này</div>
 												</div>
-												<div className="display-6 fw-bold">{banner.heading}</div>
-												<div className="fs-6">{banner.subtitle}</div>
 											</div>
 										</div>
 									</Link>
-								</div>
+								</SwiperSlide>
 							))}
-						</div>
-
-						<button
-							className="carousel-control-prev"
-							type="button"
-							data-bs-target="#flashSaleBannerCarousel"
-							data-bs-slide="prev"
-						>
-							<span className="carousel-control-prev-icon" aria-hidden="true"></span>
-							<span className="visually-hidden">Previous</span>
-						</button>
-						<button
-							className="carousel-control-next"
-							type="button"
-							data-bs-target="#flashSaleBannerCarousel"
-							data-bs-slide="next"
-						>
-							<span className="carousel-control-next-icon" aria-hidden="true"></span>
-							<span className="visually-hidden">Next</span>
-						</button>
-					</div>
+						</Swiper>
+					)}
 				</div>
 			</div>
 		</div>

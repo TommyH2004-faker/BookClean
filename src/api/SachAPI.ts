@@ -175,7 +175,7 @@ export async function laySachTheoMaSach(idBook: number): Promise<BookModel|null>
         const sachData = await response.json();
         var responseData = sachData.data;
         if(sachData){
-            return {
+            const bookResponse: BookModel = {
                 idBook: responseData.id, // id sach
                 nameBook: responseData.name, // Có thể NULL
                 author: responseData.author, // tac gia
@@ -188,8 +188,9 @@ export async function laySachTheoMaSach(idBook: number): Promise<BookModel|null>
                 soldQuantity: responseData.soldQuantity, // so luong da ban
                 discountPercent: responseData.discountPercent, // phan tram giam gia
                 thumbnail: responseData.thumbnail // anh bia
+            };
 
-            }
+            return bookResponse;
         }else{
             throw new Error('Sách không tồn tài!');
         }
@@ -208,10 +209,8 @@ export async function getBookByIdCartItem(idCart: number): Promise<BookModel | n
 
         // Kiểm tra xem dữ liệu endpoint trả về có dữ liệu không
         if (response) {
-
-            // Trả về quyển sách
-            return response;
-        } else {
+			return response;
+		} else {
             throw new Error("Sách không tồn tại");
         }
 

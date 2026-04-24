@@ -67,7 +67,7 @@ export const FeedbackCustomerPage: React.FC = () => {
                     const data = await response.json();
 
                     if (!response.ok) {
-                        throw new Error(data.message || "Gửi feedback thất bại");
+                        throw new Error(data.message || "Gửi phản hồi thất bại");
                     }
 
                     // reset form
@@ -79,10 +79,10 @@ export const FeedbackCustomerPage: React.FC = () => {
                     return data.message;
                 }),
             {
-                pending: "Đang gửi feedback...",
+                pending: "Đang gửi phản hồi...",
                 success: {
                     render({ data }) {
-                        return data || "Gửi feedback thành công";
+                        return data || "Gửi phản hồi thành công";
                     },
                 },
                 error: {

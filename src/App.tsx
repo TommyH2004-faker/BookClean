@@ -34,6 +34,7 @@ import DangNhap from "./layouts/User/DangNhap";
 import CheckoutFail from "./page/components/CheckoutFail";
 import ChatWidget from "./layouts/ChatBot/ChatWidget";
 import FlashSalePage from "./page/FlashSalePage";
+import FlashSaleManagementPage from "./layouts/Admin/FlashSaleManagement";
 
 const MyRoutes = () => {
     const [tuKhoaTimKiem, setTuKhoaTimKiem] = useState('');
@@ -104,6 +105,7 @@ const MyRoutes = () => {
                                     <Route path='/admin/genre' element={<GenreManagementPage/>}/>
                                     <Route path='/admin/order' element={<OrderManagementPage/>}/>
                                     <Route path='/admin/feedback' element={<FeedbackPage/>}/>
+                                    <Route path='/admin/flash-sale' element={<FlashSaleManagementPage/>}/>
 
                                     {/* Bắt lỗi 404 cho trang Admin */}
                                     <Route path='/admin/*' element={<Error404Page/>}/>

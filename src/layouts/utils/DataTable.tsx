@@ -4,6 +4,7 @@ import React from "react";
 interface DataTableProps {
 	rows: any;
 	columns: any;
+	onRowClick?: (params: any) => void;
 }
 
 export const DataTable: React.FC<DataTableProps> = (props) => {
@@ -19,6 +20,7 @@ export const DataTable: React.FC<DataTableProps> = (props) => {
 				autoHeight
 				rows={props.rows}
 				columns={props.columns}
+				onRowClick={props.onRowClick}
 				initialState={{
 					pagination: {
 						paginationModel: { page: 0, pageSize: 10 },

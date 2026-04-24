@@ -77,7 +77,7 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
                 </Link>
                 <button className="navbar-toggler" type="button" data-bs-toggle="collapse"
                         data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+                        aria-expanded="false" aria-label="Bật/tắt điều hướng">
                     <span className="navbar-toggler-icon"></span>
                 </button>
 
@@ -107,7 +107,7 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
                         {isToken() && (
                             <li className='nav-item d-none d-lg-block'>
                                 <NavLink className='nav-link' to='/feedback'>
-                                    Feedback
+                                    Phản hồi
                                 </NavLink>
                             </li>
                         )}
@@ -146,7 +146,7 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
         {isToken() && (
             <li>
                 <NavLink className='dropdown-item' to='/feedback'>
-                    Feedback
+                    Phản hồi
                 </NavLink>
             </li>
         )}
@@ -187,9 +187,9 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
 
                 {/* Tìm kiếm */}
                 <div className="d-flex">
-                    <input className="form-control me-2" type="search" placeholder="Tìm kiếm" aria-label="Search"
+                    <input className="form-control me-2" type="search" placeholder="Tìm kiếm" aria-label="Tìm kiếm"
                            onChange={onsearchInputChange} value={tuKhoaTamThoi} onKeyDown={handleKeyDown}/>
-                    <button className="btn btn-outline-success" type="submit" onClick={handleSearch}>Search
+                    <button className="btn btn-outline-success" type="submit" onClick={handleSearch}>Tìm
                         <Search/>
                     </button>
                 </div>
