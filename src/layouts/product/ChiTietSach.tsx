@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/exhaustive-deps */
+
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 
@@ -30,6 +30,7 @@ import {CheckoutPage} from "../../page/components/CheckoutPage";
 import RatingStar from "./rating/Rating";
 import CartItemModel from "../../models/CartItemModel";
 import SachProps from "./components/SachProps";
+import { getErrorMessage } from "../utils/helperError";
 
 
 interface BookDetailProps {}
@@ -55,7 +56,7 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
     // Khai báo biến
     const [book, setBook] = useState<BookModel | null>(null);
     const [loading, setLoading] = useState(true);
-    const [erroring, setErroring] = useState(null);
+    const [erroring, setErroring] = useState<string | null>(null);
     // Lấy sách ra
     useEffect(() => {
         let cancelled = false;
@@ -157,7 +158,7 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
                     if (b.idBook === idBookNumber) continue;
                     if (!dedup.has(b.idBook)) dedup.set(b.idBook, b);
                 }
-				setRelatedBooks(Array.from(dedup.values()));
+                setRelatedBooks(Array.from(dedup.values()));
             })
             .finally(() => {
                 if (cancelled) return;
@@ -181,10 +182,18 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
     };
 
     const [quantity, setQuantity] = useState(1);
-    // Xử lý tăng số lượng
+
+    // BỔ SUNG LOGIC TÍNH TỐI ĐA THỰC TẾ
+    const currentQuantityInCart = cartList.find((c) => c.book.idBook === book?.idBook)?.quantity || 0;
+    const availableStock = book?.quantity || 0;
+    const maxAllowed = Math.max(0, availableStock - currentQuantityInCart);
+
+    // Xử lý tăng số lượng (giới hạn theo maxAllowed)
     const add = () => {
-        if (quantity < (book?.quantity ? book?.quantity : 1)) {
+        if (quantity < maxAllowed) {
             setQuantity(quantity + 1);
+        } else {
+            toast.warning(`Giỏ hàng đã có ${currentQuantityInCart} sản phẩm. Bạn chỉ thêm được tối đa ${maxAllowed} sản phẩm nữa.`);
         }
     };
 
@@ -195,118 +204,285 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
         }
     };
 
+    // const handleAddProduct = async (newBook: BookModel, quantity: number = 1) => {
+    //     console.log("=== BẮT ĐẦU THÊM SẢN PHẨM ===");
+    //     console.log("1. Sản phẩm đang thêm:", newBook.nameBook, "| ID:", newBook.idBook);
+    //     console.log("2. Số lượng muốn thêm:", quantity);
+
+    //     if (newBook.isFlashSale) {
+    //         const maxPerUser = await getFlashSaleMaxPerUser(newBook.idBook);
+    //         if (maxPerUser && currentQuantityInCart + quantity > maxPerUser) {
+    //             toast.error(`Flash Sale: tối đa ${maxPerUser} sản phẩm/khách`);
+    //             return;
+    //         }
+    //     }
+
+    //     console.log("3. Trạng thái kho - Trong giỏ:", currentQuantityInCart, "- Tồn kho:", availableStock);
+    //     // Nếu tổng số lượng vượt quá tồn kho, thông báo và dừng
+    //     if (currentQuantityInCart + quantity > availableStock) {
+    //         toast.error("Không thể thêm, đã vượt quá số lượng tồn kho!");
+    //         return;
+    //     }
+
+    //     let isExistBook = cartList.find(
+    //         (cartItem) => cartItem.book.idBook === newBook.idBook
+    //     );
+
+    //     if (isExistBook) {
+    //         const newQuantity = isExistBook.quantity + quantity;
+
+    //         if (isToken()) {
+    //             const request = {
+    //                 idCart: isExistBook.idCart,
+    //                 quantity: newQuantity,
+    //             };
+
+    //             try {
+    //                 const res = await fetch(endpointBE + `/cart-items/update-item`, {
+    //                     method: "PUT",
+    //                     headers: {
+    //                         Authorization: `Bearer ${localStorage.getItem("token")}`,
+    //                         "content-type": "application/json",
+    //                     },
+    //                     body: JSON.stringify(request),
+    //                 });
+
+    //                 if (!res.ok) {
+    //                     const message = await getErrorMessage(res);
+    //                     toast.error(message);
+    //                     return;
+    //                 }
+
+    //                 // ✅ CHỈ update sau khi API OK
+    //                 const updatedCart = cartList.map(item =>
+    //                     item.book.idBook === newBook.idBook
+    //                         ? { ...item, quantity: newQuantity }
+    //                         : item
+    //                 );
+
+    //                 setCartList(updatedCart);
+    //                 localStorage.setItem("cart", JSON.stringify(updatedCart));
+
+    //             } catch (err) {
+    //                 toast.error("Không thể cập nhật giỏ hàng");
+    //                 return;
+    //             }
+    //         }
+    //     }
+  
+    //     else {
+    //         console.log("--> Sản phẩm CHƯA CÓ trong giỏ. Tiến hành THÊM MỚI (POST)");
+    //         // Nếu chưa có trong giỏ, thêm mới
+    //         if (isToken()) {
+    //             try {
+    //                 const token = localStorage.getItem("token");
+                    
+    //                 const postPayload = {
+    //                     bookId: newBook.idBook,
+    //                     quantity: quantity,
+    //                 };
+    //                 console.log("   [API POST] Dữ liệu gửi đi:", postPayload); // <--- LOG REQUEST ADD
+
+    //                 const response = await fetch(endpointBE + "/cart-items/add-item", {
+    //                     method: "POST",
+    //                     headers: {
+    //                         Authorization: `Bearer ${token}`,
+    //                         "content-type": "application/json",
+    //                     },
+    //                     body: JSON.stringify(postPayload),
+    //                 });
+
+    //                 console.log("   [API POST] Mã trạng thái (Status):", response.status); // <--- LOG STATUS ADD
+
+    //                 if (!response.ok) {
+    //                     const errorData = await response.text();
+    //                     console.error("   [API POST LỖI] Phản hồi từ BE:", errorData);
+    //                     toast.error("Không thể thêm vào giỏ hàng");
+    //                     return;
+    //                 }
+
+    //                 const payload = await response.json();
+    //                 console.log("   [API POST THÀNH CÔNG] Dữ liệu nhận về:", payload); // <--- LOG KẾT QUẢ TRẢ VỀ
+
+    //                 const idCart = payload?.data ?? payload?.idCart ?? payload;
+    //                 if (typeof idCart !== "number") {
+    //                     console.error("   [LỖI PARSE ID] idCart nhận được không phải là số:", idCart);
+    //                     toast.error("Không thể thêm vào giỏ hàng");
+    //                     return;
+    //                 }
+    //                 // cartList.push({
+    //                 //     idCart: idCart,
+    //                 //     quantity: quantity,
+    //                 //     book: newBook,
+    //                 // });
+    //                 const updatedCart = [
+    //                 ...cartList,
+    //                 {
+    //                     idCart: idCart,
+    //                     quantity: quantity,
+    //                     book: newBook,
+    //                 },
+    //             ];
+
+    //             setCartList(updatedCart);
+    //             localStorage.setItem("cart", JSON.stringify(updatedCart));
+
+    //             const total = updatedCart.reduce((sum, item) => sum + item.quantity, 0);
+    //             setTotalCart(total);
+    //             } catch (error) {
+    //                 console.error("   [API POST CRASH] Exception:", error); // <--- LOG EXCEPTION ADD
+    //                 toast.error("Không thể thêm vào giỏ hàng");
+    //                 return;
+    //             }
+    //         } else {
+    //             // Nếu chưa đăng nhập, lưu vào localStorage
+    //             console.log("--> User chưa đăng nhập, lưu vào LocalStorage.");
+    //             // cartList.push({
+    //             //     quantity: quantity,
+    //             //     book: newBook,
+    //             // });
+    //             const updatedCart = [
+    //             ...cartList,
+    //             {
+    //                 quantity: quantity,
+    //                 book: newBook,
+    //             },
+    //             ];
+
+    //             setCartList(updatedCart);
+    //             localStorage.setItem("cart", JSON.stringify(updatedCart));
+
+    //             const total = updatedCart.reduce((sum, item) => sum + item.quantity, 0);
+    //             setTotalCart(total);
+    //         }
+    //     }
+
+    //     // Lưu giỏ hàng vào localStorage
+    //     localStorage.setItem("cart", JSON.stringify(cartList));
+    //     setCartList([...cartList]); // cập nhật state để re-render
+
+    //     // Thông báo thêm thành công
+    //     toast.success("Thêm vào giỏ hàng thành công");
+    //     // setTotalCart(cartList.length);
+    //     const total = cartList.reduce((sum, item) => sum + item.quantity, 0);
+    //     setTotalCart(total);
+        
+    //     // Reset quantity sau khi thêm thành công (Tuỳ chọn)
+    //     setQuantity(1); 
+    //     console.log("=== KẾT THÚC THÊM SẢN PHẨM THÀNH CÔNG ===");
+    // };
     const handleAddProduct = async (newBook: BookModel, quantity: number = 1) => {
-    // Lấy số lượng tồn kho, nếu undefined thì mặc định 0
-    const availableStock = newBook.quantity ?? 0;
-
-    // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
-    let isExistBook = cartList.find(
-        (cartItem) => cartItem.book.idBook === newBook.idBook
-    );
-
-    const currentQuantityInCart = isExistBook ? isExistBook.quantity : 0;
-
-    if (newBook.isFlashSale) {
-        const maxPerUser = await getFlashSaleMaxPerUser(newBook.idBook);
-        if (maxPerUser && currentQuantityInCart + quantity > maxPerUser) {
-            toast.error(`Flash Sale: tối đa ${maxPerUser} sản phẩm/khách`);
-            return;
-        }
-    }
-
-    // Nếu tổng số lượng vượt quá tồn kho, thông báo và dừng
-    if (currentQuantityInCart + quantity > availableStock) {
-        toast.error("Không thể thêm, đã vượt quá số lượng tồn kho!");
-        return;
-    }
-
-    if (isExistBook) {
-        // Nếu đã có trong giỏ, tăng số lượng
-        const prevQuantity = isExistBook.quantity;
-        isExistBook.quantity = prevQuantity + quantity;
-
-        // Cập nhật trên server nếu đã đăng nhập
-        if (isToken()) {
-            const request = {
-                idCart: isExistBook.idCart,
-                quantity: isExistBook.quantity,
-            };
-            const token = localStorage.getItem("token");
-            try {
-                const res = await fetch(endpointBE + `/cart-items/update-item`, {
-                    method: "PUT",
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "content-type": "application/json",
-                    },
-                    body: JSON.stringify(request),
-                });
-                if (!res.ok) {
-                    isExistBook.quantity = prevQuantity;
-                    toast.error("Không thể cập nhật số lượng trong giỏ hàng");
-                    return;
-                }
-            } catch (err) {
-                isExistBook.quantity = prevQuantity;
-                toast.error("Không thể cập nhật số lượng trong giỏ hàng");
+        if (newBook.isFlashSale) {
+            const maxPerUser = await getFlashSaleMaxPerUser(newBook.idBook);
+            if (maxPerUser && currentQuantityInCart + quantity > maxPerUser) {
+                toast.error(`Flash Sale: tối đa ${maxPerUser} sản phẩm/khách`);
                 return;
             }
         }
-    } else {
-        // Nếu chưa có trong giỏ, thêm mới
-        if (isToken()) {
-            try {
-                const token = localStorage.getItem("token");
-                const response = await fetch(endpointBE + "/cart-items/add-item", {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "content-type": "application/json",
-                    },
-                    body: JSON.stringify({
+
+        if (currentQuantityInCart + quantity > availableStock) {
+            toast.error("Không thể thêm, đã vượt quá số lượng tồn kho!");
+            return;
+        }
+
+        // Tạo mảng ảo ngay từ đầu để thao tác
+        let updatedCart = [...cartList];
+        let isExistBook = updatedCart.find(
+            (cartItem) => cartItem.book.idBook === newBook.idBook
+        );
+
+        if (isExistBook) {
+            const newQuantity = isExistBook.quantity + quantity;
+
+            if (isToken()) {
+                const request = {
+                    idCart: isExistBook.idCart,
+                    quantity: newQuantity,
+                };
+
+                try {
+                    const res = await fetch(endpointBE + `/cart-items/update-item`, {
+                        method: "PUT",
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem("token")}`,
+                            "content-type": "application/json",
+                        },
+                        body: JSON.stringify(request),
+                    });
+
+                    if (!res.ok) {
+                        const message = await getErrorMessage(res);
+                        toast.error(message);
+                        return; // Lỗi thì dừng luôn, không chạy xuống dưới
+                    }
+                } catch (err) {
+                    toast.error("Không thể cập nhật giỏ hàng");
+                    return;
+                }
+            }
+            
+            // Cập nhật số lượng vào mảng ảo (chạy cho cả khi login và chưa login)
+            updatedCart = updatedCart.map(item =>
+                item.book.idBook === newBook.idBook
+                    ? { ...item, quantity: newQuantity }
+                    : item
+            );
+
+        } else {
+            if (isToken()) {
+                try {
+                    const token = localStorage.getItem("token");
+                    const postPayload = {
                         bookId: newBook.idBook,
                         quantity: quantity,
-                    }),
-                });
+                    };
 
-				if (!response.ok) {
-                    toast.error("Không thể thêm vào giỏ hàng");
-					return;
-				}
+                    const response = await fetch(endpointBE + "/cart-items/add-item", {
+                        method: "POST",
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            "content-type": "application/json",
+                        },
+                        body: JSON.stringify(postPayload),
+                    });
 
-                const payload = await response.json();
-                const idCart = payload?.data ?? payload?.idCart ?? payload;
-                if (typeof idCart !== "number") {
+                    if (!response.ok) {
+                        toast.error("Không thể thêm vào giỏ hàng");
+                        return;
+                    }
+
+                    const payload = await response.json();
+                    const idCart = payload?.data ?? payload?.idCart ?? payload;
+
+                    // Thêm sách mới vào mảng ảo
+                    updatedCart.push({
+                        idCart: idCart,
+                        quantity: quantity,
+                        book: newBook,
+                    });
+                } catch (error) {
                     toast.error("Không thể thêm vào giỏ hàng");
                     return;
                 }
-				cartList.push({
-					idCart: idCart,
-					quantity: quantity,
-					book: newBook,
-				});
-            } catch (error) {
-                console.log(error);
-				toast.error("Không thể thêm vào giỏ hàng");
-				return;
+            } else {
+                // Chưa đăng nhập -> Thêm thẳng vào mảng ảo
+                updatedCart.push({
+                    quantity: quantity,
+                    book: newBook,
+                });
             }
-        } else {
-            // Nếu chưa đăng nhập, lưu vào localStorage
-            cartList.push({
-                quantity: quantity,
-                book: newBook,
-            });
         }
-    }
 
-    // Lưu giỏ hàng vào localStorage
-    localStorage.setItem("cart", JSON.stringify(cartList));
-    setCartList([...cartList]); // cập nhật state để re-render
+        // ✅ CHỈ LƯU VÀO STATE VÀ LOCALSTORAGE ĐÚNG 1 LẦN Ở ĐÂY
+        setCartList(updatedCart);
+        localStorage.setItem("cart", JSON.stringify(updatedCart));
 
-    // Thông báo thêm thành công
-    toast.success("Thêm vào giỏ hàng thành công");
-    setTotalCart(cartList.length);
-};
+        const total = updatedCart.reduce((sum, item) => sum + item.quantity, 0);
+        setTotalCart(total);
+        setQuantity(1); // Reset lại nút chọn số lượng về 1 sau khi thêm xong
+        
+        toast.success("Thêm vào giỏ hàng thành công");
+    };
     // Viewer hình ảnh
     const [currentImage, setCurrentImage] = useState(0);
     const [isViewerOpen, setIsViewerOpen] = useState(false);
@@ -331,13 +507,13 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
     const [isCheckout, setIsCheckout] = useState(false);
     const [cartItem, setCartItem] = useState<CartItemModel[]>([]);
     const [totalPriceProduct, setTotalPriceProduct] = useState(0);
+    
     function handleBuyNow(newBook: BookModel) {
         if(!isToken()) {
             toast.warning("Bạn cần đăng nhập để mua hàng");
             return;
         }
         void (async () => {
-            const currentQuantityInCart = cartList.find((cartItem) => cartItem.book.idBook === newBook.idBook)?.quantity ?? 0;
             if (newBook.isFlashSale) {
                 const maxPerUser = await getFlashSaleMaxPerUser(newBook.idBook);
                 if (maxPerUser && currentQuantityInCart + quantity > maxPerUser) {
@@ -446,7 +622,7 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
                                     <p className='me-5'>
                                         Thể loại:{" "}
                                         <strong>
-										{genres?.map((genre) => genre.nameGenre).join(", ")}
+                                        {genres?.map((genre) => genre.nameGenre).join(", ")}
                                         </strong>
                                     </p>
                                     <p className='ms-5'>
@@ -465,52 +641,42 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
                                         </p>
                                     </div>
                                     <div className='d-flex align-items-center'>
-										<span className='mx-3 mb-1 text-secondary'>
-											|
-										</span>
+                                        <span className='mx-3 mb-1 text-secondary'>
+                                            |
+                                        </span>
                                     </div>
                                     <div className='d-flex align-items-end justify-content-center '>
-										<span
+                                        <span
                                             style={{
                                                 color: "rgb(135,135,135)",
                                                 fontSize: "16px",
                                             }}
                                         >
-											Đã bán
-										</span>
+                                            Đã bán
+                                        </span>
                                         <span className='fw-bold ms-2'>
-											{book.soldQuantity}
-										</span>
+                                            {book.soldQuantity}
+                                        </span>
                                     </div>
                                 </div>
                                 <div className='price'>
-									<span className='discounted-price text-danger me-3'>
-										<strong style={{ fontSize: "32px" }}>
-											{book.sellPrice?.toLocaleString()}đ
-										</strong>
-									</span>
+                                    <span className='discounted-price text-danger me-3'>
+                                        <strong style={{ fontSize: "32px" }}>
+                                            {book.sellPrice?.toLocaleString()}đ
+                                        </strong>
+                                    </span>
                                     <span className='original-price small me-3'>
-										<strong>
-											<del>{book.listPrice?.toLocaleString()}đ</del>
-										</strong>
-									</span>
+                                        <strong>
+                                            <del>{book.listPrice?.toLocaleString()}đ</del>
+                                        </strong>
+                                    </span>
                                     <h4 className='my-0 d-inline-block'>
-										<span className='badge bg-danger'>
-											{book.discountPercent}%
-										</span>
+                                        <span className='badge bg-danger'>
+                                            {book.discountPercent}%
+                                        </span>
                                     </h4>
                                 </div>
                                 <div className='mt-3'>
-                                    {/* <p>
-                                        Vận chuyển tới:{" "}
-                                        <strong>MH Bookstore </strong>{" "}
-                                        <span
-                                            className='ms-3 text-primary'
-                                            style={{ cursor: "pointer" }}
-                                        >
-											Thay đổi
-										</span>
-                                    </p> */}
                                     <div className='d-flex align-items-center mt-3'>
                                         <img
                                             src='https://deo.shopeemobile.com/shopee/shopee-pcmall-live-sg/d9e992985b18d96aab90969636ebfd0e.png'
@@ -523,18 +689,18 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
                                 <div className='d-flex align-items-center mt-3'>
                                     <strong className='me-5'>Số lượng: </strong>
                                     <SelectQuantity
-                                        max={book.quantity}
-                                        quantity={quantity}
+                                        max={maxAllowed} // ĐÃ ĐỔI TỪ book.quantity SANG maxAllowed
+                                        quantity={maxAllowed === 0 ? 0 : quantity}
                                         setQuantity={setQuantity}
                                         add={add}
                                         reduce={reduce}
                                     />
                                     <span className='ms-4'>
-										{book.quantity} sản phẩm có sẵn
-									</span>
+                                        {book.quantity} sản phẩm có sẵn
+                                    </span>
                                 </div>
                                 <div className='mt-4 d-flex align-items-center'>
-                                    {book.quantity === 0 ? (
+                                    {availableStock === 0 ? (
                                         <Button
                                             variant='outlined'
                                             size='large'
@@ -543,6 +709,16 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
                                         >
                                             Hết hàng
                                         </Button>
+                                    ) : maxAllowed <= 0 ? (
+                                        <Button
+                                            variant='outlined'
+                                            size='large'
+                                            className='me-3'
+                                            color='warning'
+                                            disabled
+                                        >
+                                            Đã thêm tối đa vào giỏ
+                                        </Button>
                                     ) : (
                                         <>
                                             <Button
@@ -550,7 +726,7 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
                                                 size='large'
                                                 startIcon={<ShoppingCartOutlined />}
                                                 className='me-3'
-                                                onClick={() => handleAddProduct(book)}
+                                                onClick={() => handleAddProduct(book, quantity)}
                                             >
                                                 Thêm vào giỏ hàng
                                             </Button>

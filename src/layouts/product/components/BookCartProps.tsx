@@ -14,6 +14,7 @@ import ImageModel from "../../../models/ImageModel";
 import {layToanBoHinhAnhMotSach} from "../../../api/HinhAnhAPI";
 import SelectQuantity from "./select-quantity/SelectQuantity";
 import { getFlashSaleMaxPerUser } from "../../utils/flashSaleLimit";
+import { getErrorMessage } from "../../utils/helperError";
 
 interface BookCartProps {
     cartItem: CartItemModel;
@@ -171,10 +172,15 @@ const BookCartProps: React.FC<BookCartProps> = (props) => {
                             quantity: nextQuantity,
                         }),
                     });
+                    // if (!res.ok) {
+					// 	toast.error("Không thể cập nhật số lượng trong giỏ hàng");
+                    //     return false;
+                    // }
                     if (!res.ok) {
-						toast.error("Không thể cập nhật số lượng trong giỏ hàng");
-                        return false;
-                    }
+                    const message = await getErrorMessage(res);
+                    toast.error(message);
+                    return false;
+                }
                 } catch (err) {
                     toast.error("Không thể cập nhật số lượng trong giỏ hàng");
                     return false;

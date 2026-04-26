@@ -13,6 +13,7 @@ import {get1Orders} from "../../../../api/OrderApi";
 import OrderModel from "../../../../models/OrderModel";
 import {endpointBE} from "../../../utils/Constant";
 import {OrderDetail} from "../../../product/components/order-detail/OrderDetail";
+import { clearFlashSalePurchaseUsageCache } from "../../../utils/flashSaleLimit";
 
 interface OrderFormProps {
 	id: any;
@@ -75,6 +76,7 @@ export const OrderForm: React.FC<OrderFormProps> = (props) => {
 		})
 			.then((response) => {
 				if (response.ok) {
+					clearFlashSalePurchaseUsageCache();
 					props.setKeyCountReload(Math.random());
 					toast.success("Cập nhật đơn hàng thành công");
 					props.handleCloseModal();
@@ -101,6 +103,7 @@ export const OrderForm: React.FC<OrderFormProps> = (props) => {
 		})
 			.then((response) => {
 				if (response.ok) {
+					clearFlashSalePurchaseUsageCache();
 					props.setKeyCountReload(Math.random());
 					toast.success("Huỷ đơn hàng thành công");
 					props.handleCloseModal();

@@ -4,6 +4,7 @@ import {layToanBoHinhAnhMotSach} from "./HinhAnhAPI";
 import {getGenreByIdBook} from "./GenreApi";
 import GenreModel from "../models/GenreModel";
 import {endpointBE} from "../layouts/utils/Constant";
+import { getFlashSaleMaxPerUser, getPurchasedFlashSaleQuantityForBook } from "../layouts/utils/flashSaleLimit";
 
 interface KetQuaInterface {
     ketQua: BookModel[];
@@ -11,17 +12,45 @@ interface KetQuaInterface {
     tongSoSach: number;
 }
 
-function resolveSellPrice(item: any): { isFlashSale: boolean; flashSalePrice: number | null; sellPrice: number } {
+function resolveBasePricing(item: any): { isFlashSale: boolean; flashSalePrice: number | null; sellPrice: number; baseSellPrice: number } {
     const isFlashSale = Boolean(item?.isFlashSale);
     const rawFlashSalePrice = item?.flashSalePrice;
     const flashSalePrice = typeof rawFlashSalePrice === "number" ? rawFlashSalePrice : null;
     const normalSellPrice = item?.sellPrice ?? 0;
 
     if (isFlashSale && typeof flashSalePrice === "number" && flashSalePrice > 0) {
-        return { isFlashSale, flashSalePrice, sellPrice: flashSalePrice };
+        return { isFlashSale, flashSalePrice, sellPrice: flashSalePrice, baseSellPrice: normalSellPrice };
     }
 
-    return { isFlashSale, flashSalePrice, sellPrice: normalSellPrice };
+    return { isFlashSale, flashSalePrice, sellPrice: normalSellPrice, baseSellPrice: normalSellPrice };
+}
+
+async function resolveUserAwarePricing(item: any): Promise<{ isFlashSale: boolean; flashSalePrice: number | null; sellPrice: number }> {
+    const basePricing = resolveBasePricing(item);
+    if (!basePricing.isFlashSale) {
+        return basePricing;
+    }
+
+    const bookId = Number(item?.id ?? item?.idBook ?? item?.bookId ?? 0);
+    if (!Number.isFinite(bookId) || bookId <= 0) {
+        return basePricing;
+    }
+
+    const maxPerUser = await getFlashSaleMaxPerUser(bookId);
+    if (!maxPerUser) {
+        return basePricing;
+    }
+
+    const purchasedQuantity = await getPurchasedFlashSaleQuantityForBook(bookId);
+    if (purchasedQuantity >= maxPerUser) {
+        return {
+            isFlashSale: false,
+            flashSalePrice: basePricing.flashSalePrice,
+            sellPrice: basePricing.baseSellPrice,
+        };
+    }
+
+    return basePricing;
 }
 
 // async function laySach(duongDan: string): Promise<KetQuaInterface> {
@@ -66,7 +95,7 @@ async function laySach(duongDan: string): Promise<KetQuaInterface> {
     const tongSoSach = response.totalElements;
 
     for (const item of responseData) {
-		const pricing = resolveSellPrice(item);
+		const pricing = await resolveUserAwarePricing(item);
         ketQua.push({
             idBook: item.id,
             nameBook: item.name ?? "",
@@ -179,7 +208,7 @@ export async function laySachTheoMaSach(idBook: number): Promise<BookModel|null>
         const sachData = await response.json();
         var responseData = sachData.data;
         if(sachData){
-			const pricing = resolveSellPrice(responseData);
+			const pricing = await resolveUserAwarePricing(responseData);
             const bookResponse: BookModel = {
                 idBook: responseData.id, // id sach
                 nameBook: responseData.name, // Có thể NULL
@@ -218,7 +247,7 @@ export async function getBookByIdCartItem(idCart: number): Promise<BookModel | n
             throw new Error("Sách không tồn tại");
         }
 
-        const pricing = resolveSellPrice(responseData);
+        const pricing = await resolveUserAwarePricing(responseData);
         return {
             idBook: responseData.id ?? responseData.idBook ?? 0,
             nameBook: responseData.name ?? responseData.nameBook ?? "",
@@ -322,7 +351,7 @@ export async function getBookById(idBook: number): Promise<BookModel | null> {
         var responseData = response.data;
 
         if (responseData) {
-			const pricing = resolveSellPrice(responseData);
+			const pricing = await resolveUserAwarePricing(responseData);
 
             // map lại đúng field
             const bookResponse: BookModel = {

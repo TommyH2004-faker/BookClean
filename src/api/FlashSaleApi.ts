@@ -41,17 +41,26 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
 	return body as T;
 }
 
+// function getAuthHeaders(): Record<string, string> {
+// 	const token = localStorage.getItem("token");
+// 	if (!token) {
+// 		throw new Error("Bạn chưa đăng nhập");
+// 	}
+
+// 	return {
+// 		Authorization: `Bearer ${token}`,
+// 	};
+// }
 function getAuthHeaders(): Record<string, string> {
-	const token = localStorage.getItem("token");
-	if (!token) {
-		throw new Error("Bạn chưa đăng nhập");
-	}
+    const token = localStorage.getItem("token");
+    if (!token) {
+        return {}; // Khách vãng lai thì trả về header rỗng, KHÔNG throw error
+    }
 
-	return {
-		Authorization: `Bearer ${token}`,
-	};
+    return {
+        Authorization: `Bearer ${token}`,
+    };
 }
-
 function normalizeFlashSaleItem(item: any): FlashSaleItemModel {
 	if (!item || typeof item !== "object") return item as FlashSaleItemModel;
 

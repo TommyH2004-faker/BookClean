@@ -1,4 +1,5 @@
 import { endpointBE } from "../layouts/utils/Constant";
+import { getFlashSaleMaxPerUser, getPurchasedFlashSaleQuantityForBook } from "../layouts/utils/flashSaleLimit";
 import CartItemModel from "../models/CartItemModel";
 
 
@@ -41,12 +42,26 @@ export async function getCartAllByIdUser(): Promise<CartItemModel[]> {
 
         const cartResponse = await response.json();
 
-        return cartResponse.map((item: any) => {
+        return await Promise.all(cartResponse.map(async (item: any) => {
 			const isFlashSale = Boolean(item.book?.isFlashSale);
 			const flashSalePrice = typeof item.book?.flashSalePrice === "number" ? item.book.flashSalePrice : null;
-			const effectiveSellPrice = isFlashSale && typeof flashSalePrice === "number" && flashSalePrice > 0
-				? flashSalePrice
-				: (item.book?.sellPrice ?? 0);
+            const normalSellPrice = item.book?.sellPrice ?? 0;
+            let effectiveSellPrice = isFlashSale && typeof flashSalePrice === "number" && flashSalePrice > 0
+                ? flashSalePrice
+                : normalSellPrice;
+            let effectiveIsFlashSale = isFlashSale;
+
+            if (isFlashSale) {
+                const bookId = Number(item.book?.id ?? item.book?.idBook ?? 0);
+                const maxPerUser = await getFlashSaleMaxPerUser(bookId);
+                if (maxPerUser) {
+                    const purchasedQuantity = await getPurchasedFlashSaleQuantityForBook(bookId);
+                    if (purchasedQuantity >= maxPerUser) {
+                        effectiveSellPrice = normalSellPrice;
+                        effectiveIsFlashSale = false;
+                    }
+                }
+            }
 
 			return {
             idCart: item.idCart ?? item.id,
@@ -57,13 +72,13 @@ export async function getCartAllByIdUser(): Promise<CartItemModel[]> {
                 nameBook: item.book?.name ?? "",
                 sellPrice: effectiveSellPrice,
                 listPrice: item.book?.listPrice ?? 0,
-                isFlashSale,
+                isFlashSale: effectiveIsFlashSale,
                 flashSalePrice,
                 quantity: item.book?.quantity ?? 0,
                 soldQuantity: item.book?.soldQuantity ?? 0,
             },
 			};
-		});
+        }));
     } catch (error) {
         console.error("Error: ", error);
         return [];
