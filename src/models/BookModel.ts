@@ -22,9 +22,9 @@ class BookModel {
    genresList?: GenreModel[]; // danh sach the loai
    isFavorited?: boolean; // da yeu thich
    images?: ImageModel[]; // danh sach hinh anh
+   price?: number; // gia sau giam gia
 
-
-   constructor(idBook: number, nameBook: string, author: string, isbn: string, description: string, listPrice: number, sellPrice: number, quantity: number, avgRating: number, soldQuantity: number, discountPercent: number, thumbnail: string) {
+   constructor(idBook: number, nameBook: string, author: string, isbn: string, description: string, listPrice: number, sellPrice: number, quantity: number, avgRating: number, soldQuantity: number, discountPercent: number, thumbnail: string , price ?: number) {
       this.idBook = idBook;
       this.nameBook = nameBook;
       this.author = author;
@@ -37,6 +37,7 @@ class BookModel {
       this.soldQuantity = soldQuantity;
       this.discountPercent = discountPercent;
       this.thumbnail = thumbnail;
+      this.price = price;
    }
 }
 

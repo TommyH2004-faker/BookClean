@@ -89,8 +89,8 @@ export const OrderDetail: React.FC<OrderDetailProps> = (props) => {
 			{props.order.cartItems?.map((cartItem, index) => (
 				<BookHorizontal
 					cartItem={cartItem}
-					key={index}
-					type={props.type}
+					// type={props.type}
+					 type="order"  
 					idOrder={props.order.idOrder}
 					handleCloseModalOrderDetail={props.handleCloseModal}
 					statusOrder={props.order.status}

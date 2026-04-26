@@ -2,6 +2,7 @@ import { endpointBE } from "../layouts/utils/Constant";
 import {my_request} from "./Request";
 import OrderModel from "../models/OrderModel";
 import CartItemModel from "../models/CartItemModel";
+import { PriceChange } from "@mui/icons-material";
 
 
 
@@ -113,20 +114,35 @@ export async function get1Orders(idOrder: number): Promise<OrderModel> {
 
    const res = await my_request(endpoint);
 
-   // ⚠️ API của bạn trả dạng Result<T>
    const data = res.data;
 
+   // const cartItems: CartItemModel[] = data.items?.map((item: any) => {
+   //    return new CartItemModel(
+   //       item.quantity,
+   //       {
+   //          price: item.price,
+   //          idBook: item.bookId,
+   //          nameBook: item.bookName,
+   //           sellPrice: item.sellPrice,  
+   //          listPrice: item.listPrice
+   //       } as any, // nếu BookModel chưa full
+   //    );
+   // });
    const cartItems: CartItemModel[] = data.items?.map((item: any) => {
-      return new CartItemModel(
-         item.quantity,
-         {
-            idBook: item.bookId,
-            nameBook: item.bookName,
-             sellPrice: item.sellPrice,  
-            listPrice: item.listPrice
-         } as any, // nếu BookModel chưa full
-      );
-   });
+   const cartItem = new CartItemModel(
+      item.quantity,
+      {
+         idBook: item.bookId,
+         nameBook: item.bookName,
+         sellPrice: item.sellPrice,
+         listPrice: item.listPrice
+      } as any
+   );
+
+   cartItem.price = item.price; // ✅ GÁN ĐÚNG CHỖ
+
+   return cartItem;
+});
 
    const order: OrderModel = {
       idOrder: data.id,

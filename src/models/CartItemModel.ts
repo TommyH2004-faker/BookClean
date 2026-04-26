@@ -7,10 +7,13 @@ class CartItemModel {
    book: BookModel; // sach
    idUser?: number; // id nguoi dung
    review?: boolean; // da review chua
+   price?: number; // gia ban tai thoi diem them vao gio hang
+
 
    constructor(quantity: number, book: BookModel) {
       this.quantity = quantity;
       this.book = book;
+    
    }
 }
 

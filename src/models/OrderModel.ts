@@ -3,6 +3,7 @@ import CartItemModel from "./CartItemModel";
 import PaymentModel from "./Payment";
 import { UserModel } from "./UserModel";
 import OrdersDetailModel from "./OrdersDetailModel";
+import OrderItemModel from "./OrderItemModel";
 
 class OrderModel{
     id?: any; // id don hang
@@ -21,6 +22,7 @@ class OrderModel{
     payment?: string; // phuong thuc thanh toan
     cartItems?: CartItemModel[]; // để tạm thời
     orderDetails?: OrdersDetailModel[]; // chi tiet don hang
+    items?: OrderItemModel[]; 
 
 
     constructor(idOrder: number,

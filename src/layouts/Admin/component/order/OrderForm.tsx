@@ -42,24 +42,49 @@ export const OrderForm: React.FC<OrderFormProps> = (props) => {
 	const [activeStep, setActiveStep] = useState(0);
 
 	// Lấy 1 đơn hàng khi cập nhật
+	// useEffect(() => {
+	// 	get1Orders(props.id)
+	// 		.then((response) => {
+	// 			setOrder(response);
+	// 			console.log(response);
+	// 			if (response.status === "Bị huỷ") {
+	// 				setSteps(["Đang xử lý", "Bị huỷ"]);
+	// 				setActiveStep(["Đang xử lý", "Bị huỷ"].indexOf(response.status));
+	// 			} else {
+	// 				setSteps(["Đang xử lý", "Đang giao hàng", "Thành công"]);
+	// 				setActiveStep(
+	// 					["Đang xử lý", "Đang giao hàng", "Thành công"].indexOf(
+	// 						response.status
+	// 					)
+	// 				);
+	// 			}
+	// 		})
+	// 		.catch((error) => console.log(error));
+	// }, [props.option, props.id]);
 	useEffect(() => {
-		get1Orders(props.id)
-			.then((response) => {
-				setOrder(response);
-				if (response.status === "Bị huỷ") {
-					setSteps(["Đang xử lý", "Bị huỷ"]);
-					setActiveStep(["Đang xử lý", "Bị huỷ"].indexOf(response.status));
-				} else {
-					setSteps(["Đang xử lý", "Đang giao hàng", "Thành công"]);
-					setActiveStep(
-						["Đang xử lý", "Đang giao hàng", "Thành công"].indexOf(
-							response.status
-						)
-					);
-				}
-			})
-			.catch((error) => console.log(error));
-	}, [props.option, props.id]);
+    get1Orders(props.id)
+        .then((order) => {
+            if (!order) return;
+
+            console.log("ORDER FINAL:", order);
+
+            setOrder(order); // ✅ dùng trực tiếp
+
+            // STEP
+            if (order.status === "Bị huỷ") {
+                setSteps(["Đang xử lý", "Bị huỷ"]);
+                setActiveStep(["Đang xử lý", "Bị huỷ"].indexOf(order.status));
+            } else {
+                setSteps(["Đang xử lý", "Đang giao hàng", "Thành công"]);
+                setActiveStep(
+                    ["Đang xử lý", "Đang giao hàng", "Thành công"].indexOf(
+                        order.status
+                    )
+                );
+            }
+        })
+        .catch((error) => console.log(error));
+}, [props.id]);
 
 	function hanleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
