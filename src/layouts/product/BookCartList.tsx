@@ -13,13 +13,24 @@ const BookCartList: React.FC<BookCartListProps> = () => {
     const { setTotalCart, cartList, setCartList } = useCartItem();
     const [totalPriceProduct, setTotalPriceProduct] = useState(0);
 
-    useEffect(() => {
+    // useEffect(() => {
+    //     const total = cartList.reduce((totalPrice, cartItem) => {
+    //         return totalPrice + cartItem.quantity * cartItem.book.sellPrice;
+    //     }, 0);
+    //     setTotalPriceProduct(total);
+    //     setTotalCart(cartList.length);
+    // }, [cartList, setTotalCart]); // Khúc này đang bị overloading
+   useEffect(() => {
         const total = cartList.reduce((totalPrice, cartItem) => {
-            return totalPrice + cartItem.quantity * cartItem.book.sellPrice;
+            // SỬA Ở ĐÂY: cartItem.totalItemPrice thay vì cartItem.book.price
+            const itemTotal = cartItem.totalItemPrice ?? (cartItem.quantity * cartItem.book.sellPrice);
+            
+            return totalPrice + itemTotal;
         }, 0);
+        
         setTotalPriceProduct(total);
         setTotalCart(cartList.length);
-    }, [cartList, setTotalCart]); // Khúc này đang bị overloading
+    }, [cartList, setTotalCart]);
 
     const navigation = useNavigate();
     // Xử lý xoá sách

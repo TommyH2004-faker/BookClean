@@ -176,7 +176,7 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
                         {isToken() && (
                             <li className='nav-item d-none d-lg-block'>
                                 <NavLink className='nav-link' to='/feedback'>
-                                    Phản hồi
+                                    FeedBack
                                 </NavLink>
                             </li>
                         )}
@@ -212,6 +212,7 @@ function Navbar({tuKhoaTimKiem,setTuKhoaTimKiem}:NavbarProps) {
                 Flash Sale
             </NavLink>
         </li>
+        
         {flashSaleDropdownItems
             .filter((sale) => sale?.id != null)
             .map((sale, index) => (

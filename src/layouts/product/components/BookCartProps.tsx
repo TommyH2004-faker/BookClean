@@ -1,293 +1,236 @@
 /* eslint-disable @typescript-eslint/no-redeclare */
-import { Skeleton, Tooltip } from "@mui/material";
 import React, { useEffect, useState } from "react";
+import { Skeleton, Tooltip } from "@mui/material";
 import { Link } from "react-router-dom";
-import TextEllipsis from "./text-ellipsis/TextEllipsis";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import { useConfirm } from "material-ui-confirm";
+import { toast } from "react-toastify";
+
+import TextEllipsis from "./text-ellipsis/TextEllipsis";
+import SelectQuantity from "./select-quantity/SelectQuantity";
+
 import { isToken } from "../../utils/JwtService";
 import { endpointBE } from "../../utils/Constant";
 import { useCartItem } from "../../utils/CartItemContext";
-import { toast } from "react-toastify";
-import CartItemModel from "../../../models/CartItemModel";
-import ImageModel from "../../../models/ImageModel";
-import {layToanBoHinhAnhMotSach} from "../../../api/HinhAnhAPI";
-import SelectQuantity from "./select-quantity/SelectQuantity";
-import { getFlashSaleMaxPerUser } from "../../utils/flashSaleLimit";
 import { getErrorMessage } from "../../utils/helperError";
 
-interface BookCartProps {
-    cartItem: CartItemModel;
-    handleRemoveBook: any;
+import CartItemModel from "../../../models/CartItemModel";
+import ImageModel from "../../../models/ImageModel";
+import { layToanBoHinhAnhMotSach } from "../../../api/HinhAnhAPI";
+
+interface Props {
+  cartItem: CartItemModel;
+  handleRemoveBook: (id: number) => void;
 }
 
-const BookCartProps: React.FC<BookCartProps> = (props) => {
-    const { setCartList } = useCartItem();
+const BookCartProps: React.FC<Props> = ({ cartItem, handleRemoveBook }) => {
+  const { setCartList } = useCartItem();
+  const confirm = useConfirm();
 
-    const confirm = useConfirm();
+  const book = cartItem.book;
 
-    // Tạo các biến
-    const [quantity, setQuantity] = useState(
-        props.cartItem.book.quantity !== undefined
-            ? props.cartItem.quantity > props.cartItem.book.quantity
-                ? props.cartItem.book.quantity
-                : props.cartItem.quantity
-            : props.cartItem.quantity
-    );  
-    const [imageList, setImageList] = useState<ImageModel[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [erroring, setErroring] = useState(null);
-     
-    function handleConfirm() {
-        confirm({
-            title: "Xoá sản phẩm",
-            description: "Bạn muốn bỏ sản phẩm này khỏi giỏ hàng không",
-            confirmationText: "Xoá",
-            cancellationText: "Huỷ",
-        })
-            .then(async () => {
-                props.handleRemoveBook(props.cartItem.book.idBook);
-                if (isToken()) {
-                    const token = localStorage.getItem("token");
-                    const idCart = props.cartItem.idCart;
-             
-                    if (!idCart) {
-                        console.error(" idCart undefined, không thể xoá trên server! Kiểm tra lại CartApi mapping.");
-                        return;
-                    }
-                    try {
-                        const res = await fetch(endpointBE + `/cart-items/${idCart}`, {
-                            method: "DELETE",
-                            headers: {
-                                Authorization: `Bearer ${token}`,
-                                "content-type": "application/json",
-                            },
-                        });
-                        if (!res.ok) {
-                            console.error(" Xoá cart trên server thất bại, status:", res.status);
-                        }
-                    } catch (err) {
-                        console.error(" Lỗi khi gọi DELETE cart:", err);
-                    }
-                }
-            })
-            .catch(() => {});
-    }
+  const [quantity, setQuantity] = useState(
+    book.quantity !== undefined
+      ? Math.min(cartItem.quantity, book.quantity)
+      : cartItem.quantity
+  );
 
-    // Lấy ảnh ra từ BE
-    useEffect(() => {
-        layToanBoHinhAnhMotSach(props.cartItem.book.idBook ?? props.cartItem.book.id)
-            .then((response) => {
-          
-                setImageList(response);
-                setLoading(false);
-            })
-            .catch((error) => {
-                setLoading(false);
-                setErroring(error.message);
-            });
-    }, [props.cartItem.book.idBook, props.cartItem.book.id]);
+  const [images, setImages] = useState<ImageModel[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-    // Loading ảnh thumbnail
-    let dataImage;
-    if (imageList[0]) {
-        const thumbnail = imageList.filter((i) => i.isThumbnail);
-        dataImage = thumbnail[0].url || thumbnail[0].data;
-    }
-
-    // Xử lý tăng số lượng
-    const add = () => {
-        void (async () => {
-            if (!quantity) return;
-
-            if (props.cartItem.book.isFlashSale) {
-                const maxPerUser = await getFlashSaleMaxPerUser(props.cartItem.book.idBook);
-                if (maxPerUser && quantity + 1 > maxPerUser) {
-                    toast.error(`Flash Sale: tối đa ${maxPerUser} sản phẩm/khách`);
-                    return;
-                }
-            }
-
-            if (quantity < (props.cartItem.book.quantity ? props.cartItem.book.quantity : 1)) {
-                const ok = await handleModifiedQuantity(props.cartItem.book.idBook, 1);
-                if (ok) setQuantity(quantity + 1);
-            } else {
-                toast.warning("Số lượng tồn kho không đủ");
-            }
-        })();
+  // ================== FETCH IMAGE ==================
+  useEffect(() => {
+    const fetchImages = async () => {
+      try {
+        const res = await layToanBoHinhAnhMotSach(
+          book.idBook ?? book.id
+        );
+        setImages(res);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    // Xử lý giảm số lượng
-    const reduce = () => {
-        if (quantity) {
-            // Nếu số lượng về không thì xoá sản phẩm đó
-            if (quantity - 1 === 0) {
-                handleConfirm();
-            } else if (quantity > 1) {
-				void (async () => {
-					const ok = await handleModifiedQuantity(props.cartItem.book.idBook, -1);
-					if (ok) setQuantity(quantity - 1);
-				})();
-            }
+    fetchImages();
+  }, [book.idBook, book.id]);
+
+  const thumbnail =
+    images.find((i) => i.isThumbnail)?.url ||
+    images.find((i) => i.isThumbnail)?.data;
+
+  // ================== REMOVE ==================
+  const handleConfirmRemove = () => {
+    confirm({
+      title: "Xoá sản phẩm",
+      description: "Bạn muốn bỏ sản phẩm này khỏi giỏ hàng không",
+      confirmationText: "Xoá",
+      cancellationText: "Huỷ",
+    })
+      .then(async () => {
+        handleRemoveBook(book.idBook);
+
+        if (!isToken()) return;
+
+        const token = localStorage.getItem("token");
+        if (!cartItem.idCart) return;
+
+        try {
+          await fetch(`${endpointBE}/cart-items/${cartItem.idCart}`, {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "content-type": "application/json",
+            },
+          });
+        } catch (err) {
+          console.error("Lỗi xoá cart:", err);
         }
-    };
+      })
+      .catch(() => {});
+  };
 
-    // Xử lý cập nhật lại quantity trong localstorage / database
-    async function handleModifiedQuantity(idBook: number, delta: number): Promise<boolean> {
-        const cartData: string | null = localStorage.getItem("cart");
-        const cart: CartItemModel[] = cartData ? JSON.parse(cartData) : [];
-        // cái isExistBook này sẽ tham chiếu đến cái cart ở trên, nên khi update thì cart nó cũng update theo
-        let isExistBook = cart.find(
-            (cartItem) => cartItem.book.idBook === idBook
-        );
-        // Thêm 1 sản phẩm vào giỏ hàng
-        if (isExistBook) {
-            if (delta > 0) {
-                if (props.cartItem.book.isFlashSale) {
-                    const maxPerUser = await getFlashSaleMaxPerUser(idBook);
-                    if (maxPerUser && isExistBook.quantity + delta > maxPerUser) {
-                        toast.error(`Flash Sale: tối đa ${maxPerUser} sản phẩm/khách`);
-                        return false;
-                    }
-                }
-            }
+  // ================== UPDATE QUANTITY ==================
+  const handleUpdateQuantity = async (
+    idBook: number,
+    delta: number
+  ): Promise<boolean> => {
+    const cartData = localStorage.getItem("cart");
+    const cart: CartItemModel[] = cartData ? JSON.parse(cartData) : [];
 
-            const nextQuantity = isExistBook.quantity + delta;
-            if (nextQuantity <= 0) {
-                return false;
-            }
+    const item = cart.find((i) => i.book.idBook === idBook);
+    if (!item) return false;
 
-            // Cập nhật trong db trước (nếu đã login), rồi mới ghi local
-            if (isToken()) {
-                const token = localStorage.getItem("token");
-                try {
-                    const res = await fetch(endpointBE + `/cart-items/update-item`, {
-                        method: "PUT",
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                            "content-type": "application/json",
-                        },
-                        body: JSON.stringify({
-                            idCart: props.cartItem.idCart,
-                            quantity: nextQuantity,
-                        }),
-                    });
-                    // if (!res.ok) {
-					// 	toast.error("Không thể cập nhật số lượng trong giỏ hàng");
-                    //     return false;
-                    // }
-                    if (!res.ok) {
-                    const message = await getErrorMessage(res);
-                    toast.error(message);
-                    return false;
-                }
-                } catch (err) {
-                    toast.error("Không thể cập nhật số lượng trong giỏ hàng");
-                    return false;
-                }
-            }
+    const nextQuantity = item.quantity + delta;
+    if (nextQuantity <= 0) return false;
 
-            // commit local
-            isExistBook.quantity = nextQuantity;
+    if (isToken()) {
+      const token = localStorage.getItem("token");
+      try {
+        const res = await fetch(`${endpointBE}/cart-items/update-item`, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            idCart: cartItem.idCart,
+            quantity: nextQuantity,
+          }),
+        });
 
-            // Cập nhật trong db
+        if (!res.ok) {
+          const message = await getErrorMessage(res);
+          toast.error(message);
+          return false;
         }
-        // Cập nhật lại
-        localStorage.setItem("cart", JSON.stringify(cart));
-        setCartList(cart);
-		return true;
+      } catch {
+        toast.error("Không thể cập nhật số lượng");
+        return false;
+      }
     }
 
-    if (loading) {
-        return (
-            <>
-                <Skeleton className='my-3' variant='rectangular' />
-            </>
-        );
+    item.quantity = nextQuantity;
+    localStorage.setItem("cart", JSON.stringify(cart));
+    setCartList(cart);
+
+    return true;
+  };
+
+  const add = async () => {
+    if (!quantity) return;
+
+    if (quantity < (book.quantity ?? 1)) {
+      const ok = await handleUpdateQuantity(book.idBook, 1);
+      if (ok) setQuantity(quantity + 1);
+    } else {
+      toast.warning("Số lượng tồn kho không đủ");
+    }
+  };
+
+  const reduce = async () => {
+    if (quantity <= 1) {
+      handleConfirmRemove();
+      return;
     }
 
-    if (erroring) {
-        return (
-            <>
-                <h4>Lỗi ...</h4>
-            </>
-        );
-    }
-    return (
-        <>
-            <div className='col'>
-                <div className='d-flex'>
-                    <Link to={`/book/${props.cartItem.book.idBook}`}>
-                        <img
-                            src={dataImage}
-                            className='card-img-top'
-                            alt={props.cartItem.book.nameBook}
-                            style={{ width: "100px" }}
-                        />
-                    </Link>
-                    <div className='d-flex flex-column pb-2'>
-                        <Link to={`/book/${props.cartItem.book.idBook}`}>
-                            <Tooltip title={props.cartItem.book.nameBook} arrow>
-								<span className='d-inline'>
-									<TextEllipsis
-                                        text={props.cartItem.book.nameBook + " "}
-                                        limit={38}
-                                    />
-								</span>
-                            </Tooltip>
-                        </Link>
-                        <div className='mt-auto'>
-							<span className='discounted-price text-danger'>
-								<strong style={{ fontSize: "22px" }}>
-									{props.cartItem.book.sellPrice.toLocaleString()}đ
-								</strong>
-							</span>
-                            <span
-                                className='original-price ms-3 small'
-                                style={{ color: "#000" }}
-                            >
-								<del>
-									{props.cartItem.book.listPrice.toLocaleString()}đ
-								</del>
-							</span>
-                        </div>
-                    </div>
-                </div>
+    const ok = await handleUpdateQuantity(book.idBook, -1);
+    if (ok) setQuantity(quantity - 1);
+  };
+
+  // ================== RENDER ==================
+  if (loading) return <Skeleton className="my-3" variant="rectangular" />;
+  if (error) return <h4>Lỗi ...</h4>;
+
+  return (
+    <>
+      <div className="col">
+        <div className="d-flex">
+          <Link to={`/book/${book.idBook}`}>
+            <img
+              src={thumbnail}
+              alt={book.nameBook}
+              style={{ width: 100 }}
+            />
+          </Link>
+
+          <div className="d-flex flex-column pb-2">
+            <Link to={`/book/${book.idBook}`}>
+              <Tooltip title={book.nameBook} arrow>
+                <span>
+                  <TextEllipsis text={book.nameBook + " "} limit={38} />
+                </span>
+              </Tooltip>
+            </Link>
+
+            <div className="mt-auto">
+              <span className="text-danger">
+                <strong style={{ fontSize: 22 }}>
+                  {book.sellPrice.toLocaleString()}đ
+                </strong>
+              </span>
+
+              <span className="ms-3 small">
+                <del>{book.listPrice.toLocaleString()}đ</del>
+              </span>
             </div>
-            <div className='col-3 text-center my-auto d-flex align-items-center justify-content-center'>
-                <SelectQuantity
-                    max={props.cartItem.book.quantity}
-                    setQuantity={setQuantity}
-                    quantity={quantity}
-                    add={add}
-                    reduce={reduce}
-                    book={props.cartItem.book}
-                />
-            </div>
-            <div className='col-2 text-center my-auto'>
-				<span className='text-danger'>
-					<strong>
-						{(quantity * props.cartItem.book.sellPrice).toLocaleString()}đ
-					</strong>
-				</span>
-            </div>
-            <div className='col-2 text-center my-auto'>
-                <Tooltip title={"Xoá sản phẩm"} arrow>
-                    <button
-                        style={{
-                            outline: 0,
-                            backgroundColor: "transparent",
-                            border: 0,
-                        }}
-                        onClick={() => handleConfirm()}
-                    >
-                        <DeleteOutlineOutlinedIcon sx={{ cursor: "pointer" }} />
-                    </button>
-                </Tooltip>
-            </div>
-            <hr className='my-3' />
-        </>
-    );
+          </div>
+        </div>
+      </div>
+
+      <div className="col-3 d-flex justify-content-center align-items-center">
+        <SelectQuantity
+          max={book.quantity}
+          quantity={quantity}
+          setQuantity={setQuantity}
+          add={add}
+          reduce={reduce}
+          book={book}
+        />
+      </div>
+
+      <div className="col-2 text-center my-auto">
+        <strong className="text-danger">
+          {(quantity * book.sellPrice).toLocaleString()}đ
+        </strong>
+      </div>
+
+      <div className="col-2 text-center my-auto">
+        <Tooltip title="Xoá sản phẩm" arrow>
+          <button
+            onClick={handleConfirmRemove}
+            style={{ background: "transparent", border: 0 }}
+          >
+            <DeleteOutlineOutlinedIcon sx={{ cursor: "pointer" }} />
+          </button>
+        </Tooltip>
+      </div>
+
+      <hr className="my-3" />
+    </>
+  );
 };
 
 export default BookCartProps;

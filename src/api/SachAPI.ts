@@ -4,7 +4,7 @@ import {layToanBoHinhAnhMotSach} from "./HinhAnhAPI";
 import {getGenreByIdBook} from "./GenreApi";
 import GenreModel from "../models/GenreModel";
 import {endpointBE} from "../layouts/utils/Constant";
-import { getFlashSaleMaxPerUser, getPurchasedFlashSaleQuantityForBook } from "../layouts/utils/flashSaleLimit";
+import {  getPurchasedFlashSaleQuantityForBook } from "../layouts/utils/flashSaleLimit";
 
 interface KetQuaInterface {
     ketQua: BookModel[];
@@ -25,34 +25,43 @@ function resolveBasePricing(item: any): { isFlashSale: boolean; flashSalePrice: 
     return { isFlashSale, flashSalePrice, sellPrice: normalSellPrice, baseSellPrice: normalSellPrice };
 }
 
-async function resolveUserAwarePricing(item: any): Promise<{ isFlashSale: boolean; flashSalePrice: number | null; sellPrice: number }> {
-    const basePricing = resolveBasePricing(item);
-    if (!basePricing.isFlashSale) {
-        return basePricing;
-    }
+// async function resolveUserAwarePricing(item: any): Promise<{ isFlashSale: boolean; flashSalePrice: number | null; sellPrice: number }> {
+//     const basePricing = resolveBasePricing(item);
+//     if (!basePricing.isFlashSale) {
+//         return basePricing;
+//     }
 
-    const bookId = Number(item?.id ?? item?.idBook ?? item?.bookId ?? 0);
-    if (!Number.isFinite(bookId) || bookId <= 0) {
-        return basePricing;
-    }
+//     const bookId = Number(item?.id ?? item?.idBook ?? item?.bookId ?? 0);
+//     if (!Number.isFinite(bookId) || bookId <= 0) {
+//         return basePricing;
+//     }
 
-    const maxPerUser = await getFlashSaleMaxPerUser(bookId);
-    if (!maxPerUser) {
-        return basePricing;
-    }
+//     const maxPerUser = await getFlashSaleMaxPerUser(bookId);
+//     if (!maxPerUser) {
+//         return basePricing;
+//     }
 
-    const purchasedQuantity = await getPurchasedFlashSaleQuantityForBook(bookId);
-    if (purchasedQuantity >= maxPerUser) {
-        return {
-            isFlashSale: false,
-            flashSalePrice: basePricing.flashSalePrice,
-            sellPrice: basePricing.baseSellPrice,
-        };
-    }
+//     const purchasedQuantity = await getPurchasedFlashSaleQuantityForBook(bookId);
+//     if (purchasedQuantity >= maxPerUser) {
+//         return {
+//             isFlashSale: false,
+//             flashSalePrice: basePricing.flashSalePrice,
+//             sellPrice: basePricing.baseSellPrice,
+//         };
+//     }
 
-    return basePricing;
+//     return basePricing;
+// }
+export async function resolveUserAwarePricing(item: any): Promise<{ isFlashSale: boolean; flashSalePrice: number | null; sellPrice: number }> {
+    // Không cần gọi getFlashSaleMaxPerUser hay getPurchasedFlashSaleQuantityForBook nữa
+    // Lấy trực tiếp kết quả mà C# đã trả về trong biến item
+    
+    return {
+        isFlashSale: item?.isFlashSale ?? false,
+        flashSalePrice: item?.flashSalePrice ?? null,
+        sellPrice: item?.sellPrice ?? item?.listPrice ?? 0,
+    };
 }
-
 // async function laySach(duongDan: string): Promise<KetQuaInterface> {
 //     const ketQua: BookModel[] = [];
 
@@ -85,9 +94,44 @@ async function resolveUserAwarePricing(item: any): Promise<{ isFlashSale: boolea
 
 //     return { ketQua: ketQua, tongSoTrang: tongSoTrang, tongSoSach: tongSoSach };
 // }
+// async function laySach(duongDan: string): Promise<KetQuaInterface> {
+//     const ketQua: BookModel[] = [];
+
+//     const response = await my_request(duongDan);
+
+//     const responseData = response.data;
+//     const tongSoTrang = response.totalPages;
+//     const tongSoSach = response.totalElements;
+
+//     for (const item of responseData) {
+// 		const pricing = await resolveUserAwarePricing(item);
+//         ketQua.push({
+//             idBook: item.id,
+//             nameBook: item.name ?? "",
+//             author: item.author ?? "Đang cập nhật",
+//             isbn: item.isbn ?? "",
+//             description: item.description ?? "",
+//             listPrice: item.listPrice ?? 0,
+// 			sellPrice: pricing.sellPrice,
+// 			isFlashSale: pricing.isFlashSale,
+// 			flashSalePrice: pricing.flashSalePrice,
+//             quantity: item.quantity ?? 0,
+//             avgRating: item.avgRating ?? 0,
+//             soldQuantity: item.soldQuantity ?? 0,
+//             discountPercent: item.discountPercent ?? 0,
+//             thumbnail: item.thumbnail ?? ""
+//         });
+//     }
+//     return {
+//         ketQua,
+//         tongSoTrang,
+//         tongSoSach
+//     };
+// }
 async function laySach(duongDan: string): Promise<KetQuaInterface> {
     const ketQua: BookModel[] = [];
 
+    // Sau khi my_request đã có Token, dữ liệu trả về ở đây đã RẤT CHUẨN
     const response = await my_request(duongDan);
 
     const responseData = response.data;
@@ -95,7 +139,7 @@ async function laySach(duongDan: string): Promise<KetQuaInterface> {
     const tongSoSach = response.totalElements;
 
     for (const item of responseData) {
-		const pricing = await resolveUserAwarePricing(item);
+        // Không cần gọi resolveUserAwarePricing nữa
         ketQua.push({
             idBook: item.id,
             nameBook: item.name ?? "",
@@ -103,9 +147,12 @@ async function laySach(duongDan: string): Promise<KetQuaInterface> {
             isbn: item.isbn ?? "",
             description: item.description ?? "",
             listPrice: item.listPrice ?? 0,
-			sellPrice: pricing.sellPrice,
-			isFlashSale: pricing.isFlashSale,
-			flashSalePrice: pricing.flashSalePrice,
+            
+            // Lấy thẳng kết quả đã được C# tính toán
+            sellPrice: item.sellPrice, 
+            isFlashSale: item.isFlashSale,
+            flashSalePrice: item.flashSalePrice,
+            
             quantity: item.quantity ?? 0,
             avgRating: item.avgRating ?? 0,
             soldQuantity: item.soldQuantity ?? 0,
@@ -113,6 +160,7 @@ async function laySach(duongDan: string): Promise<KetQuaInterface> {
             thumbnail: item.thumbnail ?? ""
         });
     }
+    
     return {
         ketQua,
         tongSoTrang,
@@ -193,49 +241,106 @@ export async function timKiemSach(
 	return laySach(endpoint);
 }
 
-export async function laySachTheoMaSach(idBook: number): Promise<BookModel|null> {
+// export async function laySachTheoMaSach(idBook: number): Promise<BookModel|null> {
 
+//     const duongDan = `${endpointBE}/book/${idBook}`;
+
+//     try {
+//         // Gọi phương thức request
+//         const response =  await fetch(duongDan);
+
+//         if(!response.ok){
+//             throw new Error('Gặp lỗi trong quá trình gọi API lấy sách!')
+//         }
+
+//         const sachData = await response.json();
+//         var responseData = sachData.data;
+//         if(sachData){
+// 			const pricing = await resolveUserAwarePricing(responseData);
+//             const bookResponse: BookModel = {
+//                 idBook: responseData.id, // id sach
+//                 nameBook: responseData.name, // Có thể NULL
+//                 author: responseData.author, // tac gia
+//                 isbn: responseData.isbn, // ma isbn
+//                 description: responseData.description, // mo ta
+//                 listPrice: responseData.listPrice, // gia goc
+// 				sellPrice: pricing.sellPrice, // gia ban (ưu tiên flash sale nếu có)
+// 				isFlashSale: pricing.isFlashSale,
+// 				flashSalePrice: pricing.flashSalePrice,
+//                 quantity: responseData.quantity, // so luong
+//                 avgRating: responseData.avgRating, // diem trung binh
+//                 soldQuantity: responseData.soldQuantity, // so luong da ban
+//                 discountPercent: responseData.discountPercent, // phan tram giam gia
+//                 thumbnail: responseData.thumbnail // anh bia
+//             };
+
+//             return bookResponse;
+//         }else{
+//             throw new Error('Sách không tồn tài!');
+//         }
+//     } catch (error) {
+//         console.error("Error", error);
+//         return null;
+//     }
+// }
+export async function laySachTheoMaSach(idBook: number): Promise<BookModel|null> {
     const duongDan = `${endpointBE}/book/${idBook}`;
 
     try {
-        // Gọi phương thức request
-        const response =  await fetch(duongDan);
+        // 1. Lấy token từ localStorage
+        const token = localStorage.getItem("token");
+        const headers: HeadersInit = {
+            "Content-Type": "application/json",
+        };
+
+        // 2. Nếu có token thì thêm vào header để backend định danh
+        if (token) {
+            headers["Authorization"] = `Bearer ${token}`;
+        }
+
+        // 3. Gọi phương thức request có kèm cấu hình
+        const response = await fetch(duongDan, {
+            method: "GET",
+            headers: headers
+        });
 
         if(!response.ok){
-            throw new Error('Gặp lỗi trong quá trình gọi API lấy sách!')
+            throw new Error('Gặp lỗi trong quá trình gọi API lấy sách!');
         }
 
         const sachData = await response.json();
         var responseData = sachData.data;
+
         if(sachData){
-			const pricing = await resolveUserAwarePricing(responseData);
+            // Hàm xử lý giá cũ của bạn
+            const pricing = await resolveUserAwarePricing(responseData); 
+            
             const bookResponse: BookModel = {
-                idBook: responseData.id, // id sach
-                nameBook: responseData.name, // Có thể NULL
-                author: responseData.author, // tac gia
-                isbn: responseData.isbn, // ma isbn
-                description: responseData.description, // mo ta
-                listPrice: responseData.listPrice, // gia goc
-				sellPrice: pricing.sellPrice, // gia ban (ưu tiên flash sale nếu có)
-				isFlashSale: pricing.isFlashSale,
-				flashSalePrice: pricing.flashSalePrice,
-                quantity: responseData.quantity, // so luong
-                avgRating: responseData.avgRating, // diem trung binh
-                soldQuantity: responseData.soldQuantity, // so luong da ban
-                discountPercent: responseData.discountPercent, // phan tram giam gia
-                thumbnail: responseData.thumbnail // anh bia
+                idBook: responseData.id, 
+                nameBook: responseData.name, 
+                author: responseData.author, 
+                isbn: responseData.isbn, 
+                description: responseData.description, 
+                listPrice: responseData.listPrice, 
+                sellPrice: pricing.sellPrice, 
+                isFlashSale: pricing.isFlashSale,
+                flashSalePrice: pricing.flashSalePrice,
+                quantity: responseData.quantity, 
+                avgRating: responseData.avgRating, 
+                soldQuantity: responseData.soldQuantity, 
+                discountPercent: responseData.discountPercent, 
+                thumbnail: responseData.thumbnail 
             };
 
             return bookResponse;
-        }else{
-            throw new Error('Sách không tồn tài!');
+        } else {
+            throw new Error('Sách không tồn tại!');
         }
     } catch (error) {
         console.error("Error", error);
         return null;
     }
 }
-
 export async function getBookByIdCartItem(idCart: number): Promise<BookModel | null> {
     const endpoint = `${endpointBE}/cart-items/${idCart}/book`;
 

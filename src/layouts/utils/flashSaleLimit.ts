@@ -49,12 +49,12 @@ export async function getActiveFlashSaleItemForBook(bookId: number): Promise<Fla
 	return promise;
 }
 
-export async function getFlashSaleMaxPerUser(bookId: number): Promise<number | null> {
-	const item = await getActiveFlashSaleItemForBook(bookId);
-	const max = item?.maxPerUser;
-	if (typeof max === "number" && Number.isFinite(max) && max > 0) return max;
-	return null;
-}
+// export async function getFlashSaleMaxPerUser(bookId: number): Promise<number | null> {
+// 	const item = await getActiveFlashSaleItemForBook(bookId);
+// 	const max = item?.maxPerUser;
+// 	if (typeof max === "number" && Number.isFinite(max) && max > 0) return max;
+// 	return null;
+// }
 
 async function loadPurchasedFlashSaleCounts(): Promise<Record<number, number>> {
 	const now = Date.now();

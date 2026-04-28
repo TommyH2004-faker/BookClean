@@ -118,7 +118,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
       book: booksRequest,
       note,
     };
-console.log("PAYLOAD GỬI LÊN BE KHI THANH TOÁN:", JSON.stringify(request, null, 2));
+    console.log("PAYLOAD GỬI LÊN BE KHI THANH TOÁN:", JSON.stringify(request, null, 2));
     try {
       const res = await fetch(endpointBE + "/order/add-order", {
         method: "POST",
@@ -253,6 +253,24 @@ console.log("PAYLOAD GỬI LÊN BE KHI THANH TOÁN:", JSON.stringify(request, nu
                     </div>
                   }
                 />
+
+                <FormControlLabel
+                value={3} // Giá trị phân biệt cho PayPal (ví dụ là 3 nếu VNPAY là 2)
+                control={<Radio />}
+                label={
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    <img
+                      // Đường dẫn logo PayPal chuẩn (SVG)
+                      src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg"
+                      alt="PayPal"
+                      // Giữ nguyên kích thước và khoảng cách tương tự ảnh cũ
+                      style={{ width: "40px", marginRight: "10px" }}
+                    />
+                    Thanh toán bằng PayPal
+                  </div>
+                }
+              />
+
               </RadioGroup>
             </FormControl>
           </div>

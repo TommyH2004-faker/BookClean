@@ -334,16 +334,6 @@ const FlashSalePage: React.FC = () => {
                                 ? Number(item.salePrice ?? 0)
                                 : Number(item.originalPrice ?? item.salePrice ?? 0);
 
-                            // =====================================================================
-                            // CHỐT CHẶN CONSOLE.LOG ĐỂ BẮT BỆNH:
-                            // =====================================================================
-                            console.log(`--- SẢN PHẨM: ${item.bookName} ---`);
-                            console.log(`1. rawUserRemaining (từ BE):`, rawUserRemaining);
-                            console.log(`2. maxPerUser:`, maxPerUser);
-                            console.log(`3. isPurchaseLimitReached (đạt GH chưa?):`, isPurchaseLimitReached);
-                            console.log(`4. isSoldOut (Kho còn ko?):`, isSoldOut);
-                            console.log(`5. sold:`, sold, `/ quantity:`, quantity);
-                            console.log(`-----------------------------------`);
 
                             return (
                                 <Grid
