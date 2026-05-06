@@ -4,8 +4,6 @@ import {layToanBoHinhAnhMotSach} from "./HinhAnhAPI";
 import {getGenreByIdBook} from "./GenreApi";
 import GenreModel from "../models/GenreModel";
 import {endpointBE} from "../layouts/utils/Constant";
-import {  getPurchasedFlashSaleQuantityForBook } from "../layouts/utils/flashSaleLimit";
-
 interface KetQuaInterface {
     ketQua: BookModel[];
     tongSoTrang: number;
