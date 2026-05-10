@@ -12,26 +12,59 @@ interface BookCartListProps {}
 const BookCartList: React.FC<BookCartListProps> = () => {
     const { setTotalCart, cartList, setCartList } = useCartItem();
     const [totalPriceProduct, setTotalPriceProduct] = useState(0);
+    useEffect(() => {
+    const total = cartList.reduce((totalPrice, cartItem) => {
 
-    // useEffect(() => {
-    //     const total = cartList.reduce((totalPrice, cartItem) => {
-    //         return totalPrice + cartItem.quantity * cartItem.book.sellPrice;
-    //     }, 0);
-    //     setTotalPriceProduct(total);
-    //     setTotalCart(cartList.length);
-    // }, [cartList, setTotalCart]); // Khúc này đang bị overloading
-   useEffect(() => {
-        const total = cartList.reduce((totalPrice, cartItem) => {
-            // SỬA Ở ĐÂY: cartItem.totalItemPrice thay vì cartItem.book.price
-            const itemTotal = cartItem.totalItemPrice ?? (cartItem.quantity * cartItem.book.sellPrice);
-            
-            return totalPrice + itemTotal;
-        }, 0);
-        
-        setTotalPriceProduct(total);
-        setTotalCart(cartList.length);
-    }, [cartList, setTotalCart]);
+        const currentQuantity =
+            cartItem.totalQuantity ??
+            ((cartItem.saleQuantity ?? 0) +
+             (cartItem.normalQuantity ?? 0));
 
+        const flashPrice =
+            cartItem.flashSalePrice ??
+            cartItem.book.flashSalePrice ??
+            0;
+
+        const normalPrice =
+            cartItem.normalPrice ??
+            cartItem.book.sellPrice ??
+            0;
+
+        // số lượng flash sale hiện tại
+        const saleQty = Math.min(
+            currentQuantity,
+            cartItem.saleQuantity ?? 0
+        );
+
+        // số lượng giá thường
+        const normalQty =
+            currentQuantity - saleQty;
+
+        const itemTotal =
+            (saleQty * flashPrice) +
+            (normalQty * normalPrice);
+
+        return totalPrice + itemTotal;
+
+    }, 0);
+
+    setTotalPriceProduct(total);
+
+    // tổng số lượng cart
+    const totalQuantity = cartList.reduce((sum, item) => {
+
+        const qty =
+            item.totalQuantity ??
+            ((item.saleQuantity ?? 0) +
+             (item.normalQuantity ?? 0));
+
+        return sum + qty;
+
+    }, 0);
+
+    setTotalCart(totalQuantity);
+
+}, [cartList, setTotalCart]);
     const navigation = useNavigate();
     // Xử lý xoá sách
     function handleRemoveBook(idBook: number) {
@@ -78,6 +111,7 @@ const BookCartList: React.FC<BookCartListProps> = () => {
                         {/* Bên trái */}
                         <h2 className='mt-2 px-3 py-3 mb-0'>
                             GIỎ HÀNG <span>({cartList.length} sản phẩm)</span>
+                            
                         </h2>
                         <div className='col-lg-8 col-md-12 col-sm-12 '>
                             <div className='container-book bg-light '>

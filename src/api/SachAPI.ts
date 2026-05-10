@@ -150,7 +150,7 @@ async function laySach(duongDan: string): Promise<KetQuaInterface> {
             sellPrice: item.sellPrice, 
             isFlashSale: item.isFlashSale,
             flashSalePrice: item.flashSalePrice,
-            
+            flashSaleItemId: item.flashSaleItemId ?? null,
             quantity: item.quantity ?? 0,
             avgRating: item.avgRating ?? 0,
             soldQuantity: item.soldQuantity ?? 0,
@@ -318,6 +318,7 @@ export async function laySachTheoMaSach(idBook: number): Promise<BookModel|null>
                 nameBook: responseData.name, 
                 author: responseData.author, 
                 isbn: responseData.isbn, 
+                flashSaleItemId: responseData.flashSaleItemId ?? null,
                 description: responseData.description, 
                 listPrice: responseData.listPrice, 
                 sellPrice: pricing.sellPrice, 
@@ -406,6 +407,7 @@ export async function getBookByIdAllInformation(idBook: number): Promise<BookMod
         relatedImg: [],
         idGenres: [],
         genresList: [],
+        flashSaleItemId: 0 
     }
 
     try {

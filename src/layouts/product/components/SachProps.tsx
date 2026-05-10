@@ -10,6 +10,9 @@ import { useCartItem } from "../../utils/CartItemContext";
 import { getIdUserByToken, isToken } from "../../utils/JwtService";
 import { endpointBE } from "../../utils/Constant";
 import { toast } from "react-toastify";
+import { getErrorMessage } from "../../utils/helperError";
+import { getDisplayPrice } from '../../utils/fixAsync';
+import { getCartAllByIdUser } from "../../../api/CartApi";
 
 
 interface SachPropsInterface {
@@ -49,102 +52,275 @@ const SachProps: React.FC<SachPropsInterface> = ({ sach, showSoldProgress = fals
         }
     }, [maSach]);
 
-
     const handleAddProduct = async (newBook: BookModel) => {
-    const existingCartItem = cartList.find(
-        (item) => item.book.idBook === newBook.idBook
-    );
+        console.log("🟢 CLICK ADD TO CART =================");
+        console.log("📦 BOOK INPUT:", newBook);
+        console.log("🔥 FLASH SALE INFO:", {
+            isFlashSale: newBook.isFlashSale,
+            flashSalePrice: newBook.flashSalePrice,
+            flashSaleItemId: newBook.flashSaleItemId,
+        });
+        const existingCartItem = cartList.find(
+            (item) => item.book.idBook === newBook.idBook
+        );
 
-    // ❗ Nếu chưa login mà là flash sale → chặn luôn
-    if (!isToken() && newBook.isFlashSale) {
-        toast.info("Vui lòng đăng nhập để mua Flash Sale");
-        return;
-    }
-
-    try {
-        let updatedCart = [...cartList];
-
-        if (existingCartItem) {
-            // 👉 SẢN PHẨM ĐÃ CÓ TRONG GIỎ -> TĂNG SỐ LƯỢNG (Cộng 1)
-            const newQuantity = existingCartItem.quantity + 1;
-
-            if (isToken()) {
-                const res = await fetch(`${endpointBE}/cart-items/update-item`, {
-                    method: "PUT",
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem("token")}`,
-                        "content-type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        idCart: existingCartItem.idCart,
-                        quantity: newQuantity,
-                    }),
-                });
-
-                if (!res.ok) {
-                    toast.error("Không thể cập nhật giỏ hàng");
-                    return;
-                }
-            }
-
-            // Cập nhật vào mảng ảo
-            updatedCart = updatedCart.map(item =>
-                item.book.idBook === newBook.idBook
-                    ? { ...item, quantity: newQuantity }
-                    : item
-            );
-
-        } else {
-            // 👉 SẢN PHẨM CHƯA CÓ TRONG GIỎ -> THÊM MỚI
-            if (isToken()) {
-                const res = await fetch(`${endpointBE}/cart-items/add-item`, {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem("token")}`,
-                        "content-type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        bookId: newBook.idBook,
-                        quantity: 1, // Mặc định ở ngoài danh sách là thêm 1
-                    }),
-                });
-
-                if (!res.ok) {
-                    toast.error("Không thể thêm vào giỏ hàng");
-                    return;
-                }
-
-                const data = await res.json();
-                const idCart = data?.data ?? data?.idCart ?? data;
-
-                updatedCart.push({
-                    idCart,
-                    quantity: 1,
-                    book: newBook,
-                });
-            } else {
-                // Chưa login
-                updatedCart.push({
-                    quantity: 1,
-                    book: newBook,
-                });
-            }
+        if (!isToken() && newBook.flashSalePrice != null) {
+            toast.info("Vui lòng đăng nhập để mua Flash Sale");
+            return;
         }
 
-        // ✅ LƯU STATE VÀ LOCALSTORAGE (Chỉ gọi 1 lần ở cuối)
-        setCartList(updatedCart);
-        localStorage.setItem("cart", JSON.stringify(updatedCart));
+        try {
+            let updatedCart = [...cartList];
 
-        // ✅ Cập nhật tổng số lượng hiển thị trên icon giỏ hàng
-        const total = updatedCart.reduce((sum, item) => sum + item.quantity, 0);
-        setTotalCart(total);
+            // ================= UPDATE =================
+            if (existingCartItem) {
 
-        toast.success("Thêm vào giỏ hàng thành công");
+                if (isToken()) {
 
-    } catch (err) {
-        toast.error("Lỗi kết nối server");
-    }
-};
+                    const res = await fetch(
+                        `${endpointBE}/cart-items/update-item`,
+                        {
+                            method: "PUT",
+                            headers: {
+                                Authorization:
+                                    `Bearer ${localStorage.getItem("token")}`,
+                                "content-type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                idCart: existingCartItem.idCart,
+                                quantity: existingCartItem.quantity + 1,
+                            }),
+                        }
+                    );
+
+                    if (!res.ok) {
+                        const message = await getErrorMessage(res);
+                        toast.error(message || "Không thể cập nhật giỏ hàng");
+                        return;
+                    }
+
+                    // DTO backend có thể trả nhiều shape khác nhau:
+                    // - { data: { idCart, quantity, ... } }
+                    // - { data: 123 }
+                    // - { idCart, quantity, ... }
+                    // - 123
+                    let cartData: any = undefined;
+                    try {
+                        const payload = await res.json();
+                        cartData = payload?.data ?? payload;
+                    } catch {
+                        cartData = undefined;
+                    }
+
+                    const resolvedQuantity =
+                        typeof cartData === "object" && cartData !== null
+                            ? (cartData.quantity ?? (existingCartItem.quantity + 1))
+                            : (existingCartItem.quantity + 1);
+
+                    const resolvedIdCart =
+                        typeof cartData === "object" && cartData !== null
+                            ? (cartData.idCart ?? cartData.id ?? existingCartItem.idCart)
+                            : existingCartItem.idCart;
+
+                    updatedCart = updatedCart.map(item =>
+                        item.book.idBook === newBook.idBook
+                            ? {
+                                ...item,
+
+                                idCart: resolvedIdCart,
+                                quantity: resolvedQuantity,
+
+                                totalQuantity:
+                                    (typeof cartData === "object" && cartData !== null)
+                                        ? (cartData.totalQuantity ?? cartData.TotalQuantity ?? resolvedQuantity)
+                                        : (item.totalQuantity ?? resolvedQuantity),
+
+                                saleQuantity:
+                                    (typeof cartData === "object" && cartData !== null)
+                                        ? (cartData.saleQuantity ?? cartData.SaleQuantity
+                                            ?? item.saleQuantity)
+                                        : item.saleQuantity,
+                                normalQuantity:
+                                    (typeof cartData === "object" && cartData !== null)
+                                        ? (cartData.normalQuantity ?? cartData.NormalQuantity
+                                            ?? item.normalQuantity)
+                                        : item.normalQuantity,
+
+                                flashSalePrice:
+                                    (typeof cartData === "object" && cartData !== null)
+                                        ? (cartData.flashSalePrice ?? cartData.FlashSalePrice ?? item.flashSalePrice)
+                                        : item.flashSalePrice,
+                                normalPrice:
+                                    (typeof cartData === "object" && cartData !== null)
+                                        ? (cartData.normalPrice ?? cartData.NormalPrice ?? item.normalPrice)
+                                        : item.normalPrice,
+
+                                totalItemPrice:
+                                    (typeof cartData === "object" && cartData !== null)
+                                        ? (cartData.totalItemPrice ?? cartData.TotalItemPrice ?? item.totalItemPrice)
+                                        : item.totalItemPrice,
+
+                                flashSaleItemId:
+                                    (typeof cartData === "object" && cartData !== null)
+                                        ? (cartData.flashSaleItemId ?? cartData.FlashSaleItemId ?? item.flashSaleItemId)
+                                        : item.flashSaleItemId,
+                            }
+                            : item
+                    );
+
+                } else {
+
+                    // guest cart
+                    updatedCart = updatedCart.map(item => {
+                        if (item.book.idBook !== newBook.idBook) return item;
+                        const newQty = item.quantity + 1;
+                        return {
+                            ...item,
+                            quantity: newQty,
+                            // Với sách flash sale, tăng saleQuantity cùng với quantity
+                            saleQuantity: newBook.isFlashSale
+                                ? newQty
+                                : (item.saleQuantity ?? 0),
+                            normalQuantity: newBook.isFlashSale
+                                ? 0
+                                : newQty,
+                        };
+                    });
+                }
+
+            }
+
+            // ================= CREATE =================
+            else {
+
+                if (isToken()) {
+
+                    const res = await fetch(
+                        `${endpointBE}/cart-items/add-item`,
+                        {
+                            method: "POST",
+                            headers: {
+                                Authorization:
+                                    `Bearer ${localStorage.getItem("token")}`,
+                                "content-type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                bookId: newBook.idBook,
+                                quantity: 1,
+                            }),
+                        }
+                    );
+
+                    if (!res.ok) {
+                        const message = await getErrorMessage(res);
+                        toast.error(message || "Không thể thêm vào giỏ hàng");
+                        return;
+                    }
+
+                    // DTO backend có thể trả idCart hoặc full cart item
+                    let cartData: any = undefined;
+                    try {
+                        const payload = await res.json();
+                        cartData = payload?.data ?? payload;
+                    } catch {
+                        cartData = undefined;
+                    }
+
+                    const resolvedIdCart =
+                        typeof cartData === "number"
+                            ? cartData
+                            : (typeof cartData === "string"
+                                ? (Number(cartData) || undefined)
+                                : (cartData?.idCart ?? cartData?.id));
+
+                    const resolvedQuantity =
+                        (typeof cartData === "object" && cartData !== null)
+                            ? (cartData.quantity ?? 1)
+                            : 1;
+
+                    updatedCart.push({
+                        idCart: resolvedIdCart,
+
+                        quantity: resolvedQuantity,
+
+                        totalQuantity:
+                            (typeof cartData === "object" && cartData !== null)
+                                ? (cartData.totalQuantity ?? cartData.TotalQuantity ?? resolvedQuantity)
+                                : resolvedQuantity,
+
+                        saleQuantity:
+                            (typeof cartData === "object" && cartData !== null)
+                                // Fallback: nếu BE không trả saleQuantity, với flash sale thì toàn bộ 1 quyển đầu là giá sale
+                                ? (cartData.saleQuantity ?? cartData.SaleQuantity ?? (newBook.isFlashSale ? resolvedQuantity : 0))
+                                : (newBook.isFlashSale ? resolvedQuantity : 0),
+                        normalQuantity:
+                            (typeof cartData === "object" && cartData !== null)
+                                ? (cartData.normalQuantity ?? cartData.NormalQuantity ?? (newBook.isFlashSale ? 0 : resolvedQuantity))
+                                : (newBook.isFlashSale ? 0 : resolvedQuantity),
+
+                        flashSalePrice:
+                            (typeof cartData === "object" && cartData !== null)
+                                ? (cartData.flashSalePrice ?? cartData.FlashSalePrice
+                                    ?? (newBook.isFlashSale ? newBook.flashSalePrice : null))
+                                : (newBook.isFlashSale ? newBook.flashSalePrice : null),
+                        normalPrice:
+                            (typeof cartData === "object" && cartData !== null)
+                                ? (cartData.normalPrice ?? cartData.NormalPrice ?? newBook.sellPrice)
+                                : newBook.sellPrice,
+
+                        totalItemPrice:
+                            (typeof cartData === "object" && cartData !== null)
+                                ? (cartData.totalItemPrice ?? cartData.TotalItemPrice)
+                                : undefined,
+
+                        flashSaleItemId:
+                            (typeof cartData === "object" && cartData !== null)
+                                ? (cartData.flashSaleItemId ?? cartData.FlashSaleItemId ?? newBook.flashSaleItemId ?? null)
+                                : (newBook.flashSaleItemId ?? null),
+
+                        book: newBook,
+                    });
+
+                } else {
+
+                    updatedCart.push({
+                        quantity: 1,
+                        book: newBook,
+                    });
+                }
+            }
+
+            // ================= SAVE =================
+            setCartList(updatedCart);
+
+            localStorage.setItem(
+                "cart",
+                JSON.stringify(updatedCart)
+            );
+
+            const total = updatedCart.reduce(
+                (sum, item) => sum + item.quantity,
+                0
+            );
+
+            setTotalCart(total);
+
+            toast.success("Thêm vào giỏ hàng thành công");
+
+            // Re-fetch cart từ BE để lấy đúng split sale/normal (BE biết quota)
+            if (isToken()) {
+                try {
+                    const freshCart = await getCartAllByIdUser();
+                    localStorage.setItem("cart", JSON.stringify(freshCart));
+                    setCartList([...freshCart]);
+                    setTotalCart(freshCart.reduce((s, i) => s + i.quantity, 0));
+                } catch { /* giữ fallback data */ }
+            }
+
+        } catch {
+            toast.error("Lỗi kết nối server");
+        }
+    };
     const handleFavoriteBook = async () => {
         if (!isToken()) {
             toast.info("Bạn phải đăng nhập để sử dụng chức năng này");
@@ -178,13 +354,20 @@ const SachProps: React.FC<SachPropsInterface> = ({ sach, showSoldProgress = fals
     if (dangTaiDuLieu) return <h1>Đang tải dữ liệu...</h1>;
     if (baoLoi) return <h1>Gặp lỗi: {baoLoi}</h1>;
 
+    // If BE returns both sellPrice (normal) and flashSalePrice (sale), prefer flashSalePrice for display.
+    const displayPrice =
+        sach.flashSalePrice != null
+            ? sach.flashSalePrice
+            : sach.sellPrice;
+
     const duLieuAnh = danhSachAnh.length > 0 ? danhSachAnh[0].url : "";
     const listPrice = sach.listPrice ?? 0;
-    const sellPrice = sach.sellPrice ?? 0;
-    const discountPercent = listPrice > 0 && sellPrice > 0 && sellPrice < listPrice
-        ? Math.round(((listPrice - sellPrice) / listPrice) * 100) : 0;
+    const discountPercent = listPrice > 0 && displayPrice > 0 && displayPrice < listPrice
+        ? Math.round(((listPrice - displayPrice) / listPrice) * 100) : 0;
 
-    const isFlashSale = Boolean(sach.isFlashSale);
+    const isFlashSale =
+        sach.flashSalePrice != null &&
+        sach.flashSaleItemId != null;
     const soldQuantity = sach.soldQuantity ?? 0;
     const stockQuantity = sach.quantity ?? 0;
     const totalForProgress = soldQuantity + stockQuantity;
@@ -216,7 +399,7 @@ const SachProps: React.FC<SachPropsInterface> = ({ sach, showSoldProgress = fals
 
                     <div className="mt-2">
                         <span className="discounted-price text-danger me-2">
-                            <strong style={{ fontSize: "18px" }}>{dinhDangSo(sach.sellPrice)}đ</strong>
+                            <strong style={{ fontSize: "18px" }}>{dinhDangSo(displayPrice)}đ</strong>
                         </span>
                         <span className="original-price small text-muted"><del>{dinhDangSo(sach.listPrice)}đ</del></span>
                     </div>

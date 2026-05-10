@@ -31,6 +31,7 @@ import RatingStar from "./rating/Rating";
 import CartItemModel from "../../models/CartItemModel";
 import SachProps from "./components/SachProps";
 import { getErrorMessage } from "../utils/helperError";
+import { getDisplayPrice } from "../utils/fixAsync";
 
 
 interface BookDetailProps {}
@@ -203,223 +204,273 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
             setQuantity(quantity - 1);
         }
     };
-
-    // const handleAddProduct = async (newBook: BookModel, quantity: number = 1) => {
-    //     if (newBook.isFlashSale) {
-    //         const maxPerUser = await getFlashSaleMaxPerUser(newBook.idBook);
-    //         if (maxPerUser && currentQuantityInCart + quantity > maxPerUser) {
-    //             toast.error(`Flash Sale: tối đa ${maxPerUser} sản phẩm/khách`);
-    //             return;
-    //         }
-    //     }
-
-    //     if (currentQuantityInCart + quantity > availableStock) {
-    //         toast.error("Không thể thêm, đã vượt quá số lượng tồn kho!");
-    //         return;
-    //     }
-
-    //     // Tạo mảng ảo ngay từ đầu để thao tác
-    //     let updatedCart = [...cartList];
-    //     let isExistBook = updatedCart.find(
-    //         (cartItem) => cartItem.book.idBook === newBook.idBook
-    //     );
-
-    //     if (isExistBook) {
-    //         const newQuantity = isExistBook.quantity + quantity;
-
-    //         if (isToken()) {
-    //             const request = {
-    //                 idCart: isExistBook.idCart,
-    //                 quantity: newQuantity,
-    //             };
-
-    //             try {
-    //                 const res = await fetch(endpointBE + `/cart-items/update-item`, {
-    //                     method: "PUT",
-    //                     headers: {
-    //                         Authorization: `Bearer ${localStorage.getItem("token")}`,
-    //                         "content-type": "application/json",
-    //                     },
-    //                     body: JSON.stringify(request),
-    //                 });
-
-    //                 if (!res.ok) {
-    //                     const message = await getErrorMessage(res);
-    //                     toast.error(message);
-    //                     return; // Lỗi thì dừng luôn, không chạy xuống dưới
-    //                 }
-    //             } catch (err) {
-    //                 toast.error("Không thể cập nhật giỏ hàng");
-    //                 return;
-    //             }
-    //         }
-            
-    //         // Cập nhật số lượng vào mảng ảo (chạy cho cả khi login và chưa login)
-    //         updatedCart = updatedCart.map(item =>
-    //             item.book.idBook === newBook.idBook
-    //                 ? { ...item, quantity: newQuantity }
-    //                 : item
-    //         );
-
-    //     } else {
-    //         if (isToken()) {
-    //             try {
-    //                 const token = localStorage.getItem("token");
-    //                 const postPayload = {
-    //                     bookId: newBook.idBook,
-    //                     quantity: quantity,
-    //                 };
-
-    //                 const response = await fetch(endpointBE + "/cart-items/add-item", {
-    //                     method: "POST",
-    //                     headers: {
-    //                         Authorization: `Bearer ${token}`,
-    //                         "content-type": "application/json",
-    //                     },
-    //                     body: JSON.stringify(postPayload),
-    //                 });
-
-    //                 if (!response.ok) {
-    //                     toast.error("Không thể thêm vào giỏ hàng");
-    //                     return;
-    //                 }
-
-    //                 const payload = await response.json();
-    //                 const idCart = payload?.data ?? payload?.idCart ?? payload;
-
-    //                 // Thêm sách mới vào mảng ảo
-    //                 updatedCart.push({
-    //                     idCart: idCart,
-    //                     quantity: quantity,
-    //                     book: newBook,
-    //                 });
-    //             } catch (error) {
-    //                 toast.error("Không thể thêm vào giỏ hàng");
-    //                 return;
-    //             }
-    //         } else {
-    //             // Chưa đăng nhập -> Thêm thẳng vào mảng ảo
-    //             updatedCart.push({
-    //                 quantity: quantity,
-    //                 book: newBook,
-    //             });
-    //         }
-    //     }
-
-    //     // ✅ CHỈ LƯU VÀO STATE VÀ LOCALSTORAGE ĐÚNG 1 LẦN Ở ĐÂY
-    //     setCartList(updatedCart);
-    //     localStorage.setItem("cart", JSON.stringify(updatedCart));
-
-    //     const total = updatedCart.reduce((sum, item) => sum + item.quantity, 0);
-    //     setTotalCart(total);
-    //     setQuantity(1); // Reset lại nút chọn số lượng về 1 sau khi thêm xong
-        
-    //     toast.success("Thêm vào giỏ hàng thành công");
-    // };
-    const handleAddProduct = async (newBook: BookModel, quantity: number = 1) => {
-    // 1. CHỈ CHẶN NẾU VƯỢT QUÁ TỒN KHO VẬT LÝ (Đã xóa block chặn Flash Sale)
+    const handleAddProduct = async (
+    newBook: BookModel,
+    quantity: number = 1
+) => {
+    // CHECK TỒN KHO
     if (currentQuantityInCart + quantity > availableStock) {
         toast.error("Không thể thêm, đã vượt quá số lượng tồn kho!");
         return;
     }
 
-    // 2. Tạo mảng ảo ngay từ đầu để thao tác
     let updatedCart = [...cartList];
-    let isExistBook = updatedCart.find(
-        (cartItem) => cartItem.book.idBook === newBook.idBook
+
+    const existingCartItem = updatedCart.find(
+        (item) => item.book.idBook === newBook.idBook
     );
 
-    if (isExistBook) {
-        const newQuantity = isExistBook.quantity + quantity;
+    try {
+        // =====================================================
+        // ĐÃ CÓ TRONG GIỎ
+        // =====================================================
+        if (existingCartItem) {
 
-        if (isToken()) {
-            const request = {
-                idCart: isExistBook.idCart,
-                quantity: newQuantity,
-            };
+            const newQuantity =
+                existingCartItem.quantity + quantity;
 
-            try {
-                const res = await fetch(endpointBE + `/cart-items/update-item`, {
-                    method: "PUT",
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem("token")}`,
-                        "content-type": "application/json",
-                    },
-                    body: JSON.stringify(request),
-                });
+            // LOGIN -> UPDATE SERVER
+            if (isToken()) {
 
-                if (!res.ok) {
-                    const message = await getErrorMessage(res);
-                    toast.error(message);
-                    return; // Lỗi thì dừng luôn, không chạy xuống dưới
-                }
-            } catch (err) {
-                toast.error("Không thể cập nhật giỏ hàng");
-                return;
-            }
-        }
-        
-        // Cập nhật số lượng vào mảng ảo (chạy cho cả khi login và chưa login)
-        updatedCart = updatedCart.map(item =>
-            item.book.idBook === newBook.idBook
-                ? { ...item, quantity: newQuantity }
-                : item
-        );
-
-    } else {
-        if (isToken()) {
-            try {
-                const token = localStorage.getItem("token");
-                const postPayload = {
-                    bookId: newBook.idBook,
-                    quantity: quantity,
-                };
-
-                const response = await fetch(endpointBE + "/cart-items/add-item", {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "content-type": "application/json",
-                    },
-                    body: JSON.stringify(postPayload),
-                });
+                const response = await fetch(
+                    `${endpointBE}/cart-items/update-item`,
+                    {
+                        method: "PUT",
+                        headers: {
+                            Authorization:
+                                `Bearer ${localStorage.getItem("token")}`,
+                            "content-type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            idCart: existingCartItem.idCart,
+                            quantity: newQuantity,
+                        }),
+                    }
+                );
 
                 if (!response.ok) {
-                    toast.error("Không thể thêm vào giỏ hàng");
+                    const message = await getErrorMessage(response);
+                    toast.error(message);
                     return;
                 }
 
-                const payload = await response.json();
-                const idCart = payload?.data ?? payload?.idCart ?? payload;
+                // BE trả CartItemDto (có thể bọc trong { data })
+                let dto: any = undefined;
+                try {
+                    const payload = await response.json();
+                    dto = payload?.data ?? payload;
+                } catch {
+                    dto = undefined;
+                }
 
-                // Thêm sách mới vào mảng ảo
+                if (dto && typeof dto === "object") {
+                    const quantityFromDto = dto.quantity ?? dto.Quantity;
+
+                    updatedCart = updatedCart.map((item) => {
+                        if (item.book.idBook !== newBook.idBook) return item;
+
+                        const resolvedQuantity =
+                            typeof quantityFromDto === "number"
+                                ? quantityFromDto
+                                : newQuantity;
+
+                        return {
+                            ...item,
+
+                            idCart: dto.idCart ?? dto.IdCart ?? item.idCart,
+                            quantity: resolvedQuantity,
+
+                            totalQuantity:
+                                dto.totalQuantity ?? dto.TotalQuantity ?? resolvedQuantity,
+                            saleQuantity:
+                                dto.saleQuantity ?? dto.SaleQuantity
+                                ?? (newBook.isFlashSale ? resolvedQuantity : item.saleQuantity),
+                            normalQuantity:
+                                dto.normalQuantity ?? dto.NormalQuantity
+                                ?? (newBook.isFlashSale ? 0 : item.normalQuantity),
+
+                            flashSalePrice:
+                                dto.flashSalePrice ?? dto.FlashSalePrice
+                                ?? item.flashSalePrice
+                                ?? (newBook.isFlashSale ? newBook.flashSalePrice : null),
+                            normalPrice:
+                                dto.normalPrice ?? dto.NormalPrice
+                                ?? item.normalPrice ?? newBook.sellPrice,
+                            totalItemPrice:
+                                dto.totalItemPrice ?? dto.TotalItemPrice ?? item.totalItemPrice,
+                            flashSaleItemId:
+                                dto.flashSaleItemId ?? dto.FlashSaleItemId
+                                ?? item.flashSaleItemId ?? newBook.flashSaleItemId,
+                        };
+                    });
+
+                    // đã update local theo dto, không cần tính thủ công bên dưới
+                    // (giữ đúng split sale/normal do BE quyết định)
+                    
+                } else {
+                    // fallback: chỉ cập nhật quantity nếu BE không trả dto
+                    updatedCart = updatedCart.map((item) =>
+                        item.book.idBook === newBook.idBook
+                            ? { ...item, quantity: newQuantity }
+                            : item
+                    );
+                }
+
+                // skip đoạn "UPDATE LOCAL" phía dưới
+                
+                
+            } else {
+                // guest -> update local đơn giản
+                updatedCart = updatedCart.map((item) =>
+                    item.book.idBook === newBook.idBook
+                        ? { ...item, quantity: newQuantity }
+                        : item
+                );
+            }
+
+        }
+
+        // =====================================================
+        // CHƯA CÓ TRONG GIỎ
+        // =====================================================
+        else {
+
+            let idCart: number | undefined = undefined;
+
+            // LOGIN
+            if (isToken()) {
+
+                const response = await fetch(
+                    `${endpointBE}/cart-items/add-item`,
+                    {
+                        method: "POST",
+                        headers: {
+                            Authorization:
+                                `Bearer ${localStorage.getItem("token")}`,
+                            "content-type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            bookId: newBook.idBook,
+                            quantity: quantity,
+                        }),
+                    }
+                );
+
+                if (!response.ok) {
+                    const message = await getErrorMessage(response);
+                    toast.error(message);
+                    return;
+                }
+
+                // BE trả CartItemDto (có thể bọc trong { data })
+                let dto: any = undefined;
+                try {
+                    const payload = await response.json();
+                    dto = payload?.data ?? payload;
+                } catch {
+                    dto = undefined;
+                }
+
+                // Nếu dto có idCart thì lấy; nếu chỉ trả số thì coi là idCart
+                if (typeof dto === "number") {
+                    idCart = dto;
+                } else if (typeof dto === "string") {
+                    const parsed = Number(dto);
+                    idCart = Number.isFinite(parsed) ? parsed : undefined;
+                } else if (dto && typeof dto === "object") {
+                    idCart = dto.idCart ?? dto.IdCart ?? dto.id ?? dto.Id;
+                }
+
+                const resolvedQuantity =
+                    (dto && typeof dto === "object")
+                        ? (dto.quantity ?? dto.Quantity ?? quantity)
+                        : quantity;
+
                 updatedCart.push({
-                    idCart: idCart,
-                    quantity: quantity,
+                    idCart,
+
+                    quantity: resolvedQuantity,
+                    totalQuantity:
+                        (dto && typeof dto === "object")
+                            ? (dto.totalQuantity ?? dto.TotalQuantity ?? resolvedQuantity)
+                            : resolvedQuantity,
+
+                    saleQuantity:
+                        (dto && typeof dto === "object")
+                            ? (dto.saleQuantity ?? dto.SaleQuantity
+                                ?? (newBook.isFlashSale ? resolvedQuantity : 0))
+                            : (newBook.isFlashSale ? resolvedQuantity : 0),
+                    normalQuantity:
+                        (dto && typeof dto === "object")
+                            ? (dto.normalQuantity ?? dto.NormalQuantity
+                                ?? (newBook.isFlashSale ? 0 : resolvedQuantity))
+                            : (newBook.isFlashSale ? 0 : resolvedQuantity),
+
+                    flashSalePrice:
+                        (dto && typeof dto === "object")
+                            ? (dto.flashSalePrice ?? dto.FlashSalePrice
+                                ?? (newBook.isFlashSale ? newBook.flashSalePrice : null))
+                            : (newBook.isFlashSale ? newBook.flashSalePrice : null),
+                    normalPrice:
+                        (dto && typeof dto === "object")
+                            ? (dto.normalPrice ?? dto.NormalPrice ?? newBook.sellPrice)
+                            : newBook.sellPrice,
+                    totalItemPrice:
+                        (dto && typeof dto === "object")
+                            ? (dto.totalItemPrice ?? dto.TotalItemPrice)
+                            : undefined,
+                    flashSaleItemId:
+                        (dto && typeof dto === "object")
+                            ? (dto.flashSaleItemId ?? dto.FlashSaleItemId
+                                ?? newBook.flashSaleItemId ?? null)
+                            : (newBook.flashSaleItemId ?? null),
+
                     book: newBook,
                 });
-            } catch (error) {
-                toast.error("Không thể thêm vào giỏ hàng");
-                return;
+
+                // đã push theo dto, không chạy push thủ công ở dưới
+                dto = null;
             }
-        } else {
-            // Chưa đăng nhập -> Thêm thẳng vào mảng ảo
-            updatedCart.push({
-                quantity: quantity,
-                book: newBook,
-            });
+
+            // guest (hoặc login nhưng BE không trả dto)
+            if (!isToken()) {
+                updatedCart.push({
+                    idCart,
+                    quantity,
+                    book: newBook,
+                });
+            }
         }
+
+        // =====================================================
+        // SAVE
+        // =====================================================
+
+        setCartList(updatedCart);
+
+        localStorage.setItem(
+            "cart",
+            JSON.stringify(updatedCart)
+        );
+
+        const total =
+            updatedCart.reduce(
+                (sum, item) => sum + item.quantity,
+                0
+            );
+
+        setTotalCart(total);
+
+        setQuantity(1);
+
+        toast.success("Thêm vào giỏ hàng thành công");
+
+    } catch (error) {
+
+        console.log(error);
+
+        toast.error("Lỗi kết nối server");
     }
-
-    // ✅ CHỈ LƯU VÀO STATE VÀ LOCALSTORAGE ĐÚNG 1 LẦN Ở ĐÂY
-    setCartList(updatedCart);
-    localStorage.setItem("cart", JSON.stringify(updatedCart));
-
-    const total = updatedCart.reduce((sum, item) => sum + item.quantity, 0);
-    setTotalCart(total);
-    setQuantity(1); // Reset lại nút chọn số lượng về 1 sau khi thêm xong
-    
-    toast.success("Thêm vào giỏ hàng thành công");
 };
     // Viewer hình ảnh
     const [currentImage, setCurrentImage] = useState(0);
@@ -445,26 +496,7 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
     const [isCheckout, setIsCheckout] = useState(false);
     const [cartItem, setCartItem] = useState<CartItemModel[]>([]);
     const [totalPriceProduct, setTotalPriceProduct] = useState(0);
-    
-    // function handleBuyNow(newBook: BookModel) {
-    //     if(!isToken()) {
-    //         toast.warning("Bạn cần đăng nhập để mua hàng");
-    //         return;
-    //     }
-    //     void (async () => {
-    //         if (newBook.isFlashSale) {
-    //             const maxPerUser = await getFlashSaleMaxPerUser(newBook.idBook);
-    //             if (maxPerUser && currentQuantityInCart + quantity > maxPerUser) {
-    //                 toast.error(`Flash Sale: tối đa ${maxPerUser} sản phẩm/khách`);
-    //                 return;
-    //             }
-    //         }
 
-    //         setCartItem([{ quantity, book: newBook }]);
-    //         setIsCheckout(!isCheckout);
-    //         setTotalPriceProduct(newBook.sellPrice * quantity);
-    //     })();
-    // }
     function handleBuyNow(newBook: BookModel) {
     if(!isToken()) {
         toast.warning("Bạn cần đăng nhập để mua hàng");
@@ -478,12 +510,51 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
     }
 
     // Đẩy thẳng vào state để chuyển sang trang Checkout
-    setCartItem([{ quantity, book: newBook }]);
+    // setCartItem([{ quantity, book: newBook }]);
+    setCartItem([
+    {
+        quantity,
+
+        totalQuantity: quantity,
+
+        saleQuantity:
+            newBook.isFlashSale
+                ? quantity
+                : 0,
+
+        normalQuantity:
+            newBook.isFlashSale
+                ? 0
+                : quantity,
+
+        flashSalePrice:
+            newBook.isFlashSale
+                ? (newBook.flashSalePrice ?? newBook.sellPrice)
+                : null,
+
+        normalPrice:
+            newBook.sellPrice,
+
+        totalItemPrice:
+            (newBook.sellPrice ?? 0)
+            * quantity,
+
+        book: newBook,
+    }
+]);
     setIsCheckout(!isCheckout);
     
     // Lưu ý: Tính tổng tiền tạm thời ở Frontend. 
     // Khi sang trang Checkout và gọi API tạo đơn, Backend C# sẽ tự động bóc tách số lượng để tính giá (ví dụ: 2 Sale + 1 Gốc)
-    setTotalPriceProduct(newBook.sellPrice * quantity);
+    //     const estimatedPrice =
+    //     (newBook.sellPrice ?? 0) * quantity;
+    // setTotalPriceProduct(estimatedPrice);
+const estimatedPrice =
+    (newBook.isFlashSale
+        ? (newBook.flashSalePrice ?? newBook.sellPrice)
+        : newBook.sellPrice) * quantity;
+
+setTotalPriceProduct(estimatedPrice);
 }
     if (loading) {
         return (
@@ -619,8 +690,8 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
                                 <div className='price'>
                                     <span className='discounted-price text-danger me-3'>
                                         <strong style={{ fontSize: "32px" }}>
-                                            {book.sellPrice?.toLocaleString()}đ
-                                        </strong>
+                                    {getDisplayPrice(book)?.toLocaleString()}đ
+                                </strong>
                                     </span>
                                     <span className='original-price small me-3'>
                                         <strong>

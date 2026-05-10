@@ -20,13 +20,19 @@ interface SelectQuantityProps {
 }
 
 const SelectQuantity: React.FC<SelectQuantityProps> = (props) => {
+	const maxAllowed =
+		typeof props.max === "number" && props.max > 0
+			? props.max
+			: undefined;
+
 	// Xử lý khi thay đổi input quantity bằng bàn phím
 	const handleQuantity = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const newQuantity = parseInt(e.target.value);
+		const withinMax = maxAllowed === undefined ? true : newQuantity <= maxAllowed;
 		if (
 			!isNaN(newQuantity) &&
 			newQuantity >= 1 &&
-			newQuantity <= (props.max ? props.max : 1)
+			withinMax
 		) {
 			props.setQuantity(newQuantity);
 			const cartData: string | null = localStorage.getItem("cart");
@@ -43,7 +49,7 @@ const SelectQuantity: React.FC<SelectQuantityProps> = (props) => {
 				// Cập nhật trong db
 				if (isToken()) {
 					const token = localStorage.getItem("token");
-					fetch(endpointBE + `/cart-item/update-item`, {
+					fetch(endpointBE + `/cart-items/update-item`, {
 						method: "PUT",
 						headers: {
 							Authorization: `Bearer ${token}`,
@@ -83,7 +89,7 @@ const SelectQuantity: React.FC<SelectQuantityProps> = (props) => {
 				value={props.quantity}
 				onChange={handleQuantity}
 				min={1}
-				max={props.max}
+				max={maxAllowed}
 			/>
 			<button
 				type='button'

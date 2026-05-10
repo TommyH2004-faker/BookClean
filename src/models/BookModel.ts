@@ -23,8 +23,9 @@ class BookModel {
    isFavorited?: boolean; // da yeu thich
    images?: ImageModel[]; // danh sach hinh anh
    price?: number; // gia sau giam gia
+   flashSaleItemId?: number;
 
-   constructor(idBook: number, nameBook: string, author: string, isbn: string, description: string, listPrice: number, sellPrice: number, quantity: number, avgRating: number, soldQuantity: number, discountPercent: number, thumbnail: string , price ?: number) {
+   constructor(idBook: number, nameBook: string, author: string, isbn: string, description: string, listPrice: number, sellPrice: number, quantity: number, avgRating: number, soldQuantity: number, discountPercent: number, thumbnail: string , price ?: number, flashSaleItemId?: number) {
       this.idBook = idBook;
       this.nameBook = nameBook;
       this.author = author;
@@ -38,6 +39,7 @@ class BookModel {
       this.discountPercent = discountPercent;
       this.thumbnail = thumbnail;
       this.price = price;
+      this.flashSaleItemId = flashSaleItemId;
    }
 }
 

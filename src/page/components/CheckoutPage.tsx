@@ -24,6 +24,7 @@ import { BookHorizontal } from "../../layouts/product/components/BookHorizontalP
 import { CheckoutSuccess } from "./CheckoutSuccess";
 import { UserModel } from "../../models/UserModel";
 import CartItemModel from "../../models/CartItemModel";
+import { getErrorMessage } from "../../layouts/utils/helperError";
 
 interface CheckoutPageProps {
   setIsCheckout: any;
@@ -86,22 +87,19 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
     }
 
     const booksRequest = props.cartList.map((cartItem) => ({
-      book: cartItem.book, // phải có IdBook
+      // BE đang đọc item.Book.IdBook và item.Book.NameBook để báo lỗi
+      book: cartItem.book,
       quantity: cartItem.quantity,
+
+      // Các field BE cần để reserve flash sale + tính giá an toàn
+      saleQuantity: cartItem.saleQuantity ?? 0,
+      normalQuantity:
+        cartItem.normalQuantity ??
+        Math.max(0, cartItem.quantity - (cartItem.saleQuantity ?? 0)),
+      flashSalePrice: cartItem.flashSalePrice ?? null,
+      normalPrice: cartItem.normalPrice ?? cartItem.book.sellPrice,
+      flashSaleItemId: cartItem.flashSaleItemId ?? null,
     }));
-
-    // =========================================================
-    // 🔥 ĐOẠN SỬA LỖI: Lấy FlashSaleItemId để gửi lên Backend
-    // =========================================================
-    let flashSaleIdValue = undefined;
-
-    // Nếu giỏ hàng chỉ có 1 sản phẩm và sản phẩm đó đang được Flash Sale
-    if (props.cartList.length === 1 && props.cartList[0].book.isFlashSale) {
-        // Tuỳ thuộc vào cách bạn đặt tên biến trong BookModel, có thể là flashSaleItemId, idFlashSaleItem, hoặc id. 
-        // Ta sẽ bắt an toàn các trường hợp:
-        const targetBook: any = props.cartList[0].book;
-        flashSaleIdValue = targetBook.flashSaleItemId || targetBook.idFlashSaleItem || targetBook.flashSaleId || undefined;
-    }
 
     const request = {
       idUser: getIdUserByToken(), 
@@ -111,10 +109,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
       email: user?.email ?? "",
       deliveryAddress,
       totalPriceProduct: props.totalPriceProduct,
-      totalPrice: props.totalPriceProduct, 
-      
-      flashSaleItemId: flashSaleIdValue, 
-
+      totalPrice: props.totalPriceProduct,
       book: booksRequest,
       note,
     };
@@ -129,10 +124,19 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
         body: JSON.stringify(request),
       });
 
-      const json = await res.json();
-      if (!res.ok) throw new Error(json?.message ?? "Checkout failed");
+      if (!res.ok) {
+        const message = await getErrorMessage(res);
+        throw new Error(message || "Checkout failed");
+      }
 
-      const paymentUrl = json?.data?.paymentUrl;
+      let json: any = undefined;
+      try {
+        json = await res.json();
+      } catch {
+        json = undefined;
+      }
+
+      const paymentUrl = json?.data?.paymentUrl ?? json?.paymentUrl;
 
       // VNPAY: BE trả PaymentUrl => redirect sang cổng VNPAY
       if (payment === 2) {

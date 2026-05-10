@@ -103,22 +103,51 @@ export async function getCartAllByIdUser(): Promise<CartItemModel[]> {
 
         const cartResponse = await response.json();
 
-        // Đã bỏ Promise.all và async vì không còn gọi API check giới hạn nữa
+        // Lưu lại các field BE đã tính (sale/normal split + tổng tiền)
         return cartResponse.map((item: any) => {
+            const idCart = item.idCart ?? item.IdCart ?? item.id ?? item.Id;
+            const quantity = item.quantity ?? item.Quantity ?? 0;
+
+            const bookId =
+                item.book?.idBook ?? item.book?.IdBook ??
+                item.book?.id ?? item.book?.Id ??
+                0;
+            const bookName =
+                item.book?.nameBook ?? item.book?.NameBook ??
+                item.book?.name ?? item.book?.Name ??
+                "";
+            const bookStock =
+                item.book?.availableQuantity ?? item.book?.AvailableQuantity ??
+                item.book?.quantity ?? item.book?.Quantity ??
+                0;
+
             return {
-                idCart: item.idCart ?? item.id,
-                quantity: item.quantity,
+                idCart,
+                quantity,
+				totalQuantity: item.totalQuantity ?? item.TotalQuantity,
+				saleQuantity: item.saleQuantity ?? item.SaleQuantity,
+				normalQuantity: item.normalQuantity ?? item.NormalQuantity,
+                flashSalePrice:
+                    item.flashSalePrice ?? item.FlashSalePrice ??
+                    item.book?.flashSalePrice ?? item.book?.FlashSalePrice ??
+                    null,
+                normalPrice:
+                    item.normalPrice ?? item.NormalPrice ??
+                    item.book?.sellPrice ?? item.book?.SellPrice,
+				totalItemPrice: item.totalItemPrice ?? item.TotalItemPrice,
+				flashSaleItemId: item.flashSaleItemId ?? item.FlashSaleItemId ?? null,
+
                 book: {
-                    id: item.book?.id ?? 0,
-                    idBook: item.book?.id ?? 0,
-                    nameBook: item.book?.name ?? "",
+                    id: bookId,
+                    idBook: bookId,
+                    nameBook: bookName,
                     // Lấy luôn giá trị backend đã tính toán sẵn
-                    sellPrice: item.book?.sellPrice ?? 0, 
-                    listPrice: item.book?.listPrice ?? 0,
-                    isFlashSale: item.book?.isFlashSale ?? false,
-                    flashSalePrice: item.book?.flashSalePrice ?? null,
-                    quantity: item.book?.quantity ?? 0,
-                    soldQuantity: item.book?.soldQuantity ?? 0,
+                    sellPrice: item.book?.sellPrice ?? item.book?.SellPrice ?? 0,
+                    listPrice: item.book?.listPrice ?? item.book?.ListPrice ?? 0,
+                    isFlashSale: item.book?.isFlashSale ?? item.book?.IsFlashSale ?? false,
+                    flashSalePrice: item.book?.flashSalePrice ?? item.book?.FlashSalePrice ?? null,
+                    quantity: bookStock,
+                    soldQuantity: item.book?.soldQuantity ?? item.book?.SoldQuantity ?? 0,
                 },
             };
         });

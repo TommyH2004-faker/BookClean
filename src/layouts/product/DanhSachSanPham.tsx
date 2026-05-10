@@ -3,6 +3,7 @@ import BookModel from "../../models/BookModel";
 import {layToanBoSach, timKiemSach} from "../../api/SachAPI";
 import {PhanTrang} from "../utils/PhanTrang";
 import SachProps from "./components/SachProps";
+import { getDisplayPrice } from "../utils/fixAsync";
 
 interface DanhSachSanPhamProps {
     tuKhoaTimKiem: string;
@@ -22,12 +23,13 @@ function DanhSachSanPham({ tuKhoaTimKiem, idGenre }: DanhSachSanPhamProps) {
         if (tuKhoaTimKiem === '' && idGenre === 0) {
             layToanBoSach(trangHienTai - 1).then(
                 kq => {
+                    console.log("🔥 API RESPONSE - layToanBoSach:", kq.ketQua);
                     setDanhSachQuyenSach(kq.ketQua);
                     setTongSoTrang(kq.tongSoTrang);
                     setDangTaiDuLieu(false);
                 }
             ).catch(
-                error => {
+                error => { 
                     setDangTaiDuLieu(false);
                     setBaoLoi(error.message);
                 }
@@ -35,6 +37,7 @@ function DanhSachSanPham({ tuKhoaTimKiem, idGenre }: DanhSachSanPhamProps) {
         }else{
             timKiemSach(tuKhoaTimKiem, idGenre).then(
                 kq => {
+                      console.log("🔥 API RESPONSE - timKiemSach:", kq.ketQua);
                     setDanhSachQuyenSach(kq.ketQua);
                     setTongSoTrang(kq.tongSoTrang);
                     setDangTaiDuLieu(false);
@@ -70,7 +73,7 @@ function DanhSachSanPham({ tuKhoaTimKiem, idGenre }: DanhSachSanPhamProps) {
         );
     }
 
-
+    console.log("📦 danhSachQuyenSach render:", danhSachQuyenSach);
     if(danhSachQuyenSach.length===0){
         return (
             <div className="container">
@@ -80,18 +83,20 @@ function DanhSachSanPham({ tuKhoaTimKiem, idGenre }: DanhSachSanPhamProps) {
             </div>
         );
     }
-
+    console.log(danhSachQuyenSach);
     return (
         <div className="container">
 
             <div className="row mt-4 mb-4">
-                {
-                    danhSachQuyenSach.map((sach) => (
-                            <SachProps key={sach.idBook} sach={sach} />
-                        )
-                    )
-                }
-            </div>
+        {
+        danhSachQuyenSach.map((sach) => (
+    <SachProps
+        key={sach.idBook} 
+        sach={sach}
+        />
+    ))
+        }
+    </div>
             <PhanTrang trangHienTai={trangHienTai} tongSoTrang={tongSoTrang} phanTrang={phanTrang} />
         </div>
     );
