@@ -3,7 +3,7 @@ import BookModel from "../../models/BookModel";
 import {layToanBoSach, timKiemSach} from "../../api/SachAPI";
 import {PhanTrang} from "../utils/PhanTrang";
 import SachProps from "./components/SachProps";
-import { getDisplayPrice } from "../utils/fixAsync";
+
 
 interface DanhSachSanPhamProps {
     tuKhoaTimKiem: string;

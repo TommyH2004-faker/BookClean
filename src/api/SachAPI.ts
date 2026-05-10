@@ -10,18 +10,18 @@ interface KetQuaInterface {
     tongSoSach: number;
 }
 
-function resolveBasePricing(item: any): { isFlashSale: boolean; flashSalePrice: number | null; sellPrice: number; baseSellPrice: number } {
-    const isFlashSale = Boolean(item?.isFlashSale);
-    const rawFlashSalePrice = item?.flashSalePrice;
-    const flashSalePrice = typeof rawFlashSalePrice === "number" ? rawFlashSalePrice : null;
-    const normalSellPrice = item?.sellPrice ?? 0;
+// function resolveBasePricing(item: any): { isFlashSale: boolean; flashSalePrice: number | null; sellPrice: number; baseSellPrice: number } {
+//     const isFlashSale = Boolean(item?.isFlashSale);
+//     const rawFlashSalePrice = item?.flashSalePrice;
+//     const flashSalePrice = typeof rawFlashSalePrice === "number" ? rawFlashSalePrice : null;
+//     const normalSellPrice = item?.sellPrice ?? 0;
 
-    if (isFlashSale && typeof flashSalePrice === "number" && flashSalePrice > 0) {
-        return { isFlashSale, flashSalePrice, sellPrice: flashSalePrice, baseSellPrice: normalSellPrice };
-    }
+//     if (isFlashSale && typeof flashSalePrice === "number" && flashSalePrice > 0) {
+//         return { isFlashSale, flashSalePrice, sellPrice: flashSalePrice, baseSellPrice: normalSellPrice };
+//     }
 
-    return { isFlashSale, flashSalePrice, sellPrice: normalSellPrice, baseSellPrice: normalSellPrice };
-}
+//     return { isFlashSale, flashSalePrice, sellPrice: normalSellPrice, baseSellPrice: normalSellPrice };
+// }
 
 // async function resolveUserAwarePricing(item: any): Promise<{ isFlashSale: boolean; flashSalePrice: number | null; sellPrice: number }> {
 //     const basePricing = resolveBasePricing(item);

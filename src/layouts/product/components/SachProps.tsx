@@ -11,7 +11,7 @@ import { getIdUserByToken, isToken } from "../../utils/JwtService";
 import { endpointBE } from "../../utils/Constant";
 import { toast } from "react-toastify";
 import { getErrorMessage } from "../../utils/helperError";
-import { getDisplayPrice } from '../../utils/fixAsync';
+
 import { getCartAllByIdUser } from "../../../api/CartApi";
 
 
