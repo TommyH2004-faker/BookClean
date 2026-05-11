@@ -81,7 +81,7 @@ const MyRoutes = () => {
                             <Route path='/forgot-password' element={<ForgotPassword />} />
                             <Route path='/profile' element={<ProfilePage setReloadAvatar={setReloadAvatar} />} />
                             <Route path='/flash-sale' element={<FlashSalePage />} />
-                            <Route path='/check-out/success' element={<CheckoutSuccess />} />
+                            <Route path='' element={<CheckoutSuccess />} />
                             <Route path='/check-out/failure' element={<CheckoutFail />} />
 
                             {/* Nếu không tìm thấy trang */}
