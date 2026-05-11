@@ -96,7 +96,7 @@ const DangKyNguoiDung: React.FC = () => {
                             firstName,
                             lastName,
                             phoneNumber,
-                            gender: "Male",
+                            gender: false
                         }),
                     }),
                     { pending: "Đang trong quá trình xử lý ..." }
