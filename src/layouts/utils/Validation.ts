@@ -26,7 +26,7 @@ export const checkExistUsername = async (setErrorUsername: any, username: string
       setErrorUsername("Tên đăng nhập phải chứa ít nhất 8 ký tự");
       return true;
    }
-   const endpoint = endpointBE + `/user/check-name?username=${username}`;
+   const endpoint = endpointBE + `/user/check-name?name=${username}`;
    // Call api
    try {
       const response = await fetch(endpoint);
