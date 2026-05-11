@@ -10,12 +10,18 @@ interface CaroselItemPropsInterface {
 }
 
 const Carouseltem: React.FC<CaroselItemPropsInterface> = (props) => {
-    const maSach: number = props.sach.idBook;
-    const [danhSachAnh, setDanhSachAnh] = useState<ImageModel[]>([]);
+     const [danhSachAnh, setDanhSachAnh] = useState<ImageModel[]>([]);
     const [dangTaiDuLieu, setDangTaiDuLieu] = useState(true);
     const [baoLoi, setBaoLoi] = useState<string | null>(null);
 
+        const sach = props.sach;
+
+       const maSach: number = props.sach.idBook;
+
+
     useEffect(() => {
+
+        if (!maSach) return;
         lay1AnhCuaMotSach(maSach).then(
             (hinhAnhData: ImageModel[]) => {
                 setDanhSachAnh(hinhAnhData);
@@ -28,7 +34,9 @@ const Carouseltem: React.FC<CaroselItemPropsInterface> = (props) => {
             }
         );
     }, [maSach]);
-
+      if (!sach) {
+        return null;
+    }
     if (dangTaiDuLieu) {
         return (
             <div>
