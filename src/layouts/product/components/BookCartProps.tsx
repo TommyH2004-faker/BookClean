@@ -239,7 +239,7 @@ const BookCartProps: React.FC<Props> = ({ cartItem, handleRemoveBook }) => {
     <>
       <div className="col">
         <div className="d-flex">
-          <Link to={`/book/${book.idBook}`}>
+          <Link to={`/books/${book.idBook}`}>
             <img
               src={thumbnail}
               alt={book.nameBook}
@@ -248,7 +248,7 @@ const BookCartProps: React.FC<Props> = ({ cartItem, handleRemoveBook }) => {
           </Link>
 
           <div className="d-flex flex-column pb-2">
-            <Link to={`/book/${book.idBook}`}>
+            <Link to={`/books/${book.idBook}`}>
               <Tooltip title={book.nameBook} arrow>
                 <span>
                   <TextEllipsis text={book.nameBook + " "} limit={38} />
