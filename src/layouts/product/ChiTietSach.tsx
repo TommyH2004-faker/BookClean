@@ -1,6 +1,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import { Carousel } from "react-responsive-carousel";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
@@ -25,8 +25,8 @@ import BookModel from "../../models/BookModel";
 import { laySachTheoMaSach, searchBook } from "../../api/SachAPI";
 import GenreModel from "../../models/GenreModel";
 import ImageModel from "../../models/ImageModel";
-import {layToanBoHinhAnhMotSach} from "../../api/HinhAnhAPI";
-import {CheckoutPage} from "../../page/components/CheckoutPage";
+import { layToanBoHinhAnhMotSach } from "../../api/HinhAnhAPI";
+import { CheckoutPage } from "../../page/components/CheckoutPage";
 import RatingStar from "./rating/Rating";
 import CartItemModel from "../../models/CartItemModel";
 import SachProps from "./components/SachProps";
@@ -34,7 +34,7 @@ import { getErrorMessage } from "../utils/helperError";
 import { getDisplayPrice } from "../utils/fixAsync";
 
 
-interface BookDetailProps {}
+interface BookDetailProps { }
 
 const BookDetail: React.FC<BookDetailProps> = (props) => {
     useScrollToTop(); // Mỗi lần vào component này thì sẽ ở trên cùng
@@ -205,110 +205,122 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
         }
     };
     const handleAddProduct = async (
-    newBook: BookModel,
-    quantity: number = 1
-) => {
-    // CHECK TỒN KHO
-    if (currentQuantityInCart + quantity > availableStock) {
-        toast.error("Không thể thêm, đã vượt quá số lượng tồn kho!");
-        return;
-    }
+        newBook: BookModel,
+        quantity: number = 1
+    ) => {
+        // CHECK TỒN KHO
+        if (currentQuantityInCart + quantity > availableStock) {
+            toast.error("Không thể thêm, đã vượt quá số lượng tồn kho!");
+            return;
+        }
 
-    let updatedCart = [...cartList];
+        let updatedCart = [...cartList];
 
-    const existingCartItem = updatedCart.find(
-        (item) => item.book.idBook === newBook.idBook
-    );
+        const existingCartItem = updatedCart.find(
+            (item) => item.book.idBook === newBook.idBook
+        );
 
-    try {
-        // =====================================================
-        // ĐÃ CÓ TRONG GIỎ
-        // =====================================================
-        if (existingCartItem) {
+        try {
+            // =====================================================
+            // ĐÃ CÓ TRONG GIỎ
+            // =====================================================
+            if (existingCartItem) {
 
-            const newQuantity =
-                existingCartItem.quantity + quantity;
+                const newQuantity =
+                    existingCartItem.quantity + quantity;
 
-            // LOGIN -> UPDATE SERVER
-            if (isToken()) {
+                // LOGIN -> UPDATE SERVER
+                if (isToken()) {
 
-                const response = await fetch(
-                    `${endpointBE}/cart-items/update-item`,
-                    {
-                        method: "PUT",
-                        headers: {
-                            Authorization:
-                                `Bearer ${localStorage.getItem("token")}`,
-                            "content-type": "application/json",
-                        },
-                        body: JSON.stringify({
-                            idCart: existingCartItem.idCart,
-                            quantity: newQuantity,
-                        }),
+                    const response = await fetch(
+                        `${endpointBE}/cart-items/update-item`,
+                        {
+                            method: "PUT",
+                            headers: {
+                                Authorization:
+                                    `Bearer ${localStorage.getItem("token")}`,
+                                "content-type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                idCart: existingCartItem.idCart,
+                                quantity: newQuantity,
+                            }),
+                        }
+                    );
+
+                    if (!response.ok) {
+                        const message = await getErrorMessage(response);
+                        toast.error(message);
+                        return;
                     }
-                );
 
-                if (!response.ok) {
-                    const message = await getErrorMessage(response);
-                    toast.error(message);
-                    return;
-                }
+                    // BE trả CartItemDto (có thể bọc trong { data })
+                    let dto: any = undefined;
+                    try {
+                        const payload = await response.json();
+                        dto = payload?.data ?? payload;
+                    } catch {
+                        dto = undefined;
+                    }
 
-                // BE trả CartItemDto (có thể bọc trong { data })
-                let dto: any = undefined;
-                try {
-                    const payload = await response.json();
-                    dto = payload?.data ?? payload;
-                } catch {
-                    dto = undefined;
-                }
+                    if (dto && typeof dto === "object") {
+                        const quantityFromDto = dto.quantity ?? dto.Quantity;
 
-                if (dto && typeof dto === "object") {
-                    const quantityFromDto = dto.quantity ?? dto.Quantity;
+                        updatedCart = updatedCart.map((item) => {
+                            if (item.book.idBook !== newBook.idBook) return item;
 
-                    updatedCart = updatedCart.map((item) => {
-                        if (item.book.idBook !== newBook.idBook) return item;
+                            const resolvedQuantity =
+                                typeof quantityFromDto === "number"
+                                    ? quantityFromDto
+                                    : newQuantity;
 
-                        const resolvedQuantity =
-                            typeof quantityFromDto === "number"
-                                ? quantityFromDto
-                                : newQuantity;
+                            return {
+                                ...item,
 
-                        return {
-                            ...item,
+                                idCart: dto.idCart ?? dto.IdCart ?? item.idCart,
+                                quantity: resolvedQuantity,
 
-                            idCart: dto.idCart ?? dto.IdCart ?? item.idCart,
-                            quantity: resolvedQuantity,
+                                totalQuantity:
+                                    dto.totalQuantity ?? dto.TotalQuantity ?? resolvedQuantity,
+                                saleQuantity:
+                                    dto.saleQuantity ?? dto.SaleQuantity
+                                    ?? (newBook.isFlashSale ? resolvedQuantity : item.saleQuantity),
+                                normalQuantity:
+                                    dto.normalQuantity ?? dto.NormalQuantity
+                                    ?? (newBook.isFlashSale ? 0 : item.normalQuantity),
 
-                            totalQuantity:
-                                dto.totalQuantity ?? dto.TotalQuantity ?? resolvedQuantity,
-                            saleQuantity:
-                                dto.saleQuantity ?? dto.SaleQuantity
-                                ?? (newBook.isFlashSale ? resolvedQuantity : item.saleQuantity),
-                            normalQuantity:
-                                dto.normalQuantity ?? dto.NormalQuantity
-                                ?? (newBook.isFlashSale ? 0 : item.normalQuantity),
+                                flashSalePrice:
+                                    dto.flashSalePrice ?? dto.FlashSalePrice
+                                    ?? item.flashSalePrice
+                                    ?? (newBook.isFlashSale ? newBook.flashSalePrice : null),
+                                normalPrice:
+                                    dto.normalPrice ?? dto.NormalPrice
+                                    ?? item.normalPrice ?? newBook.sellPrice,
+                                totalItemPrice:
+                                    dto.totalItemPrice ?? dto.TotalItemPrice ?? item.totalItemPrice,
+                                flashSaleItemId:
+                                    dto.flashSaleItemId ?? dto.FlashSaleItemId
+                                    ?? item.flashSaleItemId ?? newBook.flashSaleItemId,
+                            };
+                        });
 
-                            flashSalePrice:
-                                dto.flashSalePrice ?? dto.FlashSalePrice
-                                ?? item.flashSalePrice
-                                ?? (newBook.isFlashSale ? newBook.flashSalePrice : null),
-                            normalPrice:
-                                dto.normalPrice ?? dto.NormalPrice
-                                ?? item.normalPrice ?? newBook.sellPrice,
-                            totalItemPrice:
-                                dto.totalItemPrice ?? dto.TotalItemPrice ?? item.totalItemPrice,
-                            flashSaleItemId:
-                                dto.flashSaleItemId ?? dto.FlashSaleItemId
-                                ?? item.flashSaleItemId ?? newBook.flashSaleItemId,
-                        };
-                    });
+                        // đã update local theo dto, không cần tính thủ công bên dưới
+                        // (giữ đúng split sale/normal do BE quyết định)
 
-                    // đã update local theo dto, không cần tính thủ công bên dưới
-                    // (giữ đúng split sale/normal do BE quyết định)
-                    
+                    } else {
+                        // fallback: chỉ cập nhật quantity nếu BE không trả dto
+                        updatedCart = updatedCart.map((item) =>
+                            item.book.idBook === newBook.idBook
+                                ? { ...item, quantity: newQuantity }
+                                : item
+                        );
+                    }
+
+                    // skip đoạn "UPDATE LOCAL" phía dưới
+
+
                 } else {
-                    // fallback: chỉ cập nhật quantity nếu BE không trả dto
+                    // guest -> update local đơn giản
                     updatedCart = updatedCart.map((item) =>
                         item.book.idBook === newBook.idBook
                             ? { ...item, quantity: newQuantity }
@@ -316,162 +328,150 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
                     );
                 }
 
-                // skip đoạn "UPDATE LOCAL" phía dưới
-                
-                
-            } else {
-                // guest -> update local đơn giản
-                updatedCart = updatedCart.map((item) =>
-                    item.book.idBook === newBook.idBook
-                        ? { ...item, quantity: newQuantity }
-                        : item
-                );
             }
 
-        }
+            // =====================================================
+            // CHƯA CÓ TRONG GIỎ
+            // =====================================================
+            else {
 
-        // =====================================================
-        // CHƯA CÓ TRONG GIỎ
-        // =====================================================
-        else {
+                let idCart: number | undefined = undefined;
 
-            let idCart: number | undefined = undefined;
+                // LOGIN
+                if (isToken()) {
 
-            // LOGIN
-            if (isToken()) {
+                    const response = await fetch(
+                        `${endpointBE}/cart-items/add-item`,
+                        {
+                            method: "POST",
+                            headers: {
+                                Authorization:
+                                    `Bearer ${localStorage.getItem("token")}`,
+                                "content-type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                bookId: newBook.idBook,
+                                quantity: quantity,
+                            }),
+                        }
+                    );
 
-                const response = await fetch(
-                    `${endpointBE}/cart-items/add-item`,
-                    {
-                        method: "POST",
-                        headers: {
-                            Authorization:
-                                `Bearer ${localStorage.getItem("token")}`,
-                            "content-type": "application/json",
-                        },
-                        body: JSON.stringify({
-                            bookId: newBook.idBook,
-                            quantity: quantity,
-                        }),
+                    if (!response.ok) {
+                        const message = await getErrorMessage(response);
+                        toast.error(message);
+                        return;
                     }
-                );
 
-                if (!response.ok) {
-                    const message = await getErrorMessage(response);
-                    toast.error(message);
-                    return;
+                    // BE trả CartItemDto (có thể bọc trong { data })
+                    let dto: any = undefined;
+                    try {
+                        const payload = await response.json();
+                        dto = payload?.data ?? payload;
+                    } catch {
+                        dto = undefined;
+                    }
+
+                    // Nếu dto có idCart thì lấy; nếu chỉ trả số thì coi là idCart
+                    if (typeof dto === "number") {
+                        idCart = dto;
+                    } else if (typeof dto === "string") {
+                        const parsed = Number(dto);
+                        idCart = Number.isFinite(parsed) ? parsed : undefined;
+                    } else if (dto && typeof dto === "object") {
+                        idCart = dto.idCart ?? dto.IdCart ?? dto.id ?? dto.Id;
+                    }
+
+                    const resolvedQuantity =
+                        (dto && typeof dto === "object")
+                            ? (dto.quantity ?? dto.Quantity ?? quantity)
+                            : quantity;
+
+                    updatedCart.push({
+                        idCart,
+
+                        quantity: resolvedQuantity,
+                        totalQuantity:
+                            (dto && typeof dto === "object")
+                                ? (dto.totalQuantity ?? dto.TotalQuantity ?? resolvedQuantity)
+                                : resolvedQuantity,
+
+                        saleQuantity:
+                            (dto && typeof dto === "object")
+                                ? (dto.saleQuantity ?? dto.SaleQuantity
+                                    ?? (newBook.isFlashSale ? resolvedQuantity : 0))
+                                : (newBook.isFlashSale ? resolvedQuantity : 0),
+                        normalQuantity:
+                            (dto && typeof dto === "object")
+                                ? (dto.normalQuantity ?? dto.NormalQuantity
+                                    ?? (newBook.isFlashSale ? 0 : resolvedQuantity))
+                                : (newBook.isFlashSale ? 0 : resolvedQuantity),
+
+                        flashSalePrice:
+                            (dto && typeof dto === "object")
+                                ? (dto.flashSalePrice ?? dto.FlashSalePrice
+                                    ?? (newBook.isFlashSale ? newBook.flashSalePrice : null))
+                                : (newBook.isFlashSale ? newBook.flashSalePrice : null),
+                        normalPrice:
+                            (dto && typeof dto === "object")
+                                ? (dto.normalPrice ?? dto.NormalPrice ?? newBook.sellPrice)
+                                : newBook.sellPrice,
+                        totalItemPrice:
+                            (dto && typeof dto === "object")
+                                ? (dto.totalItemPrice ?? dto.TotalItemPrice)
+                                : undefined,
+                        flashSaleItemId:
+                            (dto && typeof dto === "object")
+                                ? (dto.flashSaleItemId ?? dto.FlashSaleItemId
+                                    ?? newBook.flashSaleItemId ?? null)
+                                : (newBook.flashSaleItemId ?? null),
+
+                        book: newBook,
+                    });
+
+                    // đã push theo dto, không chạy push thủ công ở dưới
+                    dto = null;
                 }
 
-                // BE trả CartItemDto (có thể bọc trong { data })
-                let dto: any = undefined;
-                try {
-                    const payload = await response.json();
-                    dto = payload?.data ?? payload;
-                } catch {
-                    dto = undefined;
+                // guest (hoặc login nhưng BE không trả dto)
+                if (!isToken()) {
+                    updatedCart.push({
+                        idCart,
+                        quantity,
+                        book: newBook,
+                    });
                 }
-
-                // Nếu dto có idCart thì lấy; nếu chỉ trả số thì coi là idCart
-                if (typeof dto === "number") {
-                    idCart = dto;
-                } else if (typeof dto === "string") {
-                    const parsed = Number(dto);
-                    idCart = Number.isFinite(parsed) ? parsed : undefined;
-                } else if (dto && typeof dto === "object") {
-                    idCart = dto.idCart ?? dto.IdCart ?? dto.id ?? dto.Id;
-                }
-
-                const resolvedQuantity =
-                    (dto && typeof dto === "object")
-                        ? (dto.quantity ?? dto.Quantity ?? quantity)
-                        : quantity;
-
-                updatedCart.push({
-                    idCart,
-
-                    quantity: resolvedQuantity,
-                    totalQuantity:
-                        (dto && typeof dto === "object")
-                            ? (dto.totalQuantity ?? dto.TotalQuantity ?? resolvedQuantity)
-                            : resolvedQuantity,
-
-                    saleQuantity:
-                        (dto && typeof dto === "object")
-                            ? (dto.saleQuantity ?? dto.SaleQuantity
-                                ?? (newBook.isFlashSale ? resolvedQuantity : 0))
-                            : (newBook.isFlashSale ? resolvedQuantity : 0),
-                    normalQuantity:
-                        (dto && typeof dto === "object")
-                            ? (dto.normalQuantity ?? dto.NormalQuantity
-                                ?? (newBook.isFlashSale ? 0 : resolvedQuantity))
-                            : (newBook.isFlashSale ? 0 : resolvedQuantity),
-
-                    flashSalePrice:
-                        (dto && typeof dto === "object")
-                            ? (dto.flashSalePrice ?? dto.FlashSalePrice
-                                ?? (newBook.isFlashSale ? newBook.flashSalePrice : null))
-                            : (newBook.isFlashSale ? newBook.flashSalePrice : null),
-                    normalPrice:
-                        (dto && typeof dto === "object")
-                            ? (dto.normalPrice ?? dto.NormalPrice ?? newBook.sellPrice)
-                            : newBook.sellPrice,
-                    totalItemPrice:
-                        (dto && typeof dto === "object")
-                            ? (dto.totalItemPrice ?? dto.TotalItemPrice)
-                            : undefined,
-                    flashSaleItemId:
-                        (dto && typeof dto === "object")
-                            ? (dto.flashSaleItemId ?? dto.FlashSaleItemId
-                                ?? newBook.flashSaleItemId ?? null)
-                            : (newBook.flashSaleItemId ?? null),
-
-                    book: newBook,
-                });
-
-                // đã push theo dto, không chạy push thủ công ở dưới
-                dto = null;
             }
 
-            // guest (hoặc login nhưng BE không trả dto)
-            if (!isToken()) {
-                updatedCart.push({
-                    idCart,
-                    quantity,
-                    book: newBook,
-                });
-            }
-        }
+            // =====================================================
+            // SAVE
+            // =====================================================
 
-        // =====================================================
-        // SAVE
-        // =====================================================
+            setCartList(updatedCart);
 
-        setCartList(updatedCart);
-
-        localStorage.setItem(
-            "cart",
-            JSON.stringify(updatedCart)
-        );
-
-        const total =
-            updatedCart.reduce(
-                (sum, item) => sum + item.quantity,
-                0
+            localStorage.setItem(
+                "cart",
+                JSON.stringify(updatedCart)
             );
 
-        setTotalCart(total);
+            const total =
+                updatedCart.reduce(
+                    (sum, item) => sum + item.quantity,
+                    0
+                );
 
-        setQuantity(1);
+            setTotalCart(total);
 
-        toast.success("Thêm vào giỏ hàng thành công");
+            setQuantity(1);
 
-    } catch (error) {
+            toast.success("Thêm vào giỏ hàng thành công");
 
-        console.log(error);
+        } catch (error) {
 
-        toast.error("Lỗi kết nối server");
-    }
-};
+            console.log(error);
+
+            toast.error("Lỗi kết nối server");
+        }
+    };
     // Viewer hình ảnh
     const [currentImage, setCurrentImage] = useState(0);
     const [isViewerOpen, setIsViewerOpen] = useState(false);
@@ -496,66 +496,67 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
     const [isCheckout, setIsCheckout] = useState(false);
     const [cartItem, setCartItem] = useState<CartItemModel[]>([]);
     const [totalPriceProduct, setTotalPriceProduct] = useState(0);
-
+    const navigation = useNavigate();
     function handleBuyNow(newBook: BookModel) {
-    if(!isToken()) {
-        toast.warning("Bạn cần đăng nhập để mua hàng");
-        return;
-    }
+        if (!isToken()) {
+            toast.warning("Bạn cần đăng nhập để mua hàng");
+            navigation('/dangnhap');
+            return;
+        }
 
-    // Chốt chặn an toàn: Kiểm tra tồn kho vật lý
-    if (quantity > availableStock) {
-        toast.error("Không thể mua, đã vượt quá số lượng tồn kho!");
-        return;
-    }
+        // Chốt chặn an toàn: Kiểm tra tồn kho vật lý
+        if (quantity > availableStock) {
+            toast.error("Không thể mua, đã vượt quá số lượng tồn kho!");
+            return;
+        }
 
-    // Đẩy thẳng vào state để chuyển sang trang Checkout
-    // setCartItem([{ quantity, book: newBook }]);
-    setCartItem([
-    {
-        quantity,
+        // Đẩy thẳng vào state để chuyển sang trang Checkout
+        // setCartItem([{ quantity, book: newBook }]);
+        setCartItem([
+            {
+                quantity,
 
-        totalQuantity: quantity,
+                totalQuantity: quantity,
 
-        saleQuantity:
-            newBook.isFlashSale
-                ? quantity
-                : 0,
+                saleQuantity:
+                    newBook.isFlashSale
+                        ? quantity
+                        : 0,
 
-        normalQuantity:
-            newBook.isFlashSale
-                ? 0
-                : quantity,
+                normalQuantity:
+                    newBook.isFlashSale
+                        ? 0
+                        : quantity,
 
-        flashSalePrice:
-            newBook.isFlashSale
+                flashSalePrice:
+                    newBook.isFlashSale
+                        ? (newBook.flashSalePrice ?? newBook.sellPrice)
+                        : null,
+
+                normalPrice:
+                    newBook.sellPrice,
+
+                totalItemPrice:
+                    (newBook.sellPrice ?? 0)
+                    * quantity,
+
+                book: newBook,
+            }
+        ]);
+        setIsCheckout(!isCheckout);
+
+        // Lưu ý: Tính tổng tiền tạm thời ở Frontend. 
+        // Khi sang trang Checkout và gọi API tạo đơn, Backend C# sẽ tự động bóc tách số lượng để tính giá (ví dụ: 2 Sale + 1 Gốc)
+        //     const estimatedPrice =
+        //     (newBook.sellPrice ?? 0) * quantity;
+        // setTotalPriceProduct(estimatedPrice);
+        const estimatedPrice =
+            (newBook.isFlashSale
                 ? (newBook.flashSalePrice ?? newBook.sellPrice)
-                : null,
+                : newBook.sellPrice) * quantity;
 
-        normalPrice:
-            newBook.sellPrice,
-
-        totalItemPrice:
-            (newBook.sellPrice ?? 0)
-            * quantity,
-
-        book: newBook,
+        setTotalPriceProduct(estimatedPrice);
     }
-]);
-    setIsCheckout(!isCheckout);
-    
-    // Lưu ý: Tính tổng tiền tạm thời ở Frontend. 
-    // Khi sang trang Checkout và gọi API tạo đơn, Backend C# sẽ tự động bóc tách số lượng để tính giá (ví dụ: 2 Sale + 1 Gốc)
-    //     const estimatedPrice =
-    //     (newBook.sellPrice ?? 0) * quantity;
-    // setTotalPriceProduct(estimatedPrice);
-const estimatedPrice =
-    (newBook.isFlashSale
-        ? (newBook.flashSalePrice ?? newBook.sellPrice)
-        : newBook.sellPrice) * quantity;
-
-setTotalPriceProduct(estimatedPrice);
-}
     if (loading) {
         return (
             <div className='container-book container mb-5 py-5 px-5 bg-light'>
@@ -650,7 +651,7 @@ setTotalPriceProduct(estimatedPrice);
                                     <p className='me-5'>
                                         Thể loại:{" "}
                                         <strong>
-                                        {genres?.map((genre) => genre.nameGenre).join(", ")}
+                                            {genres?.map((genre) => genre.nameGenre).join(", ")}
                                         </strong>
                                     </p>
                                     <p className='ms-5'>
@@ -690,8 +691,8 @@ setTotalPriceProduct(estimatedPrice);
                                 <div className='price'>
                                     <span className='discounted-price text-danger me-3'>
                                         <strong style={{ fontSize: "32px" }}>
-                                    {getDisplayPrice(book)?.toLocaleString()}đ
-                                </strong>
+                                            {getDisplayPrice(book)?.toLocaleString()}đ
+                                        </strong>
                                     </span>
                                     <span className='original-price small me-3'>
                                         <strong>
