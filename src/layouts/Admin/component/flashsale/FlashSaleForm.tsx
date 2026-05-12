@@ -30,11 +30,11 @@ interface FlashSaleFormProps {
 }
 
 function toIsoOrThrow(datetimeLocalValue: string): string {
-  const v = datetimeLocalValue?.trim();
-  if (!v) throw new Error("Thời gian không hợp lệ");
+	const v = datetimeLocalValue?.trim();
+	if (!v) throw new Error("Thời gian không hợp lệ");
 
-  // giữ giờ local, KHÔNG đổi sang UTC
-  return v.length === 16 ? `${v}:00` : v; // "YYYY-MM-DDTHH:mm:ss"
+	// giữ giờ local, KHÔNG đổi sang UTC
+	return v.length === 16 ? `${v}:00` : v; // "YYYY-MM-DDTHH:mm:ss"
 }
 
 function toDatetimeLocalValue(value?: string): string {
@@ -265,7 +265,11 @@ export const FlashSaleForm: React.FC<FlashSaleFormProps> = (props) => {
 				quantity,
 				maxPerUser: maxPerUser === "" ? null : maxPerUser,
 			};
+			const stock = selectedBook?.quantity ?? 0;
 
+			if (quantity > stock) {
+				throw new Error(`Số lượng Flash Sale vượt quá tồn kho (${stock})`);
+			}
 			await addFlashSaleItem(payload);
 			toast.success("Thêm sản phẩm vào Flash Sale thành công");
 			props.onSelectedFlashSaleId?.(resolvedFlashSaleId);
