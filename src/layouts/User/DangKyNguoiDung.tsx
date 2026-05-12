@@ -11,7 +11,8 @@ import {
 } from "../utils/Validation";
 import {endpointBE} from "../utils/Constant";
 import {toast} from "react-toastify";
-import {TextField} from "@mui/material";
+import {TextField, InputAdornment, IconButton} from "@mui/material";
+import {Visibility, VisibilityOff} from "@mui/icons-material";
 import {LoadingButton} from "@mui/lab";
 
 
@@ -41,6 +42,16 @@ const DangKyNguoiDung: React.FC = () => {
     const [errorPassword, setErrorPassword] = useState("");
     const [errorRepeatPassword, setErrorRepeatPassword] = useState("");
     const [errorPhoneNumber, setErrorPhoneNumber] = useState("");
+
+    const [showPassword, setShowPassword] = useState(false);
+    const handleClickShowPassword = () => setShowPassword(!showPassword);
+
+    const [showRepeatPassword, setShowRepeatPassword] = useState(false);
+    const handleClickShowRepeatPassword = () => setShowRepeatPassword(!showRepeatPassword);
+
+    const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
+        event.preventDefault();
+    };
 
     // Khai báo biến thông báo
 
@@ -179,7 +190,7 @@ const DangKyNguoiDung: React.FC = () => {
                             helperText={errorPassword}
                             required={true}
                             fullWidth
-                            type='password'
+                            type={showPassword ? "text" : "password"}
                             label='Mật khẩu'
                             placeholder='Nhập mật khẩu'
                             value={password}
@@ -188,6 +199,20 @@ const DangKyNguoiDung: React.FC = () => {
                                 checkPassword(setErrorPassword, e.target.value);
                             }}
                             className='input-field'
+                            InputProps={{
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <IconButton
+                                            aria-label="toggle password visibility"
+                                            onClick={handleClickShowPassword}
+                                            onMouseDown={handleMouseDownPassword}
+                                            edge="end"
+                                        >
+                                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                                        </IconButton>
+                                    </InputAdornment>
+                                )
+                            }}
                         />
 
                         <TextField
@@ -195,7 +220,7 @@ const DangKyNguoiDung: React.FC = () => {
                             helperText={errorRepeatPassword}
                             required={true}
                             fullWidth
-                            type='password'
+                            type={showRepeatPassword ? "text" : "password"}
                             label='Xác nhận mật khẩu'
                             placeholder='Nhập lại mật khẩu'
                             value={repeatPassword}
@@ -208,6 +233,20 @@ const DangKyNguoiDung: React.FC = () => {
                                 );
                             }}
                             className='input-field'
+                            InputProps={{
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <IconButton
+                                            aria-label="toggle password visibility"
+                                            onClick={handleClickShowRepeatPassword}
+                                            onMouseDown={handleMouseDownPassword}
+                                            edge="end"
+                                        >
+                                            {showRepeatPassword ? <VisibilityOff /> : <Visibility />}
+                                        </IconButton>
+                                    </InputAdornment>
+                                )
+                            }}
                         />
                     </div>
                     <div className='col-lg-6 col-md-12 col-12'>

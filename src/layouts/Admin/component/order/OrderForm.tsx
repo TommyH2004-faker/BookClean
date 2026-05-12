@@ -9,10 +9,10 @@ import {
 } from "@mui/material";
 
 import { toast } from "react-toastify";
-import {get1Orders} from "../../../../api/OrderApi";
+import { get1Orders } from "../../../../api/OrderApi";
 import OrderModel from "../../../../models/OrderModel";
-import {endpointBE} from "../../../utils/Constant";
-import {OrderDetail} from "../../../product/components/order-detail/OrderDetail";
+import { endpointBE } from "../../../utils/Constant";
+import { OrderDetail } from "../../../product/components/order-detail/OrderDetail";
 import { clearFlashSalePurchaseUsageCache } from "../../../utils/flashSaleLimit";
 
 interface OrderFormProps {
@@ -62,29 +62,29 @@ export const OrderForm: React.FC<OrderFormProps> = (props) => {
 	// 		.catch((error) => console.log(error));
 	// }, [props.option, props.id]);
 	useEffect(() => {
-    get1Orders(props.id)
-        .then((order) => {
-            if (!order) return;
+		get1Orders(props.id)
+			.then((order) => {
+				if (!order) return;
 
-            console.log("ORDER FINAL:", order);
+				console.log("ORDER FINAL:", order);
 
-            setOrder(order); // ✅ dùng trực tiếp
+				setOrder(order); // ✅ dùng trực tiếp
 
-            // STEP
-            if (order.status === "Bị huỷ") {
-                setSteps(["Đang xử lý", "Bị huỷ"]);
-                setActiveStep(["Đang xử lý", "Bị huỷ"].indexOf(order.status));
-            } else {
-                setSteps(["Đang xử lý", "Đang giao hàng", "Thành công"]);
-                setActiveStep(
-                    ["Đang xử lý", "Đang giao hàng", "Thành công"].indexOf(
-                        order.status
-                    )
-                );
-            }
-        })
-        .catch((error) => console.log(error));
-}, [props.id]);
+				// STEP
+				if (order.status === "Bị huỷ") {
+					setSteps(["Đang xử lý", "Bị huỷ"]);
+					setActiveStep(["Đang xử lý", "Bị huỷ"].indexOf(order.status));
+				} else {
+					setSteps(["Đang xử lý", "Đang giao hàng", "Thành công"]);
+					setActiveStep(
+						["Đang xử lý", "Đang giao hàng", "Thành công"].indexOf(
+							order.status
+						)
+					);
+				}
+			})
+			.catch((error) => console.log(error));
+	}, [props.id]);
 
 	function hanleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
@@ -172,7 +172,12 @@ export const OrderForm: React.FC<OrderFormProps> = (props) => {
 								<MenuItem value='Đang giao hàng'>
 									Đang giao hàng
 								</MenuItem>
-								<MenuItem value='Thành công'>Thành công</MenuItem>
+								{/* <MenuItem value='Thành công'>Thành công</MenuItem> */}
+								{props.option === "update" && (
+									<MenuItem value='Thành công'>
+										Thành công
+									</MenuItem>
+								)}
 								<MenuItem value='Bị huỷ'>Huỷ</MenuItem>
 							</Select>
 						</FormControl>

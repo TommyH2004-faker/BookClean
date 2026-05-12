@@ -1,4 +1,5 @@
-import { Box, Button, Link as MuiLink, TextField } from "@mui/material";
+import { Box, Button, Link as MuiLink, TextField, InputAdornment, IconButton } from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { jwtDecode } from "jwt-decode";
 import React, { FormEvent, useEffect, useState } from "react";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
@@ -31,6 +32,11 @@ const DangNhap: React.FC = () => {
     const [name, setName] = useState("");
     const [password, setPassword] = useState("");
     const [error] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const handleClickShowPassword = () => setShowPassword(!showPassword);
+    const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
+        event.preventDefault();
+    };
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -168,12 +174,26 @@ const DangNhap: React.FC = () => {
                 <TextField
                     fullWidth
                     required
-                    type='password'
+                    type={showPassword ? "text" : "password"}
                     label='Mật khẩu'
                     placeholder='Nhập mật khẩu'
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className='mb-3'
+                    InputProps={{
+                        endAdornment: (
+                            <InputAdornment position="end">
+                                <IconButton
+                                    aria-label="toggle password visibility"
+                                    onClick={handleClickShowPassword}
+                                    onMouseDown={handleMouseDownPassword}
+                                    edge="end"
+                                >
+                                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                                </IconButton>
+                            </InputAdornment>
+                        )
+                    }}
                 />
 
                 <div className='d-flex justify-content-end mb-2'>

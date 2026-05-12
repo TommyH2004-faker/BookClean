@@ -1,4 +1,6 @@
-import { CloudUpload, EditOutlined } from "@mui/icons-material";
+import { CloudUpload, EditOutlined, Visibility, VisibilityOff } from "@mui/icons-material";
+import InputAdornment from "@mui/material/InputAdornment";
+import IconButton from "@mui/material/IconButton";
 import TabContext from "@mui/lab/TabContext";
 import TabList from "@mui/lab/TabList";
 import TabPanel from "@mui/lab/TabPanel";
@@ -76,6 +78,18 @@ const ProfilePage: React.FC<ProfilePageProps> = (props) => {
 	const [newPassword, setNewPassword] = useState("");
 	const [repeatPassword, setRepeatPassword] = useState("");
 	const [previewAvatar, setPreviewAvatar] = useState("");
+
+	const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+	const [showNewPassword, setShowNewPassword] = useState(false);
+	const [showRepeatPassword, setShowRepeatPassword] = useState(false);
+
+	const handleClickShowCurrentPassword = () => setShowCurrentPassword(!showCurrentPassword);
+	const handleClickShowNewPassword = () => setShowNewPassword(!showNewPassword);
+	const handleClickShowRepeatPassword = () => setShowRepeatPassword(!showRepeatPassword);
+
+	const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
+		event.preventDefault();
+	};
 
 	// reload lại component order table
 	const [keyCountReload, setKeyCountReload] = useState(0);
@@ -632,13 +646,27 @@ function handleSubmitChangePassword(event: FormEvent<HTMLFormElement>): void {
 											helperText={errorCurrentPassword}
 											required
 											fullWidth
-											type="password"
+											type={showCurrentPassword ? "text" : "password"}
 											label="Mật khẩu hiện tại"
 											placeholder="Nhập mật khẩu hiện tại"
 											value={currentPassword}
 											onChange={(e) => {
 												setCurrentPassword(e.target.value);
 												setErrorCurrentPassword("");
+											}}
+											InputProps={{
+												endAdornment: (
+													<InputAdornment position="end">
+														<IconButton
+															aria-label="toggle password visibility"
+															onClick={handleClickShowCurrentPassword}
+															onMouseDown={handleMouseDownPassword}
+															edge="end"
+														>
+															{showCurrentPassword ? <VisibilityOff /> : <Visibility />}
+														</IconButton>
+													</InputAdornment>
+												)
 											}}
 										/>
 										<TextField
@@ -648,7 +676,7 @@ function handleSubmitChangePassword(event: FormEvent<HTMLFormElement>): void {
 											helperText={errorNewPassword}
 											required={true}
 											fullWidth
-											type='password'
+											type={showNewPassword ? "text" : "password"}
 											label='Mật khẩu mới'
 											placeholder='Nhập mật khẩu mới'
 											value={newPassword}
@@ -660,6 +688,20 @@ function handleSubmitChangePassword(event: FormEvent<HTMLFormElement>): void {
 												);
 											}}
 											className='input-field'
+											InputProps={{
+												endAdornment: (
+													<InputAdornment position="end">
+														<IconButton
+															aria-label="toggle password visibility"
+															onClick={handleClickShowNewPassword}
+															onMouseDown={handleMouseDownPassword}
+															edge="end"
+														>
+															{showNewPassword ? <VisibilityOff /> : <Visibility />}
+														</IconButton>
+													</InputAdornment>
+												)
+											}}
 										/>
 
 										<TextField
@@ -671,7 +713,7 @@ function handleSubmitChangePassword(event: FormEvent<HTMLFormElement>): void {
 											helperText={errorRepeatPassword}
 											required={true}
 											fullWidth
-											type='password'
+											type={showRepeatPassword ? "text" : "password"}
 											label='Xác nhận mật khẩu mới'
 											placeholder='Nhập lại mật khẩu mới'
 											value={repeatPassword}
@@ -684,6 +726,20 @@ function handleSubmitChangePassword(event: FormEvent<HTMLFormElement>): void {
 												);
 											}}
 											className='input-field'
+											InputProps={{
+												endAdornment: (
+													<InputAdornment position="end">
+														<IconButton
+															aria-label="toggle password visibility"
+															onClick={handleClickShowRepeatPassword}
+															onMouseDown={handleMouseDownPassword}
+															edge="end"
+														>
+															{showRepeatPassword ? <VisibilityOff /> : <Visibility />}
+														</IconButton>
+													</InputAdornment>
+												)
+											}}
 										/>
 										<div className='text-center my-3'>
 											<Button
