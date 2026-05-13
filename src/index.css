@@ -11,13 +11,23 @@ img {
 	height: auto;
 }
 
+iframe {
+	max-width: 100%;
+}
+
+a {
+	word-break: break-word;
+}
+
 html,
 body {
 	max-width: 100%;
+	overflow-x: hidden;
 }
 
 #root {
 	max-width: 100%;
+	overflow-x: hidden;
 }
 
 body {
@@ -30,6 +40,10 @@ body {
 	background-color: #f0f0f0;
 }
 
+.container-book {
+	width: 100%;
+}
+
 @media (hover: hover) and (pointer: fine) {
 	.dropdown-hover:hover > .dropdown-menu {
 		display: block;
@@ -37,5 +51,111 @@ body {
 
 	.dropdown-hover > .dropdown-toggle:active {
 		pointer-events: none;
+	}
+}
+
+@media (max-width: 767.98px) {
+	body {
+		font-size: 15px;
+	}
+
+	.container,
+	.container-fluid {
+		padding-left: 0.75rem;
+		padding-right: 0.75rem;
+	}
+
+	.container-book {
+		padding-left: 0.75rem !important;
+		padding-right: 0.75rem !important;
+	}
+
+	.p-5 {
+		padding: 1rem !important;
+	}
+
+	.px-5 {
+		padding-left: 1rem !important;
+		padding-right: 1rem !important;
+	}
+
+	.py-5 {
+		padding-top: 1rem !important;
+		padding-bottom: 1rem !important;
+	}
+
+	.m-5 {
+		margin: 1rem !important;
+	}
+
+	.mt-5 {
+		margin-top: 1rem !important;
+	}
+
+	.mb-5 {
+		margin-bottom: 1rem !important;
+	}
+
+	.w-25,
+	.w-50 {
+		width: 100% !important;
+	}
+
+	.row > [class*='col-'] {
+		width: 100% !important;
+		max-width: 100% !important;
+		flex: 0 0 100% !important;
+	}
+
+	.site-navbar {
+		padding: 0.75rem !important;
+		gap: 0.75rem !important;
+		align-items: stretch !important;
+	}
+
+	.site-navbar__logo {
+		width: 96px !important;
+		max-width: 96px !important;
+	}
+
+	.site-navbar__menu,
+	.site-navbar__search,
+	.site-navbar__actions {
+		width: 100% !important;
+	}
+
+	.site-navbar__menu {
+		justify-content: center !important;
+		gap: 0.75rem !important;
+	}
+
+	.site-navbar__search {
+		flex-wrap: wrap;
+		justify-content: stretch !important;
+	}
+
+	.site-navbar__search input {
+		min-width: 0 !important;
+		width: 100% !important;
+		flex: 1 1 auto;
+	}
+
+	.site-navbar__actions {
+		justify-content: center !important;
+		flex-wrap: wrap;
+	}
+
+	.site-navbar .dropdown-menu {
+		width: 100% !important;
+		position: static !important;
+	}
+
+	.book-list-cta {
+		width: 100% !important;
+	}
+
+	iframe {
+		width: 100% !important;
+		height: 280px;
 	}
 }

@@ -182,6 +182,7 @@ function Navbar({
 
     return (
         <nav
+            className="site-navbar"
             style={{
                 display: "flex",
                 alignItems: "center",
@@ -198,6 +199,7 @@ function Navbar({
                 <img
                     src="./../../../images/books/logo.png"
                     alt="Logo"
+                    className="site-navbar__logo"
                     style={{
                         width: "120px",
                         objectFit: "contain",
@@ -207,6 +209,7 @@ function Navbar({
 
             {/* Menu */}
             <ul
+                className="site-navbar__menu"
                 style={{
                     display: "flex",
                     alignItems: "center",
@@ -325,6 +328,7 @@ function Navbar({
 
             {/* Search */}
             <div
+                className="site-navbar__search"
                 style={{
                     display: "flex",
                     alignItems: "center",
@@ -357,6 +361,7 @@ function Navbar({
 
             {/* Right */}
             <div
+                className="site-navbar__actions"
                 style={{
                     display: "flex",
                     alignItems: "center",

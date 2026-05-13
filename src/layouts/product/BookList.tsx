@@ -171,7 +171,7 @@ const BookList: React.FC<BookListProps> = (props) => {
 						<Button
 							variant='outlined'
 							size='large'
-							className='text-primary mt-5 w-25'
+							className='text-primary mt-5 w-25 book-list-cta'
 						>
 							Xem Thêm
 						</Button>

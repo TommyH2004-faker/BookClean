@@ -100,11 +100,11 @@ export const FeedbackCustomerPage: React.FC = () => {
     }
 
     return (
-        <div className='container-book container bg-light my-3 py-3 px-5'>
+        <div className='container-book container-fluid bg-light my-3 py-3 px-5'>
             <h3 className='text-center m-3'>NHẬN XÉT VỀ CHÚNG TÔI</h3>
 
             <div className='d-flex align-items-center justify-content-center'>
-                <div className='w-50'>
+                <div className='w-50 w-100 feedback-form-shell'>
                     <form className='form' onSubmit={handleSubmit}>
                         <Box sx={{ "& .MuiTextField-root": { mb: 3 } }}>
                             

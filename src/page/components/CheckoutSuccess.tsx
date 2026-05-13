@@ -57,11 +57,14 @@ import { Link, useLocation } from "react-router-dom";
 import { useCartItem } from "../../layouts/utils/CartItemContext";
 import { getCartAllByIdUser } from "../../api/CartApi";
 import { clearFlashSalePurchaseUsageCache } from "../../layouts/utils/flashSaleLimit";
+import useScrollToTop from "../../hooks/ScrollToTop";
 
 export const CheckoutSuccess = () => {
   const { setCartList, setTotalCart } = useCartItem();
 
   const location = useLocation();
+
+  useScrollToTop();
 
   useEffect(() => {
     async function syncCartAfterVnPay() {
@@ -94,8 +97,8 @@ export const CheckoutSuccess = () => {
   }, [location.search, setCartList, setTotalCart]);
 
   return (
-    <div className='container bg-light my-3 rounded-3 p-3'>
-      <div className='d-flex align-items-center justify-content-center flex-column p-5'>
+    <div className='container-fluid container bg-light my-3 rounded-3 p-3 p-md-5'>
+      <div className='d-flex align-items-center justify-content-center flex-column p-3 p-md-5 text-center'>
         <img
           src='https://cdn0.fahasa.com/skin/frontend/base/default/images/order_status/ico_successV2.svg?q=10311'
           alt='success'
