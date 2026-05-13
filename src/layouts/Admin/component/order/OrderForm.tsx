@@ -66,7 +66,6 @@ export const OrderForm: React.FC<OrderFormProps> = (props) => {
 			.then((order) => {
 				if (!order) return;
 
-				console.log("ORDER FINAL:", order);
 
 				setOrder(order); // ✅ dùng trực tiếp
 

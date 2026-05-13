@@ -22,7 +22,7 @@ export const FeedbackTable: React.FC = (props) => {
 
 	useEffect(() => {
 		getAllFeedback().then((response) => {
-			console.log("Feedback data from API:", response);
+	
 			const feedbacks = response.map((feedback: any) => ({
 				...feedback,
 				id: feedback.idFeedback,

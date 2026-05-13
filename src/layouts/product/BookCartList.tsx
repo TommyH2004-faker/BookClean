@@ -17,6 +17,7 @@ const BookCartList: React.FC<BookCartListProps> = () => {
 
         const currentQuantity =
             cartItem.totalQuantity ??
+            cartItem.quantity ??
             ((cartItem.saleQuantity ?? 0) +
              (cartItem.normalQuantity ?? 0));
 
@@ -55,6 +56,7 @@ const BookCartList: React.FC<BookCartListProps> = () => {
 
         const qty =
             item.totalQuantity ??
+            item.quantity ??
             ((item.saleQuantity ?? 0) +
              (item.normalQuantity ?? 0));
 

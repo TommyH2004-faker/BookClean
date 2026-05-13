@@ -563,7 +563,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
         json = undefined;
       }
 
-      console.log("CHECKOUT RESPONSE:", json);
+    
 
       const paymentUrl =
         json?.data?.paymentUrl ??

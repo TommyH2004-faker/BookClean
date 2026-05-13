@@ -53,13 +53,7 @@ const SachProps: React.FC<SachPropsInterface> = ({ sach, showSoldProgress = fals
     }, [maSach]);
 
     const handleAddProduct = async (newBook: BookModel) => {
-        console.log("🟢 CLICK ADD TO CART =================");
-        console.log("📦 BOOK INPUT:", newBook);
-        console.log("🔥 FLASH SALE INFO:", {
-            isFlashSale: newBook.isFlashSale,
-            flashSalePrice: newBook.flashSalePrice,
-            flashSaleItemId: newBook.flashSaleItemId,
-        });
+       
         const existingCartItem = cartList.find(
             (item) => item.book.idBook === newBook.idBook
         );

@@ -23,7 +23,7 @@ function DanhSachSanPham({ tuKhoaTimKiem, idGenre }: DanhSachSanPhamProps) {
         if (tuKhoaTimKiem === '' && idGenre === 0) {
             layToanBoSach(trangHienTai - 1).then(
                 kq => {
-                    console.log("🔥 API RESPONSE - layToanBoSach:", kq.ketQua);
+                   
                     setDanhSachQuyenSach(kq.ketQua);
                     setTongSoTrang(kq.tongSoTrang);
                     setDangTaiDuLieu(false);
@@ -37,7 +37,7 @@ function DanhSachSanPham({ tuKhoaTimKiem, idGenre }: DanhSachSanPhamProps) {
         }else{
             timKiemSach(tuKhoaTimKiem, idGenre).then(
                 kq => {
-                      console.log("🔥 API RESPONSE - timKiemSach:", kq.ketQua);
+                 
                     setDanhSachQuyenSach(kq.ketQua);
                     setTongSoTrang(kq.tongSoTrang);
                     setDangTaiDuLieu(false);
@@ -73,7 +73,7 @@ function DanhSachSanPham({ tuKhoaTimKiem, idGenre }: DanhSachSanPhamProps) {
         );
     }
 
-    console.log("📦 danhSachQuyenSach render:", danhSachQuyenSach);
+
     if(danhSachQuyenSach.length===0){
         return (
             <div className="container">
@@ -83,7 +83,7 @@ function DanhSachSanPham({ tuKhoaTimKiem, idGenre }: DanhSachSanPhamProps) {
             </div>
         );
     }
-    console.log(danhSachQuyenSach);
+   
     return (
         <div className="container">
 

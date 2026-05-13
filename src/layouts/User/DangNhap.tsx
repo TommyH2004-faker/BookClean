@@ -133,7 +133,7 @@ const DangNhap: React.FC = () => {
 
             // Load lại giỏ hàng đầy đủ từ server (bao gồm cả items vừa merge)
             const cartFromServer = await getCartAllByIdUser();
-            console.log("Giỏ hàng sau khi đăng nhập và merge:", cartFromServer);
+    
             localStorage.setItem("cart", JSON.stringify(cartFromServer));
             setCartList(cartFromServer);
             setTotalCart(cartFromServer.length);

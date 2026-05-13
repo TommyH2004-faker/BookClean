@@ -127,7 +127,7 @@ export const ReviewForm: React.FC<ReviewFormProps> = (props) => {
 		return res.json();
 		})
 		.then((data) => {
-			console.log("Response:", data);
+			
 
 			if (!data) {
 				setCartItem?.({

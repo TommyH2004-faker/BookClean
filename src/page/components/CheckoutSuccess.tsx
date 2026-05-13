@@ -77,7 +77,7 @@ export const CheckoutSuccess = () => {
         if (responseCode === "00") {
           const carts = await getCartAllByIdUser();
 
-          console.log("Giỏ hàng sau khi đồng bộ:", carts);
+       
 
           setCartList(carts);
           setTotalCart(carts.length);
