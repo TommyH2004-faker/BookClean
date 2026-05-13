@@ -25,6 +25,11 @@ const ToolFilter: React.FC<ToolFilterProps> = (props) => {
 	// Xử lý input search (giống bên navbar)
 	// let keySearchTemp: string = "";
 	const [keySearchTemp, setKeySearchTemp] = useState(props.keySearch);
+
+	useEffect(() => {
+		setKeySearchTemp(props.keySearch);
+	}, [props.keySearch]);
+
 	// Khi thay đổi value ở ô input thì sẽ tự động cập nhật lại component
 	const onSetKeySearch = (e: ChangeEvent<HTMLInputElement>) => {
 		setKeySearchTemp(e.target.value);
