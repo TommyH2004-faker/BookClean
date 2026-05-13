@@ -101,11 +101,18 @@ function Navbar({
     const handleSearch = () => {
         setTuKhoaTimKiem(tuKhoaTamThoi);
 
-        navigate(
-            `/search?keyword=${encodeURIComponent(
-                tuKhoaTamThoi
-            )}`
-        );
+        if (location.pathname.startsWith("/search")) {
+            navigate(
+                `/search?keyword=${encodeURIComponent(
+                    tuKhoaTamThoi
+                )}`
+            );
+            return;
+        }
+
+        if (location.pathname !== "/") {
+            navigate("/");
+        }
     };
 
     const handleKeyDown = (
