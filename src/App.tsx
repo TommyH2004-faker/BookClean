@@ -81,11 +81,14 @@ const MyRoutes = () => {
                             <Route path='/forgot-password' element={<ForgotPassword />} />
                             <Route path='/profile' element={<ProfilePage setReloadAvatar={setReloadAvatar} />} />
                             <Route path='/flash-sale' element={<FlashSalePage />} />
-                            <Route path='' element={<CheckoutSuccess />} />
+                            <Route path='/check-out/success' element={<CheckoutSuccess />} />
+                            <Route path='/checkout/success' element={<CheckoutSuccess />} />
                             <Route path='/check-out/failure' element={<CheckoutFail />} />
+                            <Route path='/checkout/failure' element={<CheckoutFail />} />
 
                             {/* Nếu không tìm thấy trang */}
-                            <Route path='*' element={<Error403Page />} />
+                            {/* Nếu không tìm thấy trang */}
+                        <Route path='*' element={<Error404Page />} />
                         </Routes>
                     )}
 
