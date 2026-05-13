@@ -174,16 +174,27 @@ const SachProps: React.FC<SachPropsInterface> = ({ sach, showSoldProgress = fals
                     updatedCart = updatedCart.map(item => {
                         if (item.book.idBook !== newBook.idBook) return item;
                         const newQty = item.quantity + 1;
+                        const saleQuantity = newBook.isFlashSale
+                            ? newQty
+                            : (item.saleQuantity ?? 0);
+                        const normalQuantity = newBook.isFlashSale
+                            ? 0
+                            : newQty;
+                        const normalPrice = item.normalPrice ?? newBook.sellPrice;
+                        const flashSalePrice = newBook.isFlashSale
+                            ? (item.flashSalePrice ?? newBook.flashSalePrice ?? null)
+                            : (item.flashSalePrice ?? null);
                         return {
                             ...item,
                             quantity: newQty,
+                            totalQuantity: newQty,
                             // Với sách flash sale, tăng saleQuantity cùng với quantity
-                            saleQuantity: newBook.isFlashSale
-                                ? newQty
-                                : (item.saleQuantity ?? 0),
-                            normalQuantity: newBook.isFlashSale
-                                ? 0
-                                : newQty,
+                            saleQuantity,
+                            normalQuantity,
+                            normalPrice,
+                            flashSalePrice,
+                            totalItemPrice: newQty * normalPrice,
+                            flashSaleItemId: item.flashSaleItemId ?? newBook.flashSaleItemId ?? null,
                         };
                     });
                 }
@@ -285,6 +296,13 @@ const SachProps: React.FC<SachPropsInterface> = ({ sach, showSoldProgress = fals
 
                     updatedCart.push({
                         quantity: 1,
+                        totalQuantity: 1,
+                        saleQuantity: 0,
+                        normalQuantity: 1,
+                        flashSalePrice: null,
+                        normalPrice: newBook.sellPrice,
+                        totalItemPrice: newBook.sellPrice,
+                        flashSaleItemId: newBook.flashSaleItemId ?? null,
                         book: newBook,
                     });
                 }
