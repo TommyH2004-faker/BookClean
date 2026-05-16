@@ -51,9 +51,9 @@ export const BookHorizontal: React.FC<BookHorizontalProps> = (props) => {
 	let dataImage = "";
 
 	const displayPrice =
-    props.type === "order"
-        ? (props.cartItem.price ?? 0)
-        : props.cartItem.book.sellPrice;
+		props.type === "order"
+			? (props.cartItem.price ?? 0)
+			: props.cartItem.book.sellPrice;
 
 	if (imageList.length > 0) {
 		const thumbnail = imageList.find((i) => i.isThumbnail);
@@ -61,18 +61,18 @@ export const BookHorizontal: React.FC<BookHorizontalProps> = (props) => {
 	}
 
 	return (
-		<div className='row'>
+		<div className='row g-2'>
 			{/* ================= BOOK INFO ================= */}
-			<div className='col'>
+			<div className='col-12 col-md'>
 				<div className='d-flex'>
 					<img
 						src={dataImage}
 						className='card-img-top'
 						alt={props.cartItem.book.nameBook}
-						style={{ width: "100px" }}
+						style={{ width: "80px", minWidth: "80px" }}
 					/>
 
-					<div className='d-flex flex-column pb-2'>
+					<div className='d-flex flex-column pb-2 ms-2'>
 						<Tooltip title={props.cartItem.book.nameBook} arrow>
 							<Link
 								to={`/book/${props.cartItem.book.idBook}`}
@@ -87,13 +87,13 @@ export const BookHorizontal: React.FC<BookHorizontalProps> = (props) => {
 
 						<div className='mt-auto'>
 							<span className='discounted-price text-danger'>
-								<strong style={{ fontSize: "22px" }}>
+								<strong style={{ fontSize: "20px" }}>
 									{displayPrice.toLocaleString()}đ
 								</strong>
 							</span>
 
 							<span
-								className='original-price ms-3 small'
+								className='original-price ms-2 small'
 								style={{ color: "#000" }}
 							>
 								<del>
@@ -106,17 +106,16 @@ export const BookHorizontal: React.FC<BookHorizontalProps> = (props) => {
 			</div>
 
 			{/* ================= QUANTITY ================= */}
-			<div className='col-2 text-center'>
+			<div className='col-6 col-md-2 d-flex align-items-center'>
+				<span className='d-md-none me-1 text-muted small'>SL:</span>
 				<strong>{props.cartItem.quantity}</strong>
 			</div>
 
 			{/* ================= TOTAL ================= */}
-			<div className='col-2 text-center'>
+			<div className='col-6 col-md-2 d-flex align-items-center justify-content-end justify-content-md-center'>
 				<span className='text-danger'>
 					<strong>
-						{
-			(props.cartItem.quantity * displayPrice).toLocaleString()
-						}
+						{(props.cartItem.quantity * displayPrice).toLocaleString()}
 						đ
 					</strong>
 				</span>
@@ -160,7 +159,7 @@ export const BookHorizontal: React.FC<BookHorizontalProps> = (props) => {
 						{/* ================= MODAL ================= */}
 						<FadeModal
 							open={openModal}
-							handleOpen={() => {}}
+							handleOpen={() => { }}
 							handleClose={handleCloseModal}
 						>
 							<ReviewForm

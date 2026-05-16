@@ -237,17 +237,17 @@ const BookCartProps: React.FC<Props> = ({ cartItem, handleRemoveBook }) => {
 
   return (
     <>
-      <div className="col">
+      <div className="col-12 col-md">
         <div className="d-flex">
           <Link to={`/books/${book.idBook}`}>
             <img
               src={thumbnail}
               alt={book.nameBook}
-              style={{ width: 100 }}
+              style={{ width: 80, minWidth: 80 }}
             />
           </Link>
 
-          <div className="d-flex flex-column pb-2">
+          <div className="d-flex flex-column pb-2 ms-2">
             <Link to={`/books/${book.idBook}`}>
               <Tooltip title={book.nameBook} arrow>
                 <span>
@@ -258,12 +258,12 @@ const BookCartProps: React.FC<Props> = ({ cartItem, handleRemoveBook }) => {
 
             <div className="mt-auto">
               <span className="text-danger">
-                <strong style={{ fontSize: 22 }}>
+                <strong style={{ fontSize: 20 }}>
                   {(book.sellPrice ?? 0).toLocaleString()}đ
                 </strong>
               </span>
 
-              <span className="ms-3 small">
+              <span className="ms-2 small">
                 <del>{(book.listPrice ?? 0).toLocaleString()}đ</del>
               </span>
             </div>
@@ -271,7 +271,9 @@ const BookCartProps: React.FC<Props> = ({ cartItem, handleRemoveBook }) => {
         </div>
       </div>
 
-      <div className="col-3 d-flex justify-content-center align-items-center">
+      {/* Số lượng */}
+      <div className="col-12 col-md-3 d-flex justify-content-start justify-content-md-center align-items-center mt-2 mt-md-0">
+        <span className="d-md-none me-2 text-muted small">Số lượng:</span>
         <SelectQuantity
           max={book.quantity}
           quantity={quantity}
@@ -282,10 +284,9 @@ const BookCartProps: React.FC<Props> = ({ cartItem, handleRemoveBook }) => {
         />
       </div>
 
-      <div className="col-2 text-center my-auto">
-        {/* <strong className="text-danger">
-          {(quantity * book.sellPrice).toLocaleString()}đ
-        </strong> */}
+      {/* Số tiền */}
+      <div className="col-12 col-md-2 d-flex justify-content-start justify-content-md-center align-items-center mt-1 mt-md-0">
+        <span className="d-md-none me-2 text-muted small">Thành tiền:</span>
         <strong className="text-danger">
           {(() => {
             const flashPrice =
@@ -321,7 +322,8 @@ const BookCartProps: React.FC<Props> = ({ cartItem, handleRemoveBook }) => {
         </strong>
       </div>
 
-      <div className="col-2 text-center my-auto">
+      {/* Xoá */}
+      <div className="col-12 col-md-2 d-flex justify-content-start justify-content-md-center align-items-center mt-1 mt-md-0 mb-2">
         <Tooltip title="Xoá sản phẩm" arrow>
           <button
             onClick={handleConfirmRemove}
@@ -332,7 +334,7 @@ const BookCartProps: React.FC<Props> = ({ cartItem, handleRemoveBook }) => {
         </Tooltip>
       </div>
 
-      <hr className="my-3" />
+      <hr className="my-2" />
     </>
   );
 };

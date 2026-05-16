@@ -101,10 +101,10 @@ body {
 		width: 100% !important;
 	}
 
-	.row > [class*='col-'] {
-		width: 100% !important;
-		max-width: 100% !important;
-		flex: 0 0 100% !important;
+	/* Chỉ force full-width các col không có breakpoint (col-N thuần) */
+	/* KHÔNG override col-sm-, col-md- để giữ Bootstrap responsive */
+	.row > .col {
+		flex: 1 1 0%;
 	}
 
 	.site-navbar {
@@ -157,5 +157,49 @@ body {
 	iframe {
 		width: 100% !important;
 		height: 280px;
+	}
+
+	/* Cart table header ẩn trên mobile */
+	.cart-header-row {
+		display: none !important;
+	}
+
+	/* Cart item - layout dọc trên mobile */
+	.cart-item-row {
+		flex-wrap: wrap;
+	}
+
+	/* Checkout footer responsive */
+	.checkout-footer-fixed {
+		height: auto !important;
+		min-height: 175px;
+		padding-bottom: 0.5rem;
+	}
+
+	/* Card sách - giảm chiều cao ảnh trên mobile */
+	.card .card-img-top,
+	.card > a > div {
+		height: 200px !important;
+	}
+
+	/* Đảm bảo ảnh trong product card fit */
+	.card img {
+		max-height: 200px;
+		object-fit: cover;
+	}
+
+	/* Đảm bảo SelectQuantity không tràn */
+	.select-quantity-wrap {
+		flex-wrap: wrap;
+	}
+
+	/* Price display không bị cắt */
+	.discounted-price strong {
+		font-size: 16px !important;
+	}
+
+	/* Carousel item height trên mobile */
+	.carousel .slide div[style] {
+		height: 220px !important;
 	}
 }

@@ -819,7 +819,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
 
             <hr />
 
-            <div className="row my-3">
+            <div className="row my-3 d-none d-md-flex">
               <div className="col">
                 <span className="ms-3">
                   Sản phẩm
@@ -846,8 +846,8 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
 
           {/* FOOTER */}
           <footer
-            className="fixed-bottom bottom-0 shadow-4-strong bg-light"
-            style={{ height: "175px" }}
+            className="fixed-bottom bottom-0 shadow-4-strong bg-light checkout-footer-fixed"
+            style={{ height: "auto", minHeight: "175px" }}
           >
             <div className="container my-3">
               <div className="row">
@@ -893,7 +893,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
               <hr className="mt-3" />
 
               <div className="row">
-                <div className="col d-flex align-items-center">
+                <div className="col-12 col-md d-flex align-items-center mb-2 mb-md-0">
                   <span
                     style={{ cursor: "pointer" }}
                     onClick={() =>
@@ -908,7 +908,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
                   </span>
                 </div>
 
-                <div className="col-4">
+                <div className="col-12 col-md-4">
                   <Button
                     type="submit"
                     variant="contained"

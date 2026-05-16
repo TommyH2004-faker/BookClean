@@ -386,7 +386,7 @@ const SachProps: React.FC<SachPropsInterface> = ({ sach, showSoldProgress = fals
     const soldPercent = totalForProgress > 0 ? Math.round((soldQuantity / totalForProgress) * 100) : 0;
 
     return (
-        <div className="col-md-3 mt-2">
+        <div className="col-6 col-md-4 col-lg-3 mt-2">
             <div className="card border-0 shadow-4 rounded h-100 bg-white" style={{ position: "relative", overflow: "hidden" }}>
                 {discountPercent > 0 && (
                     <div className="badge bg-danger" style={{ position: "absolute", top: "10px", left: "10px", padding: "8px 10px", fontSize: "0.85rem", zIndex: 2 }}>

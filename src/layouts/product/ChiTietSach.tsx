@@ -559,7 +559,7 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
     }
     if (loading) {
         return (
-            <div className='container-book container mb-5 py-5 px-5 bg-light'>
+            <div className='container p-2 p-md-4 bg-white my-3 rounded'>
                 <div className='row'>
                     <div className='col-4'>
                         <Skeleton
@@ -568,7 +568,7 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
                             height={400}
                         />
                     </div>
-                    <div className='col-8 px-5'>
+                    <div className='col-8 px-3 px-md-5'>
                         <Skeleton
                             className='my-3'
                             variant='rectangular'
@@ -605,7 +605,7 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
                 <>
                     <div className='container p-2 bg-white my-3 rounded'>
                         <div className='row mt-4 mb-4'>
-                            <div className='col-lg-4 col-md-4 col-sm-12'>
+                            <div className='col-lg-4 col-md-5 col-12 mb-3 mb-md-0'>
                                 <Carousel
                                     emulateTouch={true}
                                     swipeable={true}
@@ -617,7 +617,7 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
                                             onClick={() => openImageViewer(index)}
                                             style={{
                                                 width: "100%",
-                                                height: "400px",
+                                                height: "320px",
                                                 objectFit: "cover",
                                             }}
                                         >
@@ -645,16 +645,16 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
                                     />
                                 )}
                             </div>
-                            <div className='col-lg-8 col-md-8 col-sm-12 px-5'>
-                                <h2>{book.nameBook}</h2>
-                                <div className='d-flex align-items-center'>
-                                    <p className='me-5'>
+                            <div className='col-lg-8 col-md-7 col-12 px-3 px-md-4 px-lg-5'>
+                                <h2 className='fs-4 fs-md-2'>{book.nameBook}</h2>
+                                <div className='d-flex flex-wrap align-items-center gap-2'>
+                                    <p className='me-3 mb-1'>
                                         Thể loại:{" "}
                                         <strong>
                                             {genres?.map((genre) => genre.nameGenre).join(", ")}
                                         </strong>
                                     </p>
-                                    <p className='ms-5'>
+                                    <p className='mb-1'>
                                         Tác giả: <strong>{book.author}</strong>
                                     </p>
                                 </div>
@@ -715,20 +715,20 @@ const BookDetail: React.FC<BookDetailProps> = (props) => {
                                         <span className='ms-3'>Miễn phí vận chuyển</span>
                                     </div>
                                 </div>
-                                <div className='d-flex align-items-center mt-3'>
-                                    <strong className='me-5'>Số lượng: </strong>
+                                <div className='d-flex flex-wrap align-items-center mt-3 gap-2'>
+                                    <strong>Số lượng:</strong>
                                     <SelectQuantity
-                                        max={maxAllowed} // ĐÃ ĐỔI TỪ book.quantity SANG maxAllowed
+                                        max={maxAllowed}
                                         quantity={maxAllowed === 0 ? 0 : quantity}
                                         setQuantity={setQuantity}
                                         add={add}
                                         reduce={reduce}
                                     />
-                                    <span className='ms-4'>
+                                    <span>
                                         {book.quantity} sản phẩm có sẵn
                                     </span>
                                 </div>
-                                <div className='mt-4 d-flex align-items-center'>
+                                <div className='mt-4 d-flex flex-wrap align-items-center gap-2'>
                                     {availableStock === 0 ? (
                                         <Button
                                             variant='outlined'

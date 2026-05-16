@@ -103,7 +103,7 @@ const BookCartList: React.FC<BookCartListProps> = () => {
                         </div>
                     )}
                     <div
-                        className='row my-4 pb-5 px-5'
+                        className='row my-4 pb-5 px-2 px-md-4'
                         style={
                             cartList.length === 0
                                 ? { display: "none" }
@@ -111,21 +111,21 @@ const BookCartList: React.FC<BookCartListProps> = () => {
                         }
                     >
                         {/* Bên trái */}
-                        <h2 className='mt-2 px-3 py-3 mb-0'>
+                        <h2 className='mt-2 px-3 py-3 mb-0 w-100'>
                             GIỎ HÀNG <span>({cartList.length} sản phẩm)</span>
                             
                         </h2>
-                        <div className='col-lg-8 col-md-12 col-sm-12 '>
-                            <div className='container-book bg-light '>
-                                <div className='row px-4 py-3'>
+                        <div className='col-lg-8 col-12'>
+                            <div className='container-book bg-light'>
+                                <div className='row px-2 px-md-4 py-3 cart-header-row'>
                                     <div className='col'>Sản phẩm</div>
                                     <div className='col-3 text-center'>Số lượng</div>
                                     <div className='col-2 text-center'>Số tiền</div>
                                     <div className='col-2 text-center'>Thao tác</div>
                                 </div>
                             </div>
-                            <div className='container-book bg-light mt-3 px-3'>
-                                <div className='row px-4 py-3'>
+                            <div className='container-book bg-light mt-3 px-2 px-md-3'>
+                                <div className='row px-2 px-md-4 py-3'>
                                     {cartList.map((cartItem) => {
                                         return (
                                             <BookCartProps
@@ -141,7 +141,7 @@ const BookCartList: React.FC<BookCartListProps> = () => {
 
                         {/* Bên phải */}
                         <div
-                            className='container-book bg-light col-lg col-md-12 col-sm-12 px-5 pb-4 mt-lg-0 mt-md-3 mt-sm-3'
+                            className='container-book bg-light col-lg-4 col-12 px-3 px-md-5 pb-4 mt-lg-0 mt-3'
                             style={{ height: "fit-content" }}
                         >
                             <div className='d-flex align-items-center justify-content-between mt-3'>
