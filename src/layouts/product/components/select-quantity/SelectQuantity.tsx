@@ -70,7 +70,6 @@ const SelectQuantity: React.FC<SelectQuantityProps> = (props) => {
 	return (
 		<div
 			className='wrapper-select-quantity d-flex align-items-center rounded'
-			style={{ width: "110px" }}
 		>
 			<button
 				type='button'
